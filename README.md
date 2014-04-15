@@ -1,6 +1,6 @@
 # A Plan to Program
------
-This is the first program learning project that I am going to do for improving programming skills. This specific one is a rountine to follow the MIT Open Course Ware's [U6001 Structure and Interpretation of Computer Programs ](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-001-structure-and-interpretation-of-computer-programs-spring-2005/). What I am doing is take down every notes I have during the process. Hope you enjoy it.
+
+This is the first program learning project that I am going to do for improving programming skills. This specific one is a rountine following up the MIT Open Course Ware's [U6001 Structure and Interpretation of Computer Programs ](http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-001-structure-and-interpretation-of-computer-programs-spring-2005/). What I am doing is taking down every notes I have during the process. Hope you enjoy it.
 
 ## Goal
 My goal for this project is to:
