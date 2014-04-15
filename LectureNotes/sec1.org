@@ -1,0 +1,38 @@
+* Section 1.1 What is the course?
+** Two Knowledges
+*** Declarative
+This is the knowledge to determind what is what.
+*** Imperative
+This is the knowledge about how to do something. Algorithms.
+** Process
+We could use the imperative knowledge to make a standard process of something so that we could apply them rather easily.
+
+So control of the process will be the focus of our course!
+
+** A language
+We need tools to implement processes that we are going to learn about. So we need a language. A language that could depicts the process we want would necessarily have elements below:
+*** Vocabulary
+Words that has meanings.
+*** Syntax
+Grammer that suggests the legality
+*** Semantics
+Meaning that derives from the legal expressions
+*** Procedures
+Rule that regulates how to combine expressions
+
+** Using precedures to control the complexity
+As we could see, that complicated processes are built step by step. So we have:
+*** A black box -- decompartmentation
+As we see, we could image the precess of getting a square root a virtue black box where we take a number in and a number out. The user need not to know how it is processed inside the box. The isolation of the usage from its mechanism is central idea to control the complexity.
+*** Conventional interfaces and program paradigms
+As we have multiple black boxes, we also need to let the boxex communicate with each other.As we will see these ideas later:
+**** Manifest typing
+**** Stream
+**** OOP
+
+*** Metalinguistic abstraction
+Different languages could also serve as different black boxes. As we will see:
+**** Layered language for new problem
+**** Hardware languages
+**** Scheme evaluator(s)
+**** Manipulation of programs
