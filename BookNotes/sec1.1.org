@@ -1,0 +1,46 @@
+* Sec 3 Evaluating Combinations
+** Combination
+Normal combination is just calculation and the =define= does not count as the normal combination. It is a =special forms= to accosiate the value with a symbol.
+
+* Sec 5 The Substitiution Model for Procedure Application
+** Recursion evaluation
+Pay attention, clearly you misunderstand the true sequence that these two are measured.
+*** normal-order evaluation
+Errror: This kind of evaluation is the sort that expand all the functions to the lowest level of data, numbers and then try to build up the calculations.
+Correct: In fact this order starts with the beginning and measures every possible evaluations within this level and then expand to the next level.
+*** applicative-order evaluation
+Error: This kind of evaluation is the sort do and get into the lower function. So we try to do the calculation as earlier as possible.
+Correct: This order would try to measures the evaluation inside this level first and then go back to the level.
+
+The lisp language uses the applicative-order for efficiency reasons, for normal-ordering could cause so much redundency and mess things up.
+
+** Catastrophy that could happen if neglect the order thing
+Most of the cases cause infinite looping.
+*** Example 1
+#+BEGIN_SRC scheme
+(define (p) (p))
+
+(define (test x y) (if (= x 0) 0 y))
+
+(test 0 (p))
+#+END_SRC
+
+As for the applicative-order, it will first evaluate the =(p)= and loop ever after.
+
+For the normal-order, it will first evaluate the =test= and try to see the =if= clause, if fit, then return and neglect the =(p)=.
+
+And similar cases happens if we try to define conditional clause using the combination.
+
+*** Example 2
+#+BEGIN_SRC scheme
+(define (new-if predicate then-clause else-clause)
+        (conds (predicate the-clause)
+               (else else-clause)))
+
+(define (new-sqrt-iter guess x)
+        (new-if (good-enough? guess x)
+                guess
+                (new-sqrt-iter (improve guess x)
+                               x)))
+#+END_SRC
+Similarly, the infinite looping will happen for the applicative-order make the program keep entering =good-enough?= and =new-sqrt-iter= but never enter =new-if= for it is always at the beginning.
