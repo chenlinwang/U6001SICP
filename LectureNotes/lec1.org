@@ -36,3 +36,4 @@ Different languages could also serve as different black boxes. As we will see:
 **** Hardware languages
 **** Scheme evaluator(s)
 **** Manipulation of programs
+* Section 1.2 Computation as a metaphor
