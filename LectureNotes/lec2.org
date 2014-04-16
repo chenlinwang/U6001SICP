@@ -1,0 +1,76 @@
+* Capturing the procedure
+In this lecture, we cover two more special forms and two ideas to capture the procedure. Later, we shall see the case.
+
+*Sepcial Forms*
+1. =lambda=
+2. =if=
+
+*idea*
+1. Abstraction
+2. Decompartmentation
+
+
+** Forms
+*** lambda
+The =lambda= is used to capture the procedure of computations.
+**** How to use
+#+BEGIN_SRC scheme
+(lambda (a b c ...) (do something with a b c...))
+;       variable list         operation list
+#+END_SRC
+
+As above, a =lambda= has two parts, variable list, that states what to calculate with, and operation list, that says about how to calculate.
+
+For example, we want a =new-add= for adding two number, we have:
+#+BEGIN_SRC scheme
+(lambda (new-add x y) (+ x y))
+#+END_SRC
+
+**** How to evaluate
+The =lambda= is similar to the =define= statement, and they both get stored somewhere and return a procedure object.
+
+**** How to apply
+Just use it as an operator. Use the combination to evaluate, like:
+#+BEGIN_SRC scheme
+((lambda (x) (* x x)) 5)
+#+END_SRC
+
+**** How to calculate
+After we define, we could use the =lambda= :
+#+BEGIN_SRC scheme
+((lambda (x) (* x x)) 5)
+#+END_SRC
+And this gives five. And what the evaluator does is that it expand the expression ,or say, combination with what is defined in the =environment=. So it is:
+#+BEGIN_SRC scheme
+((lambda (x) (* x x)) 5)
+; |
+(* 5 5)
+; |
+(5)
+; |
+5
+#+END_SRC
+**** Easy define
+We could combine =define= with =lambda=, so we could repeatedly use the procedure we define, like:
+#+BEGIN_SRC scheme
+(define square (lambda (x) (* x x)))
+#+END_SRC
+
+And we could make it simpler by:
+#+BEGIN_SRC scheme
+(define (square x) (* x x))
+#+END_SRC
+*** if
+**** How to use
+#+BEGIN_SRC scheme
+(if <predicate> <then-clause> <else-clause>)
+#+END_SRC
+**** How evaluate
+The evaluator first evaluate =<predicate>= and if true, return =<then-clause>=, if not return =<else-clause>=.
+** Idea
+*** Abstraction
+If we repeatedly do something, so we should denote it and make it a procedure.
+*** Decompartmentation
+And to do that give each function a role to play, instead putting all the things in one procedure. It is good:
+1. Easier to debug
+2. Make the code less redundant

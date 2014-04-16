@@ -8,6 +8,13 @@ My goal for this project is to:
 + Improve my programming skills
 + Master scheme or lisp
 
+## Working Sequence
+I shall say that I mainly follow a squence of working like this:
++ Book Content
++ Book Exercise
++ Lecture Video and Note
++ Lecture Project
+
 ## Content Guid
 There are four directories:
 
