@@ -96,3 +96,57 @@
 ;;                ^                            |
 ;;                |                            |
 ;;                ------------------------------
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex1.7
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Define error to measure
+(define error 0.001)
+
+;To improve the result using the Newton's method
+(define (average x y)
+    (/ (+ x y) 2))
+(define (improve guess x)
+    (average guess (/ x guess)))
+
+;To test whether converage
+(define (good-enough? guess x)
+    (< (abs (- (improve guess x) guess)) error))
+
+;To iterate until meet the converage
+(define (sqrt-iter guess x) (if (good-enough? guess x)
+                                guess
+                                   (sqrt-iter (improve guess x) x)))
+
+;Pack the thing
+(define (sqrt x) (sqrt-iter 1.0 x))
+
+;;Take ther error = 0.001 and try to get the square root of 0.0001, the former gives 0.03 while latter yields 0.001. It is because that when it gets smaller, though it might misses hundreds by percentage, however, the number between guess's square and x is small. To calculate, give the former's absolute error to be error, the latter's absolute error between guess and x is 2*guess*error.
+;;Similarly, however for big numbers the former outperform the latter.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex1.8
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Define error
+(define cube-error 0.001)
+
+;Define cube
+(define (cube x) (* x x x))
+
+;To test whether converage
+(define (cube-good-enough? guess x)
+    (< (abs (- (cube guess) x)) cube-error))
+
+;To improve the guess
+(define (cube-improve guess x)
+    (/ (+ (* 2 guess) (/ x (square guess))) 3))
+
+;To iterate
+(define (curt-iter guess x)
+    (if (cube-good-enough? guess x)
+        guess
+        (curt-iter (cube-improve guess x) x)))
+
+;To pack
+(define (curt x)
+    (curt-iter 1.0 x))

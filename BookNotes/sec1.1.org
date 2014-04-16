@@ -6,11 +6,11 @@ Normal combination is just calculation and the =define= does not count as the no
 ** Recursion evaluation
 Pay attention, clearly you misunderstand the true sequence that these two are measured.
 *** normal-order evaluation
-Errror: This kind of evaluation is the sort that expand all the functions to the lowest level of data, numbers and then try to build up the calculations.
-Correct: In fact this order starts with the beginning and measures every possible evaluations within this level and then expand to the next level.
+- Errror: This kind of evaluation is the sort that expand all the functions to the lowest level of data, numbers and then try to build up the calculations.
+- Correct: In fact this order starts with the beginning and measures every possible evaluations within this level and then expand to the next level.
 *** applicative-order evaluation
-Error: This kind of evaluation is the sort do and get into the lower function. So we try to do the calculation as earlier as possible.
-Correct: This order would try to measures the evaluation inside this level first and then go back to the level.
+- Error: This kind of evaluation is the sort do and get into the lower function. So we try to do the calculation as earlier as possible.
+- Correct: This order would try to measures the evaluation inside this level first and then go back to the level.
 
 The lisp language uses the applicative-order for efficiency reasons, for normal-ordering could cause so much redundency and mess things up.
 
@@ -44,3 +44,74 @@ And similar cases happens if we try to define conditional clause using the combi
                                x)))
 #+END_SRC
 Similarly, the infinite looping will happen for the applicative-order make the program keep entering =good-enough?= and =new-sqrt-iter= but never enter =new-if= for it is always at the beginning.
+* Sec 8 Procedures as Black-Box abstractions
+** Ideas of procedure abstraction
+- With standard input required and output stated
+- No need to need how it is being implemented
+- Variables isolated from the global
+** Variable Type
+To follow up the variable isolation, we several conceptions.
+*** bound variables
+The new variables inside the procedure are binded with the scope of the procedures. There are two characteristics:
+- They only exist with the procedure.
+- What they are named have no effects what so ever towards the procedure functioning.
+*** free variables
+Similarly, we have variables like =-=, =<=, which works everywhere.
+
+*** scope
+This is to say where the variable is effective.
+
+** Problem with our program sqrt
+As we implement the program in the sec1.1.7, it is fine as if it is just a poece for amusing. However, if it were inside a very large project, it would raise problems like renaming. Functions like =good-enough?= and =improve= are not visible to users or others who seek only the function =sqrt=, thus they might have other =good-enough?= and =improve= somewhere else, and problem araise. This is deflect is caused by our abstraction of black-box. And there is nothing wrong about it. All we need to do is to *shield the functions scope within* =sqrt=. Like:
+#+BEGIN_SRC scheme
+;Pack the thing
+(define (sqrt x)
+    ;Define error to measure
+    (define error 0.001)
+
+    ;To test whether converage
+    (define (good-enough? guess x)
+        (< (abs (- (square guess) x)) error))
+
+    ;To improve the result using the Newton's method
+    (define (average x y)
+        (/ (+ x y) 2))
+    (define (improve guess x)
+        (average guess (/ x guess)))
+
+    ;To iterate until meet the converage
+    (define (sqrt-iter guess x) (if (good-enough? guess x)
+                                    guess
+                                       (sqrt-iter (improve guess x) x)))
+    (sqrt-iter 1.0 x))
+#+END_SRC
+
+In this case, we don't have to worry anymore for =good-enough?= and =improve= are now bound variables with the scope of =sqrt=.
+
+** Still part to improve.
+As we could see inside the better version of the =sqrt=, we have many very local =x= s inside differet procedures. The fact is that, during all the procedure to calculate the square root, =x= never changes. So logically, it should be with the same scope with =good-enough?= and =improve=. So let's just make it a larger scope by doing some deleting in the =define= part of the subprocedures. This abstraction process is called =lexial scoping=.
+
+#+BEGIN_SRC scheme
+;Pack the thing
+(define (sqrt x)
+    ;Define error to measure
+    (define error 0.001)
+
+    ;To test whether converage
+    (define (good-enough? guess)
+        (< (abs (- (square guess) x)) error))
+
+    ;To improve the result using the Newton's method
+    (define (average x y)
+        (/ (+ x y) 2))
+    (define (improve guess)
+        (average guess (/ x guess)))
+
+    ;To iterate until meet the converage
+    (define (sqrt-iter guess) (if (good-enough? guess)
+                                    guess
+                                       (sqrt-iter (improve guess))))
+    (sqrt-iter 1.0))
+#+END_SRC
+
+This will not only cut the redundancy within the program but also enhance the efficiency.
