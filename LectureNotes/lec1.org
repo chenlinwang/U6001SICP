@@ -37,3 +37,82 @@ Different languages could also serve as different black boxes. As we will see:
 **** Scheme evaluator(s)
 **** Manipulation of programs
 * Section 1.2 Computation as a metaphor
+The most important idea of computation is that to infer new knowledge from the old data. This might concerns:
++ Finding resource from the web
++ Doing a calculation for a mathematical problem
+
+And as we need a language to implement the procedure, we choose *Scheme*. And we shall Introduce the language rules about it.
+
+** Atonic Element -- basic elements to make use of
+In this part, it comes the fundamental elements, there are two catagories: data and operators.
+
+*Every Thing is Evaluation*
+These are all expressions, which means they have themself a value, even for the operator. So to evaluate, the process contains the process of data and operator.
+
+*** Data
+We have:
+- number, eg: 1, 2
+- string, eg: "Chenlin", "Halo"
+- boolean, eg: #t, #f
+
+*** Operator
+We have:
+- number operator, eg +, -
+-boolean operator, eg: and, or, not
+
+** Combination -- means to combine basic elements
+Combination's basic role is to apply operator to data and do calculation.
+
+Thus we have here a syntax to apply operator to data, eg:
+
+#+BEGIN_SRC scheme
+(+ 2 3)
+#+END_SRC
+
+The open and close parenthesises are the symbol to identify the combination.
+the first element is the operator and the following are just data to be applied to.
+
+And for the conbination, it could be nested arbitrarily. Like:
+
+#+BEGIN_SRC scheme
+(+ 2 (- 2 3))
+#+END_SRC
+
+** Abstraction of the procedure
+In this part, we introduce the special form of operator =define=.
+
+It is used to link the evaluation of certain combination to a new variable. It is a special form and try to store the result of the combination to a certain place called =environment=.
+
+*** define variable
+#+BEGIN_SRC scheme
+(define tmp 3)
+(tmp)
+#+END_SRC
+And the result gives:
+#+BEGIN_SRC bash
+> 3
+#+END_SRC
+
+*** define procedure
+#+BEGIN_SRC scheme
+(define (new-add x y) (+ x y))
+(new-add 1 3)
+#+END_SRC
+And the result gives:
+#+BEGIN_SRC bash
+4
+#+END_SRC
+* Section 1.3 How the it really works inside the computer
+** For general evaluation
+
+1. The code is first read into a =reader= to transilate to a more mechine-friend format
+
+2. Then it is evaluated by a =evaluator=. The evaluation goes step by step, so for nested argument, it will apply recursion and keep using evaluator again and again.
+
+3. And after finishing the evaluation, the result is fed to a =printer= so we could see.
+
+** For define
+
+The same thing happens, except there is a 2.5 as:
+
+- Give the result to a place to store and link to the variable
