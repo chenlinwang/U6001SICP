@@ -44,7 +44,7 @@
 #+END_SRC
 
 * Ex1.3
-What I am trying to do is to find the smallest number first and then subtract its square with the sum of the squares of the numbers
+What I am trying to do is to find the smallest number first and then subtract its square with the sum of the squares of the numbers.
 
 #+BEGIN_SRC scheme
 ;;Define square
@@ -65,7 +65,7 @@ What I am trying to do is to find the smallest number first and then subtract it
       ((if (> b 0) + -) a b))
 #+END_SRC
 
-The a-plus-abs-b first test whether b is positive, if so, it will use plus, else it will use the minus
+The =a-plus-abs-b= first test whether =b= is positive, if so, it will use plus, else it will use the minus
 
 * Ex1.5
 
@@ -78,7 +78,7 @@ The a-plus-abs-b first test whether b is positive, if so, it will use plus, else
 (test 0 (p))
 #+END_SRC
 
-For applicative-order, it will end in infinite looping. As the order evaluates, it will first try to evaluate (p) and it results in (p) and then it will go like this forever.
+For applicative-order, it will end in infinite looping. As the order evaluates, it will first try to evaluate =(p)= and it results in =(p)= and then it will go like this forever.
 
 For the normal-order, it will end in giving the correct answer 0. As the order evaluates , it will try to evaluate the test function and then the if-clause terminates the funcation and return 0.
 
@@ -95,9 +95,9 @@ For the normal-order, it will end in giving the correct answer 0. As the order e
                       ￼x)))
 #+END_SRC
 
-For similar reasons as Ex1.5, the function will end in infinite looping. As the applicative-order goes, when it try to evaluate the first layer, it will first evaluate good-enough? function and then evaluate sqrt-iter, and then evaluate improve and then good-enough?, for now the new-if is simply a function that needs to be evaluated. In this case it will never be evaluated, thus infinite looping.
+For similar reasons as Ex1.5, the function will end in infinite looping. As the applicative-order goes, when it try to evaluate the first layer, it will first evaluate =good-enough?= function and then evaluate =sqrt-iter=, and then evaluate =improve= and then =good-enough?=, for now the =new-if= is simply a function that needs to be evaluated. In this case it will never be evaluated, thus infinite looping.
 
-[[file:./../resource/pdf/1.1.pdf][Function Graph]]
+[[file:sec1.1.png]]
 
 
 * Ex1.7
@@ -124,7 +124,7 @@ For similar reasons as Ex1.5, the function will end in infinite looping. As the 
 (define (sqrt x) (sqrt-iter 1.0 x))
 #+END_SRC
 
-Take ther error = 0.001 and try to get the square root of 0.0001, the former gives 0.03 while latter yields 0.001. It is because that when it gets smaller, though it might misses hundreds by percentage, however, the number between guess's square and x is small. To calculate, give the former's absolute error to be error, the latter's absolute error between guess and x is 2*guess*error.
+Take ther =error = 0.001= and try to get the square root of 0.0001, the former gives 0.03 while latter yields 0.001. It is because that when it gets smaller, though it might misses hundreds by percentage, however, the number between guess's square and x is small. To calculate, give the former's absolute error to be error, the latter's absolute error between guess and x is =2*guess*error=.
 
 Similarly, however for big numbers the former outperform the latter.
 
