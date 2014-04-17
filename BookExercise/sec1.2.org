@@ -96,4 +96,3 @@ $$ h(n) = 2^{2^{2 \dots ^2}} (n times 2)$$
 
 * Ex 1.13
 [[file:sec1.2-ex1.13.png]]
-$$ \sin a \cos a = \frac{1}{2} \sin 2a $$
