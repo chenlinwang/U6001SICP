@@ -97,7 +97,7 @@ For the normal-order, it will end in giving the correct answer 0. As the order e
 
 For similar reasons as Ex1.5, the function will end in infinite looping. As the applicative-order goes, when it try to evaluate the first layer, it will first evaluate good-enough? function and then evaluate sqrt-iter, and then evaluate improve and then good-enough?, for now the new-if is simply a function that needs to be evaluated. In this case it will never be evaluated, thus infinite looping.
 
-[[file:~/org/OCW/resource/pdf/1.1.pdf][Function Graph]]
+[[file:./../resource/pdf/1.1.pdf][Function Graph]]
 
 
 * Ex1.7
