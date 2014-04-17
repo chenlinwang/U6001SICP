@@ -1,0 +1,105 @@
+* Procedures and the Process they generate
+
+The grammer of the language is just like the rules of the chess. One that master is will make a good player. It is the strategy that matters
+
+
+** 1.2.1 Linear Recursion and Iteration
+
+One important thing, both LR and I are the Implementaion of a Recursive Procedure.And by RP, we mean:
+
+#+BEGIN_QUOTE
+The definition of the procedure involves using itself.
+#+END_QUOTE
+
+The Differences between LR and I is however they got evaluated hind.
+*** Linear Recursion Process
+For LR, the machine has to keep a track of operators, that could not be evaluated for there are still subprocesses. And when it gets to the grounds, it finish.Like:
+
+#+BEGIN_SRC scheme
+;; Doing it downwards
+(define (factorial n)
+  (if (= n 1)
+      1
+      (* n (factorial (- n 1)))))
+#+END_SRC
+
+*** Iteration Process
+For I, the machine could do not keep a record, because there is no need. Like:
+
+#+BEGIN_SRC scheme
+;; Doing it upwards
+(define (factorial-up n)
+  ;; A recursion to mulitply until reach n
+  (define (up result next)
+    (if (= next n)
+        (* result n)
+        (up (* result next) (+ next 1))))
+  (up 1 1))
+#+END_SRC
+
+*** Attention
+LR has to take more space than I as they have to denote the previous operator.
+
+The I is also referred as the /tail recursion/. And for language like =c=, all recursion functions are LR instead of I, but =for=, =while= and so on are I.
+
+The =scheme= implement the two differently.
+
+* Tree Recursion
+We could see what see recursion is in a example to calculate the Fibonacci numbers:
+
+: 0 1 1 2 3 5 8 13 21 ...
+
+We implement with tree recursion in recursive process way first:
+** LR
+#+BEGIN_SRC scheme
+(define (Fib n)
+  (cond ((= n 0) 0)
+        ((= n 1) 1)
+        (else
+         (+ (Fib (- n 1)) (Fib (- n 2))))))
+#+END_SRC
+
+You could see that we have to record two functions for every time we evaluate.
+
+** I
+And this certainly cost hell lots of time, So what we do is to cut the redundancy and use a iterative process.
+#+BEGIN_SRC scheme
+(define (Fib-I n)
+  (define (Fib-iter former latter n)
+    (if (= n 0)
+        former
+        (Fib-iter latter (+ former latter) (- n 1))))
+  (Fib-iter 0 1 n))
+#+END_SRC
+
+** An example: counting the changes
+It seems that recursive tree recursion is of great redundancy. That is true. However, it is also very straight forwards to implement the problem. So let see another problem:
+
+#+BEGIN_QUOTE
+Suppose there are n kinds of money, worth like {v1, v2, v3, ... ,vn}. How many ways are there to change a money of m?
+#+END_QUOTE
+
+To do that we also need to do the recursion division. So the number of changing m with n kinds is equal to the sum of changing m with (n-1) kinds (without the first one) and changing (m-v1) with n kinds.
+
+And to terminate the loop, if the kind is zero or the money is below zero. If ther money is zero, we return 1.
+
+#+BEGIN_SRC scheme
+(define (Count money kind)
+  (define (money-table kind)
+    (cond ((= kind 0) 0)
+          ((= kind 1) 1)
+          ((= kind 2) 5)
+          ((= kind 3) 10)
+          ((= kind 4) 20)
+          ((= kind 5) 50)
+          ((= kind 6) 100)
+          (else 0)))
+  (cond ((or (< money 0) (= kind 0)) 0)
+        ((= money 0) 1)
+        (else (+ (Count (- money (money-table kind)) kind) (Count money (- kind 1))))))
+#+END_SRC
+
+This is easily counted. But it takes more times.
+
+*LEFT QUESTION*
+Is there any iterative process implementation to do the same work?

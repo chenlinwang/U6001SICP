@@ -1,0 +1,98 @@
+* Ex 1.9
+** First One
+#+BEGIN_SRC Scheme
+(+ 4 5)
+
+(inc (+ (dec 4) 5))
+
+(inc (+ 3 5))
+
+(inc (inc (+ (dec 3) 5)))
+
+(inc (inc (+ 2 5)))
+
+(inc (inc (inc (+ (dec 2) 5))))
+
+(inc (inc (inc (+ 1 5))))
+
+(inc (inc (inc (inc (+ (dec 1) 5)))))
+
+(inc (inc (inc (inc (+ 0 5)))))
+
+(inc (inc (inc (inc 5))))
+
+...
+
+9
+#+END_SRC
+
+It is a recursive, because it keep a record of the previous operators.
+
+** Second
+#+BEGIN_SRC scheme
+(+ 4 5)
+
+(+ (dec 4) (inc 5))
+
+(+ 3 6)
+
+(+ (dec 3) (inc 6))
+
+(+ 2 7)
+
+(+ (dec 2) (inc 7))
+
+(+ 1 8)
+
+(+ (dec 1) (inc 8))
+
+(+ 0 9)
+
+9
+#+END_SRC
+
+It is iterative.
+
+* Ex 1.10
+** Answer
+#+BEGIN_EXAMPLE
+(A 1 10) > 1024
+
+(A 2 4) > 65536
+
+(A 3 3) > 65536
+#+END_EXAMPLE
+** Calculation
+#+BEGIN_SRC latex
+$$ f(n) = 2 n $$
+
+$$ g(n) = 2^n $$
+
+$$ h(n) = 2^{2^{2 \dots ^2}} (n times 2)$$
+#+END_SRC
+* Ex 1.11
+#+BEGIN_SRC scheme
+(define (f-r n)
+  (if (< n 3)
+      n
+      (+ (f-r (- n 1)) (f-r (- n 2)) (f-r (- n 3)))))
+
+(define (f-i n)
+  (define (f-iter f m l n)
+    (if (= n 0)
+        f
+        (f-iter m l (+ f m l) (- n 1))))
+  (f-iter 0 1 2 n))
+#+END_SRC
+
+* Ex 1.12
+
+#+BEGIN_SRC scheme
+(define (p-r n i)
+  (if (or (= i 1) (= i n))
+      1
+      (+ (p-r (- n 1) (- i 1)) (p-r (- n 1) i))))
+#+END_SRC
+
+* Ex 1.13
+[[file:sec1.2-ex1.13.png]]
