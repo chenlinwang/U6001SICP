@@ -73,4 +73,4 @@ If we repeatedly do something, so we should denote it and make it a procedure.
 *** Decompartmentation
 And to do that give each function a role to play, instead putting all the things in one procedure. It is good:
 1. Easier to debug
-2. Make the code less redundant
+2. Make the code less redundant [Z]
