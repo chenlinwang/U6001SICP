@@ -14,6 +14,7 @@ I shall say that I mainly follow a squence of working like this:
 + Book Exercise
 + Lecture Video and Note
 + Lecture Project
++ Lecture Extend Reading Reflect
 
 ## Content Guid
 There are four directories:
