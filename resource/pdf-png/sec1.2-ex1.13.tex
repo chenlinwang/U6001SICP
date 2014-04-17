@@ -1,0 +1,25 @@
+\documentclass[class=minimal,border=4pt,preview,12pt]{standalone}
+\usepackage{amsmath,amssymb}
+\begin{document}
+
+for $\forall n > 1, \in \mathcal{N}$, we have:\\
+$$f(n) = f(n-1) + f(n-2) $$
+Suppose $f(n) = a x^n$, thus for $\forall n > 1$, we have:\\
+\begin{align*}
+ax^n & = ax^{n-1} + ax^{n-2} \\
+\Leftrightarrow 0 &=x^2 - x - 1\\
+\Leftrightarrow x &= \left\{
+  \begin{array}{c}
+     \frac{1 + \sqrt{5}}{2} \\
+     \frac{1 - \sqrt{5}}{2}
+  \end{array}\right.
+\end{align*}
+Thus, we have:\\
+$$f(n) = a\left(\frac{1 + \sqrt{5}}{2}\right)^n + b\left(\frac{1 -
+    \sqrt{5}}{2}\right)^n $$
+As $f(0) = 0$ and $f(1) = 1$, we have:\\
+$$a  = b = 1$$
+Thus:\\
+$$f(n) = \left(\frac{1 + \sqrt{5}}{2}\right)^n + \left(\frac{1 -
+    \sqrt{5}}{2}\right)^n $$
+\end{document}
