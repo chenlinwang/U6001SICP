@@ -1,0 +1,15 @@
+\documentclass[class=minimal,border=4pt]{standalone}
+
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}[scale=1.5]
+\node (a) at (0,0) {good-enough?};
+\node (b) at (3.4,2) {sqrt-iter};
+\node (c) at (3.4,-2) {improve};
+\node (d) at (-3.4,0) {sqrt-iter};
+
+\foreach \from/\to in {a/b, b/c, c/a}
+\draw [->] (\from) -- (\to);
+\draw [->] (d) -- (a);
+\end{tikzpicture}
+\end{document}
