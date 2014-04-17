@@ -1,0 +1,37 @@
+* Beating the Average
+In this speech, Paul told two story.
+
+- About the  his experice of creating a startup firm, called /Viaweb/
+- About how programers understand the power continuum of program language, but chould not change about it when applying to themselves.
+
+** Startup
+For this part, I learn in this ways:
+*** Identify the eccence of the work
+In the case of this startup, what needs the most is fast and good service towards the costumers.
+
+And this actually contains two parts, how to be fast and how to be good.
+
+We would put the fast part later. In the sence of the being good part:
+
+1. The market is not big and everyone copies each other's idea, so you should be able to copy one's idea faster then the others.
+2. And listen to what costumers want and get it done before the others.
+
+To narrow down, it is also the speed that matters.
+
+*** Identify your strength and try everything to push it to the limit
+
+Luckily for Paul, his strength was programming. So he chose to push it to the limit by using the most powerful language: Lisp.
+
+Everyone know it is powerful but could not use it for unknown reasons. It can't be reasoned, there is nothing wrong about using it.
+
+** A blue paradox
+In this part, I learn that:
+*** Pragramming languages are varied in power
+Reason: obviously self-evident.
+
+So, what you should keep in mind is to learn and see more.
+
+*** Pragramming is not a skill but a style of thinking
+That is the reason why programmors usually got stuck to a single language.
+
+In that case, I should explore more before I got stucked.
