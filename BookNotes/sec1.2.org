@@ -103,3 +103,53 @@ This is easily counted. But it takes more times.
 
 *LEFT QUESTION*
 Is there any iterative process implementation to do the same work?
+* Order of Growth
+This is used to discrible how the speed and space procedures consume.
+* An example: Faster Exponent Algorithm
+This example designs a better way to compute a exponenial product.
+
+** Normal
+Normally we have two way of doing it: recursive and iterative:
+#+BEGIN_SRC scheme
+;;Ordinary Way of Computing
+(define root 2)
+; recursive process
+(define (ex-r n)
+  (if (= n 1)
+      root
+      (* root (ex-r (- n 1)))))
+; iterative process
+(define (ex-i n)
+  (define (ex-iter sum n)
+    (if (= n 0)
+        sum
+        (ex-iter (* root sum) (- n 1))))
+  (ex-iter 1 n))
+#+END_SRC
+
+The recursion takes \Theta (n) for both time and space.
+
+The iteration takes \Theta (n) for time and \Theta (1) for space.
+
+** Fast
+#+BEGIN_SRC scheme
+;;Fast Way of Computing
+(define (ex-f n)
+  (define (square n) (* n n))
+  ;Test for even number
+  (define (even? n)
+    (= (remainder n 2) 0))
+  ;Begin process
+  (cond ((= n 0) 1)
+        ((even? n) (square (ex-f (/ n 2))))
+        (else (* root (ex-f (- n 1))))))
+#+END_SRC
+
+This recursion takes \Theta (\log n) for space and time.
+* An example: Great Common Divider
+This is an example to calculate ther order of growth on the gcd. It is \log (n).
+
+As we have the Lame's Theorem:
+#+BEGIN_QUOTE
+If Euclid's Algorithm requires k steps to compute the GCD of some pair, then the smaller number in the pair must be greater than or equal to the kth Fibonacci number.
+#+END_QUOTE

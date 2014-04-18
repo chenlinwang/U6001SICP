@@ -96,3 +96,144 @@ $$ h(n) = 2^{2^{2 \dots ^2}} (n times 2)$$
 
 * Ex 1.13
 [[file:sec1.2-ex1.13.png]]
+* Ex 1.14
+for n money unit with m kinds of moneys, it is the theta of n^m.
+* Ex 1.15
+** a
+5 times
+
+for number =x= , =times = min{ m | x/3^m < 0.1}=
+
+** b
+It is a recursive process, so time is the same as space. It is theta of =log a=.
+* Ex 1.16
+Use the trick of adding a number to denote odd remainders.
+So =a= will multiply =b= everytime =n= is odd and =b= will be squared everytime =n= is even.
+
+*This is very easily mistaken with =a= muliply of =root= everytime =n= is odd.
+#+BEGIN_SRC scheme; iterative version of the fast exponent
+(define root 2)
+
+(define (ex-f-i n)
+  (define (square n) (* n n))
+  ;define a test for even
+  (define (even? n)
+    (= (remainder n 2) 0))
+  ;real process
+  (define (ex-f-iter a b n)
+    (cond ((= n 0) 0)
+          ((= n 1) (* a b))
+          ((even? n)
+           (ex-f-iter a (square b) (/ n 2)))
+          (else
+           (ex-f-iter (* a b) b (- n 1)))))
+  (ex-f-iter 1 root n))
+#+END_SRC
+* Ex 1.17 1.18
+Similarly
+#+BEGIN_SRC scheme
+
+;;build the default operators
+;double the number
+(define (double n)
+  (* n 2))
+;halve
+(define (halve n)
+  (/ n 2))
+;root
+(define root 2)
+
+;;So do it-again
+;test for even
+(define (even? n)
+  (= (remainder n 2) 0))
+
+;recursive
+(define (mul-f-r n)
+  (cond ((= 0 n) 0)
+        ((even? n)
+         (double (mul-f-r (halve n))))
+        (else
+         (+ root (mul-f-r (- n 1))))))
+
+;iterative
+(define (mul-f-i n)
+  (define (mul-f-iter a b n)
+    (cond ((= n 0) 0)
+          ((= n 1) (+ a b))
+          ((even? n) (mul-f-iter a (double b) (halve n)))
+          (else
+           (mul-f-iter (+ a b) b (- n 1)))))
+  (mul-f-iter 0 root n))
+#+END_SRC
+
+* Ex 1.19
+There is really some confusion in the termination condition. So I start the squence with first and second and third element as no.1 2 3.
+
+In that case, we have:
+#+BEGIN_SRC scheme
+;square
+(define (square x) (* x x))
+;Define the calculation for p and q
+(define (cal-p p q) (+ (square p) (square q)))
+(define (cal-q p q) (+ (* 2 p q) (square q)))
+;Define how to apply tranformation T
+(define (cal-tl p q l f) (+ (* l (+ p q)) (* f q)))
+(define (cal-tf p q l f) (+ (* l q) (* f p)))
+
+;iterative
+(define (fib-f-i n)
+  (define (fi p q l f n)
+    (cond ((= 0 n) f)
+          ((even? n)
+           (fi (cal-p p q) (cal-q p q) l f (/ n 2)))
+          (else
+           (fi p q (cal-tl p q l f) (cal-tf p q l f) (- n 1)))))
+  (fi 0 1 1 0 (- n 1)))
+#+END_SRC
+* Ex 1.20
+** The normal order
+As we evaluate, it goes:
+#+BEGIN_SRC scheme
+(gcd 206 40)
+
+(if (= 40 0)
+    40
+    (gcd 40 (remainder 206 40)))
+
+(gcd 40 (remainder 206 40))
+
+(if (= (remainder 206 40) 0)
+    40
+    (gcd (remainder 206 40) (remainder 40 (remainder 206 40))))
+
+(if (= 6 0)
+    40
+    (gcd (remainder 206 40) (remainder 40 (remainder 206 40))))
+
+(gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
+
+(if (= (remainder 40 (remainder 206 40)) 0)
+    (remainder 206 40)
+    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+
+(if (= (remainder 40 6) 0)
+    (remainder 206 40)
+    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+
+(if (= 2 0)
+    (remainder 206 40)
+    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
+
+(gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
+
+(if (= (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) 0)
+    (remainder 40 (remainder 206 40))
+    (gcd (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (reminder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
+
+(if (= (remainder 6 (remainder 40 (remainder 206 40))) 0)
+    (remainder 40 (remainder 206 40))
+    (gcd (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (reminder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
+
+...
+#+END_SRC

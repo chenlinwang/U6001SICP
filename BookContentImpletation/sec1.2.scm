@@ -48,3 +48,42 @@
   (cond ((or (< money 0) (= kind 0)) 0)
         ((= money 0) 1)
         (else (+ (Count (- money (money-table kind)) kind) (Count money (- kind 1))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Exponent
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;Ordinary Way of Computing
+(define root 2)
+; recursive process
+(define (ex-r n)
+  (if (= n 1)
+      root
+      (* root (ex-r (- n 1)))))
+; iterative process
+(define (ex-i n)
+  (define (ex-iter sum n)
+    (if (= n 0)
+        sum
+        (ex-iter (* root sum) (- n 1))))
+  (ex-iter 1 n))
+
+;;Fast Way of Computing
+(define (ex-f n)
+  (define (square n) (* n n))
+  ;Test for even number
+  (define (even? n)
+    (= (remainder n 2) 0))
+  ;Begin process
+  (cond ((= n 0) 1)
+        ((even? n) (square (ex-f (/ n 2))))
+        (else (* root (ex-f (- n 1))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;GCD
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Great Common divider
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
