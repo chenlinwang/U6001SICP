@@ -138,3 +138,163 @@
           (else
            (fi p q (cal-tl p q l f) (cal-tf p q l f) (- n 1)))))
   (fi 0 1 1 0 (- n 1)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex 1.21
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Smallest divisor
+(define (divides? n k) (= (remainder n k) 0))
+
+(define (smallest-dividor n)
+  (define (sd-i k)
+    (cond ((> (square k) n) n)
+          ((divides? n k) k)
+          (else
+           (sd-i (+ k 1)))))
+  (sd-i 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex 1.22
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;find prime in normal ways
+(define (test-prime n count)
+  (define start (current-milliseconds))
+
+  (define (fp k count)
+    (cond ((= count 0) (rt (current-milliseconds)))
+          ((= (smallest-dividor k) k) (dpg k count))
+          (else
+           (fp (+ k 1) count))))
+  (define (rt end)
+    (display (- end start))
+    (newline))
+
+  ;display and go to next level
+  (define (dpg k count)
+;    (display k)
+;    (display "\t")
+    (fp (+ k 1) (- count 1)))
+
+  (fp n count))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex 1.23
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;another version of the smallest dividor
+(define (smallest-dividor-two n)
+  ;Next function to skip even number
+  (define (next n)
+    (if (= n 2)
+        3
+        (+ n 2)))
+  (define (sm-i k)
+    (cond ((> (square k) n) n)
+          ((divides? n k) k)
+          (else (sm-i (next k)))))
+  (sm-i 2))
+
+(define (test-find-prime num func)
+  ;test for the prime number
+  (define (tf n)
+    (= (func n) n))
+
+ ;denote the start time
+  (define start (current-milliseconds))
+
+ ;iteratively go up to num
+  (define (time k)
+    (cond ((= k num) (rt (current-milliseconds)))
+          ((tf k) (dpg k))
+          (else
+           (time (+ k 1)))))
+
+  ;display and go to next level
+  (define (dpg k)
+;    (display k)
+;    (display "\t")
+    (time (+ k 1)))
+
+ ;report the answer
+  (define (rt end)
+    (newline)
+    (display "With ")
+    (display (- end start))
+    (display " ms , found prime number ")
+    (display " out of ")
+    (display num)
+    (newline))
+
+  (time 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex 1.24
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;exponent module
+(define (expmod bas n p)
+  (define (eiter left bas n p)
+    (cond ((= n 1)
+           (remainder (* left bas) p))
+          ((even? n)
+           (eiter left (remainder (square bas) p) (/ n 2) p))
+          (else
+           (eiter (remainder (* left bas) p) bas (- n 1) p))))
+  (eiter 1 bas n p))
+
+;test for prime number
+(define (fermat? n k)
+  (= (expmod k n n) k))
+
+;Prime test
+(define (prime? n times)
+  (cond ((= times 0)
+         #t)
+        ((fermat? n (random (- n 1)))
+         (prime? n (- times 1)))
+        (else
+         #f)))
+
+(define (time-find-prime n)
+  (newline)
+  (start-prime-test n (current-milliseconds) 0))
+
+;n is a odd number
+(define (start-prime-test n starttime count)
+  (cond ((= count 12)
+         (report-prime-test "" (- (current-milliseconds) starttime)))
+        ((prime? n 20)
+         (start-prime-test (+ n 1) starttime (+ count 1)))
+        (else
+         (start-prime-test (+ n 1) starttime count))))
+
+;report
+(define (report-prime-test n time)
+  (display n)
+  (display " *** ")
+  (display time)
+  (display "ms\n"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Ex 1.27
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Don't know how to control the squences!!!!!!!!
+; The Miller-Rabin test for primality
+(define (mrexp bas exp n)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (let ((calculate (mrexp bas (/ exp 2) n)) (r1 (remainder calculate n)) (sqcal (square calculate)) (r2 (remainder sqcal n)))
+           (cond ((= calculate 0)
+                  0)
+                 ((and (= r2 1) (not (= r1 1)) (not (= r1 (- n 1))))
+                  0)
+                 (else
+                  r2))))
+        (else
+         (remainder (* bas (mrexp bas (- exp 1) n)) n))))
+
+(define (mr n k)
+  (define tmp (+ (random (- n 2)) 1))
+  (cond ((= k 0)
+         #t)
+        ((= (mrexp tmp (- n 1) n) 0)
+         #f)
+        (else (mr n (- k 1)))))

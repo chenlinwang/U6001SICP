@@ -168,7 +168,7 @@ Similarly
 #+END_SRC
 
 * Ex 1.19
-There is really some confusion in the termination condition. So I start the squence with first and second and third element as no.1 2 3.
+There is really some confusion in the termination condition. So I start the sequence with first and second and third element as no.1 2 3.
 
 In that case, we have:
 #+BEGIN_SRC scheme
@@ -192,13 +192,13 @@ In that case, we have:
   (fi 0 1 1 0 (- n 1)))
 #+END_SRC
 * Ex 1.20
-** The normal order
+** Normal Order
 As we evaluate, it goes:
 #+BEGIN_SRC scheme
 (gcd 206 40)
 
 (if (= 40 0)
-    40
+    206
     (gcd 40 (remainder 206 40)))
 
 (gcd 40 (remainder 206 40))
@@ -212,28 +212,156 @@ As we evaluate, it goes:
     (gcd (remainder 206 40) (remainder 40 (remainder 206 40))))
 
 (gcd (remainder 206 40) (remainder 40 (remainder 206 40)))
-
-(if (= (remainder 40 (remainder 206 40)) 0)
-    (remainder 206 40)
-    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
-
-(if (= (remainder 40 6) 0)
-    (remainder 206 40)
-    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
-
-(if (= 2 0)
-    (remainder 206 40)
-    (gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))
-
-(gcd (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40))))
-
-(if (= (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) 0)
-    (remainder 40 (remainder 206 40))
-    (gcd (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (reminder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
-
-(if (= (remainder 6 (remainder 40 (remainder 206 40))) 0)
-    (remainder 40 (remainder 206 40))
-    (gcd (remainder (remainder 206 40) (remainder 40 (remainder 206 40))) (reminder (remainder 40 (remainder 206 40)) (remainder (remainder 206 40) (remainder 40 (remainder 206 40)))))))
-
 ...
 #+END_SRC
+
+We could deduce a sequence {a_n}, for the number of remainders in the latter position of the two number for each appearance of =gcd=. So:
+
+*a_n = a_{n-1} + a_{n-2} + 1*
+
+With a_0 = 0 , a_1 = 1, so the =gcd(206,40)= involves 5 appears:
+#+BEGIN_EXAMPLE
+a_0 = 0
+a_1 = 1
+a_2 = 2
+a_3 = 4
+a_4 = 7
+#+END_EXAMPLE
+
+The answer is the sum of them, that is 14.
+
+** Applicative Order
+#+BEGIN_SRC scheme
+(gcd 206 40)
+
+(if (= 40 0)
+    206
+    (gcd 40 (remainder 206 40)))
+
+(gcd 40 (remainder 206 40)))
+
+(gcd 40 6)
+
+(if (= 6 0)
+    40
+    (gcd 6 (remainder 40 6))))
+
+(gcd 6 (remainder 40 6)))
+...
+#+END_SRC
+
+Obviously, that each time the =gcd= only evaluate the =remainder= once, so there are just 4 times.
+* Ex 1.21
+| number | smallest dividor |
+|--------+------------------|
+| 199    | 199              |
+| 1999   | 1999             |
+| 19999  | 7                |
+
+* Ex 1.22
+At first, I set the =count= to be 3. So I intend to find three consecutive prime numbers. The results are weird:
+
+| number | time (ms) |
+|--------+-----------|
+|   1000 |         0 |
+|  10000 |         0 |
+| 100000 |         2 |
+
+The time does not bear out the rules for the number. I guess it is becauese the relative error rate of the time function is too large. So I change =count= to 30 and try to start with 100000:
+
+|   number | time (ms) | ratio |
+|----------+-----------+-------|
+|   100000 |        10 |       |
+|  1000000 |        24 |  2.4  |
+| 10000000 |        80 |  3.3  |
+
+The expected ratio between these every two consecutive numbers should be 3.15. But it seems that:
+
+1. For larger numbers the 30th prime number might be even further than the smaller number. As prime number follows a average of 1 / \ln(n). So the ratio should become larger.
+
+* Ex 1.23
+I have implement the function as followed:
+#+BEGIN_SRC scheme
+;another version of the smallest dividor
+(define (smallest-dividor-two n)
+  ;Next function to skip even number
+  (define (next n)
+    (if (= n 2)
+        3
+        (+ n 2)))
+  (define (sm-i k)
+    (cond ((> (square k) n) n)
+          ((divides? n k) k)
+          (else (sm-i (next k)))))
+  (sm-i 2))
+
+(define (test-find-prime num func)
+  ;test for the prime number
+  (define (tf n)
+    (= (func n) n))
+
+ ;denote the start time
+  (define start (current-milliseconds))
+
+ ;iteratively go up to num
+  (define (time k)
+    (cond ((= k num) (rt (current-milliseconds)))
+          ((tf k) (dpg k))
+          (else
+           (time (+ k 1)))))
+
+  ;display and go to next level
+  (define (dpg k)
+;    (display k)
+;    (display "\t")
+    (time (+ k 1)))
+
+ ;report the answer
+  (define (rt end)
+    (newline)
+    (display "With ")
+    (display (- end start))
+    (display " ms , found prime number ")
+    (display " out of ")
+    (display num)
+    (newline))
+
+  (time 2))
+#+END_SRC
+
+So I takes the num to be 100000, the results are:
+| function name        | time (ms) |
+|----------------------+-----------|
+| smallest-dividor     |      1766 |
+| smallest-dividor-two |      1442 |
+
+The reason for which the time is not exactly the twice is that:
+
+1. The timing function has a large error rate.
+
+2. The timing does not only contains the time the machine ran the two functions but also involves going into loops and print.
+
+* Ex 1.24
+I can not find a very solid =runtime= primitive here.I am using the =chicken= so I used the primitive =current-milliseconds=.So the results are:
+
+|  number | time (ms) |
+|---------+-----------|
+|    1000 |         8 |
+| 1000000 |        15 |
+
+And as \log(100000) / \log(1000) is 2.00, this is not quite accurate, the reason lies:
+1. The function is not reliable. It has a large error rate.
+2. The processes contains also going into loops and print, thus the ratio should not equal to 2
+* Ex 1.25
+They are both correct. But the new one will definitely run much more time than the other, for it calculate all the exponienial numbers.
+* Ex 1.26
+By doing this, the =expmod= got computed twice when trying to reduce the calculation. So it is really only \Theta(n), not \Theta(\log n).
+* Ex 1.27
+For this numbers:
+: 561, 1105, 1729, 2465, 2821, and 6601
+=smallest-dividor= gives:
+: 3 5 7 5 7 and 7
+But they passed the Fermat Test.
+
+* Ex 1.28
+Understand the program but do not understand how to implement it with single control flow.

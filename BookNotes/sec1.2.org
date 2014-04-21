@@ -153,3 +153,92 @@ As we have the Lame's Theorem:
 #+BEGIN_QUOTE
 If Euclid's Algorithm requires k steps to compute the GCD of some pair, then the smaller number in the pair must be greater than or equal to the kth Fibonacci number.
 #+END_QUOTE
+* A test for the prime number
+In this part, we introduce two methods to test wheter a number is prime. The first one takes time of \Theta(n^{0.5}) and the other is \Theta(\log(n)) .
+
+** Normal Method
+The definition of the *prime number* is:
+
+#+BEGIN_QUOTE
+The smallest dividor besides 1 is itself.
+#+END_QUOTE
+
+So we just need to test that criteria.
+
+** Fermat Test
+We have a very powerful theorem to support, Fermat's Litter Theorem:
+#+BEGIN_QUOTE
+If n is a prime number and a is any positive integer less than n, then a raised to
+the nth power is congruent to a modulo n.
+#+END_QUOTE
+In that case, if most of the a below n satisfy this theorem, we deduce that n is prime.
+
+Thus we could start construct the process. The first thing we need to do is to calculat the bas^n (mod n), so let generalize it to bas^n (mod p). We could use the reduction technique to narrow the computerion time to \Theta(\log n).
+
+#+BEGIN_SRC scheme
+;;for the normal one
+(define (pt-n n)
+;Test if it is a divider
+  (define (test-divider k n)
+    (= (remainder n k) 0))
+  (define (pt-iter k n)
+    (cond ((> (square k) n) n)
+          ((test-divider k n) k)
+          (else
+           (pt-iter (+ k 1) n))))
+  (pt-iter 2 n))
+
+;;for the fermat test
+;recursive process
+(define (expmod-r bas n p)
+  (cond ((= n 1)
+         (remainder bas p))
+        ((even? n)
+         (remainder (expmod-r (remainder (square bas) p) (/ n 2) p) p))
+        (else
+         (remainder (* bas (expmod-r bas (- n 1) p)) p))))
+
+;iterative process
+(define (expmod-i bas n p)
+  (define (exp-iter left bas n p)
+    (cond ((= n 1)
+           (remainder (* left bas) p))
+          ((even? n)
+           (exp-iter left (remainder (square bas) p) (/ n 2) p))
+          (else
+           (exp-iter (remainder (* left bas) p) bas (- n 1) p))))
+  (exp-iter 1 bas n p))
+#+END_SRC
+
+Then use the test to see whether this applies by ramdon times:
+
+*a^n (mod n) = a (mod n)*
+
+Suppose a is less then n, so we have:
+
+#+BEGIN_SRC scheme
+(define (ft n times)
+  (define testnum (random (- n 1)))
+  (cond ((= times 0) #t)
+        ((= (expmod-i testnum n n) testnum)
+         (ft n (- times 1)))
+        (else
+         #f)))
+#+END_SRC
+
+
+And I guess it is cooler to use this as a criteria:
+
+*a^{n-1} (mod n) = 1*
+
+#+BEGIN_SRC scheme
+(define (ft-s n times)
+  (define testnum (random (- n 1)))
+  (cond ((= times 0) #t)
+        ((= (expmod-i testnum (- n 1) n) 1)
+         (ft-s n (- times 1)))
+        (else
+         #f)))
+#+END_SRC
+
+And to end, there are cases that non-prime number also obey the Farmet's Litter Theorem. But it is really a rare case. So this is practically ok.

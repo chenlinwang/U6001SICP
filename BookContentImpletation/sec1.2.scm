@@ -1,3 +1,10 @@
+;;Basics
+(define (square n) (* n n))
+
+(define (even? n)
+  (= (remainder n 2) 0))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;Factorial
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,3 +94,55 @@
   (if (= b 0)
       a
       (gcd b (remainder a b))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;prime test
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;for the normal one
+(define (pt-n n)
+;Test if it is a divider
+  (define (test-divider k n)
+    (= (remainder n k) 0))
+  (define (pt-iter k n)
+    (cond ((> (square k) n) n)
+          ((test-divider k n) k)
+          (else
+           (pt-iter (+ k 1) n))))
+  (pt-iter 2 n))
+
+;;for the fermat test
+;recursive process
+(define (expmod-r bas n p)
+  (cond ((= n 1)
+         (remainder bas p))
+        ((even? n)
+         (remainder (expmod-r (remainder (square bas) p) (/ n 2) p) p))
+        (else
+         (remainder (* bas (expmod-r bas (- n 1) p)) p))))
+
+;iterative process
+(define (expmod-i bas n p)
+  (define (exp-iter left bas n p)
+    (cond ((= n 1)
+           (remainder (* left bas) p))
+          ((even? n)
+           (exp-iter left (remainder (square bas) p) (/ n 2) p))
+          (else
+           (exp-iter (remainder (* left bas) p) bas (- n 1) p))))
+  (exp-iter 1 bas n p))
+
+(define (ft n times)
+  (define testnum (random (- n 1)))
+  (cond ((= times 0) #t)
+        ((= (expmod-i testnum n n) testnum)
+         (ft n (- times 1)))
+        (else
+         #f)))
+
+(define (ft-s n times)
+  (define testnum (random (- n 1)))
+  (cond ((= times 0) #t)
+        ((= (expmod-i testnum (- n 1) n) 1)
+         (ft-s n (- times 1)))
+        (else
+         #f)))
