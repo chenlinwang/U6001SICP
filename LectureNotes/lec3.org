@@ -1,0 +1,28 @@
+* Evaluation and Recursions
+This part of lecture mainly talks about two parts of contents:
+1. How to evaluate complicated combinations in =scheme= .
+2. How recursion procedure is implemented and examines .
+
+** Evaluation
+As I have read the book, the evaluation is quite simple. It contains 3 main rools.
+1. For operator
+2. For atomic data
+3. For special forms like: =define=, =lambda=, =if= bla bla bla
+
+*** Operator
+If the program hit a operator, it look for the =environment= for the definition of the operator and substitue the operator with the difiinition using the operand insdie the parenthesises.
+*** Atomic Data
+Just use the value
+*** Special Forms
+Do What is needed.
+
+** Evaluation order
+The order of the evaluation matters a lot, as I have seen the unstoppable program for =scheme=. So the =scheme= interpretor is applicative. So whenever there is a subparethesises inside an operator combination, it will evaluate the subparenthesises first and then go back.
+
+** Recursion
+Recursion means that the procedure use itself as a subprocedure. For each recursion, it has:
+1. a terminal condition
+2. base case result for the terminal condition
+3. a induction or deduction method.
+
+A recursion will always be able to be written in recursive process form or iterative process form. The latter is much harder to write. But is save a lot space.
