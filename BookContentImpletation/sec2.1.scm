@@ -44,3 +44,24 @@
 (define (rat-divid x y)
   (rat-times x
              (make-rat (denom y) (numer y))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Section 2.1.3 Build up the cons
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;New cons
+(define (new-cons x y)
+  (define (pair m)
+    (cond ((= m 0) x)
+          ((= m 1) y)
+          (else
+           (display "No data with that No.\n"))))
+  pair)
+
+;;New car
+(define (new-car p)
+  (p 0))
+
+;;New cdr
+(define (new-cdr p)
+  (p 1))

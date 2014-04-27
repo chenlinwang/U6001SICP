@@ -79,3 +79,27 @@ If we do not do as much as we could in =make-rat=, say, but =gcd= into the =nume
 #+END_SRC
 
 It is hard to read as well as hard to modify.
+* Data
+In the case above, we aim to define the rational number with one single property. That is the uniqueness. The value of a rational number, composed by numerator and denominator with =make-rat=, should be the only criteria to decide the unqiueness of a rational number. If our design satisfy that, there is no doubt, it is a good design.
+
+And to see it from ground up, we use =cons= , =car= and =cdr=. But that should not be mattered, since we wound write our own things with what we have learned, like:
+#+BEGIN_SRC scheme
+;;New cons
+(define (new-cons x y)
+  (define (pair m)
+    (cond ((= m 0) x)
+          ((= m 1) y)
+          (else
+           (display "No data with that No.\n"))))
+  pair)
+
+;;New car
+(define (new-car p)
+  (p 0))
+
+;;New cdr
+(define (new-cdr p)
+  (p 1))
+#+END_SRC
+
+With these, we could implement the rational number with exact the same code. But pay an attention, we use a procedure, =pair=, here to represent data. That is a new concept called /message passing/. For efficiency reasons, =lisp= does not implement =cons= with procedure.

@@ -236,3 +236,82 @@
 (define v3 (make-vec l3))
 (define v4 (make-vec l4))
 ;;;;;;;;;;End of Testing
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.4
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;Here is an alternative procedural representation of pairs. For this representation, verify that (new-car (new-cons x y)) yields x for any objects x and y.
+
+(define (new-cons x y)
+  (lambda (m) (m x y)))
+
+(define (new-car z)
+  (z (lambda (p q) p)))
+
+(define (new-cdr z)
+  (z (lambda (p q) q)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.5
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;Show that we can represent pairs of nonnegative integers using only numbers and arithmetic operations if we represent the pair a and b as the integer that is the product 2a 3b. Give the corresponding definitions of the procedures cons, car, and cdr.
+
+;;test for even odd property
+ (define (even? num)
+   (= (remainder num 2) 0))
+
+ ;;fast-exp
+ (define (fast-exp bas exp)
+   (define (fei l b e)
+     (cond ((= e 1) (* l b))
+           ((even? e) (fei l (* b b) (/ e 2)))
+           (else (fei (* l b) b (- e 1)))))
+   (fei 1 bas exp))
+
+ ;;new cons 2
+ (define (new-cons2 a b)
+   (* (fast-exp 2 a)
+      (fast-exp 3 b)))
+
+ ;;has exponient
+ (define (has-exp num bas)
+   (define (left? x)
+     (= (remainder x bas) 0))
+
+   (define (hei num exp)
+     (if (left? num)
+         (hei (/ num bas) (+ exp 1))
+         exp))
+  (hei num 0))
+
+;;new car 2
+(define (new-car2 num)
+  (has-exp num 2))
+
+;;new cdr 2
+(define (new-cdr2 num)
+  (has-exp num 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.6
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;In case representing pairs as procedures wasn't mind-boggling enough, consider that, in a language that can manipulate procedures, we can get by without numbers (at least insofar as nonnegative integers are concerned) by implementing 0 and the operation of adding 1 as
+
+(define zero (lambda (f) (lambda (x) x)))
+
+(define (add-1 n)
+    (lambda (f) (lambda (x) (f ((n f) x)))))
+
+;;This representation is known as Church numerals, after its inventor, Alonzo Church, the logician who invented the lambda calculus.
+;;Define one and two directly (not in terms of zero and add-1). (Hint: Use substitution to evaluate (add-1 zero)). Give a direct definition of the addition procedure + (not in terms of repeated application of add-1).
+
+;The one is:
+(define one (lambda (f) (lambda (x) (f x))))
+
+;The plus is:
+(define (church-add x y)
+  (lambda (f) ((x f) ((y f) x))))
