@@ -279,18 +279,20 @@ As we evaluate, it goes:
 ...
 #+END_SRC
 
-We could deduce a sequence {a_n}, for the number of remainders in the latter position of the two number for each appearance of =gcd=. So:
+We could deduce a sequence {a_{n}}, for the number of remainders in the latter position of the two number for each appearance of =gcd=. So:
 
 *a_n = a_{n-1} + a_{n-2} + 1*
 
-With a_0 = 0 , a_1 = 1, so the =gcd(206,40)= involves 5 appears:
-#+BEGIN_EXAMPLE
-a_0 = 0
-a_1 = 1
-a_2 = 2
-a_3 = 4
-a_4 = 7
-#+END_EXAMPLE
+With a_{0} = 0 , a_{1} = 1, so the =gcd(206,40)= involves 5 appears:
+
+| No. | Times |
+|-----+-------|
+|   0 |     0 |
+|   1 |     1 |
+|   2 |     2 |
+|   3 |     4 |
+|   4 |     7 |
+
 The answer is the sum of them, that is 14.
 
 *** Applicative Order
@@ -427,7 +429,7 @@ The reason for which the time is not exactly the twice is that:
 2. The timing does not only contains the time the machine ran the two functions but also involves going into loops and print.
 
 * Exercise  1.24
-Modify the timed-prime-test procedure of exercise 1.22 to use fast-prime? (the Fermat method), and test each of the 12 primes you found in that exercise. Since the Fermat test has \Thate(\log n) growth, how would you expect the time to test primes near 1,000,000 to compare with the time needed to test primes near 1000? Do your data bear this out? Can you explain any discrepancy you find?
+Modify the timed-prime-test procedure of exercise 1.22 to use fast-prime? (the Fermat method), and test each of the 12 primes you found in that exercise. Since the Fermat test has \Theta(\log n) growth, how would you expect the time to test primes near 1,000,000 to compare with the time needed to test primes near 1000? Do your data bear this out? Can you explain any discrepancy you find?
 ** Answer
 I can not find a very solid =runtime= primitive here.I am using the =chicken= so I used the primitive =current-milliseconds=.So the results are:
 
