@@ -133,7 +133,7 @@ For n money unit with m kinds of moneys, it is the \Theta(n^{m}).
 * Exercise  1.15
 The sine of an angle (specified in radians) can be computed by making use of the approximation \sin x \approx x   if x is sufficiently small, and the trigonometric identity:
 
-\sin r = 3 \sin r/3  - 4 \sin^{3} r/3 \
+\sin r = 3 \sin r/3  - 4 \sin^{3} r/3
 
 to reduce the size of the argument of sin. (For purposes of this exercise an angle is considered ``sufficiently small'' if its magnitude is not greater than 0.1 radians.) These ideas are incorporated in the following procedures:
 
@@ -146,12 +146,12 @@ to reduce the size of the argument of sin. (For purposes of this exercise an ang
 (p (sine (/ angle 3.0)))))
 #+END_SRC
 ** a
-5 times, for number =x= , =times = min{ m | x/3^m < 0.1}=
+5 times, for number =x= , =times = min{ m | x/3^{m} < 0.1}=
 ** b
 It is a recursive process, so time is the same as space. It is \Theta(\log a).
 * Exercise  1.16
 Design a procedure that evolves an iterative exponentiation process that uses successive squaring and uses a logarithmic number of steps, as does fast-expt. (Hint: Using the observation that
-(b^{n/2})^2 = (b^2){n/2}, keep, along with the exponent n and the base b, an additional state variable a, and define the state transformation in such a way that the product a bn is unchanged from state to state. At the beginning of the process a is taken to be 1, and the answer is given by the value of a at the end of the process. In general, the technique of defining an invariant quantity that remains unchanged from state to state is a powerful way to think about the design of iterative algorithms.)
+(b^{n/2})^{2} = (b^{2}){n/2}, keep, along with the exponent n and the base b, an additional state variable a, and define the state transformation in such a way that the product a bn is unchanged from state to state. At the beginning of the process a is taken to be 1, and the answer is given by the value of a at the end of the process. In general, the technique of defining an invariant quantity that remains unchanged from state to state is a powerful way to think about the design of iterative algorithms.)
 
 ** Answer
 Use the trick of adding a number to denote odd remainders.
@@ -225,8 +225,8 @@ Using the results of exercises 1.16 and 1.17, devise a procedure that generates 
 #+END_SRC
 
 * Exercise  1.19
-There is a clever algorithm for computing the Fibonacci numbers in a logarithmic number of steps. Recall the transformation of the state variables a and b in the fib-iter process of section 1.2.2: a \leftarrow a + b and b \leftarrow a. Call this transformation T, and observe that applying T over and over again n times, starting with 1 and 0, produces the pair Fib(n + 1) and Fib(n). In other words, the Fibonacci numbers are produced by applying Tn, the nth power of the transformation T, starting with the pair (1,0). Now consider T to be the special case of p = 0 and q = 1 in a family of transformations Tpq, where T_{pq}
-transforms the pair (a,b) according to a \leftarrow￼ bq + aq + ap and b \leftarrow￼ bp + aq. Show that if we apply such a transformation Tpq twice, the effect is the same as using a single transformation T_{p'q'} of the same form, and compute p' and q' in terms of p and q. This gives us an explicit way to square these transformations, and thus we can compute T^n using successive squaring, as in the =fast-expt= procedure. Put this all together to complete the following procedure, which runs in a logarithmic number of steps:
+There is a clever algorithm for computing the Fibonacci numbers in a logarithmic number of steps. Recall the transformation of the state variables a and b in the fib-iter process of section 1.2.2: a \leftarrow a + b and b \leftarrow a. Call this transformation T, and observe that applying T over and over again n times, starting with 1 and 0, produces the pair Fib(n + 1) and Fib(n). In other words, the Fibonacci numbers are produced by applying T_{n}, the nth power of the transformation T, starting with the pair (1,0). Now consider T to be the special case of p = 0 and q = 1 in a family of transformations T_{pq}, where T_{pq}
+transforms the pair (a,b) according to a \leftarrow￼ bq + aq + ap and b \leftarrow￼ bp + aq. Show that if we apply such a transformation T_{pq} twice, the effect is the same as using a single transformation T_{p'q'} of the same form, and compute p' and q' in terms of p and q. This gives us an explicit way to square these transformations, and thus we can compute T^{n} using successive squaring, as in the =fast-expt= procedure. Put this all together to complete the following procedure, which runs in a logarithmic number of steps:
 
 ** Answer
 There is really some confusion in the termination condition. So I start the sequence with first and second and third element as no.1 2 3.
@@ -342,7 +342,7 @@ Most Lisp implementations include a primitive called runtime that returns an int
   (display elapsed-time))
 #+END_SRC
 Using this procedure, write a procedure search-for-primes that checks the primality of consecutive odd integers in a specified range. Use your procedure to find the three smallest primes larger than 1000; larger than 10,000; larger than 100,000; larger than 1,000,000. Note the time needed to test each prime.
-Since the testing algorithm has order of growth of \Theta(sqrt n), you should expect that testing for primes around 10,000 should take about sqrt 10 times as long as testing for primes around 1000. Do your timing data bear this out? How well do the data for 100,000 and 1,000,000 support the sqrt￼n prediction? Is your result compatible with the notion that programs on your machine run in time proportional to the number of steps required for the computation?
+Since the testing algorithm has order of growth of \Theta(\radicn), you should expect that testing for primes around 10,000 should take about \radic10 times as long as testing for primes around 1000. Do your timing data bear this out? How well do the data for 100,000 and 1,000,000 support the \radicn prediction? Is your result compatible with the notion that programs on your machine run in time proportional to the number of steps required for the computation?
 ** Answer
 At first, I set the =count= to be 3. So I intend to find three consecutive prime numbers. The results are weird:
 
