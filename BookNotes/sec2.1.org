@@ -1,0 +1,81 @@
+Before I start, the main part of this section is about how to understand the conception of /data abstraction/. To use certain kinds of data and their operations with knowing the detailed implementation of that. This could largely enhance the efficiency of developping super large systems with multiple people.
+
+* Example: The arithmetic of the rational number
+** Wishful thinking
+To start, suppose we already have the functions below:
+#+BEGIN_SRC scheme
+; constructor
+(make-rat n m)
+
+; selectors ?
+(numerator x)
+
+(denominator x)
+#+END_SRC
+
+So how should we build up the basic + - * / operators for the rational numbers.
+
+We take first step to see how the rules are:
+
+#+BEGIN_EXAMPLE
+
+a/b + c/d =  (ad + bc)/(bd)
+
+a/b + c/d = (ad - bc)/(bd)
+
+a/b * c/d = (ac)/(bd)
+
+a/b / c/d = (ad)/(bc)
+#+END_EXAMPLE
+
+So just use that.
+
+** How to implement
+To implement =make-rat=, we need to know a basic data in =lisp=, that is =pair=, we could construct =pair= using the constructor =cons=. And =car= will give you the firs pair member and =cdr= will give the second.
+
+Now just do what you need to do!
+* Abstraction Barriers
+We talks about the abstraction of the data in the example. What we did not see but do during the implementation is that, there are actually more abstractions during the data abstraction. And we denote the layers here as abstraction barriers.
+
+** Rational number arithmetics
+During the implementaion, we have some dependencies as follows:
+#+BEGIN_EXAMPLE
+Programs that use rational numbers and their arithmetics
+
+----------------------------------------
+
+rat-minus rat-divide
+
+----------------------------------------
+
+rat-add rat-times
+
+----------------------------------------
+
+make-rat numer denom
+
+----------------------------------------
+
+cons car cdr
+
+#+END_EXAMPLE
+
+The thing here is, if we have the layer upwards. And while implementing, we should, out of efficiency and later convinience, get as more done as possible in each layer. In that case, the code will be simpler and the later modification will be easier, as there are less code written.
+
+** Bad Example
+If we do not do as much as we could in =make-rat=, say, but =gcd= into the =numer= and =denom=, it will be terrible:
+
+#+BEGIN_SRC scheme
+(define (make-rat n d)
+  (cons n d))
+￼￼
+(define (numer x)
+  (let ((g (gcd (car x) (cdr x))))
+    (/ (car x) g)))
+
+(define (denom x)
+  (let ((g (gcd (car x) (cdr x))))
+    (/ (cdr x) g)))
+#+END_SRC
+
+It is hard to read as well as hard to modify.

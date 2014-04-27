@@ -1,0 +1,119 @@
+* Exercise 2.1
+
+#+BEGIN_QUOTE
+Define a better version of make-rat that handles both positive and negative arguments. Make-rat should normalize the sign so that if the rational number is positive, both the numerator and denominator are positive, and if the rational number is negative, only the numerator is negative.
+#+END_QUOTE
+
+Just make sure that =make-rat= check the positive-negative symbols.
+
+* Exercise 2.2
+
+#+BEGIN_QUOTE
+Consider the problem of representing line segments in a plane. Each segment is represented as a pair of points: a starting point and an ending point. Define a constructor make-segment and selectors start-segment and end-segment that define the representation of segments in terms of points. Furthermore, a point can be represented as a pair of numbers: the x coordinate and the y coordinate. Accordingly, specify a constructor make-point and selectors x-point and y-point that define this representation. Finally, using your selectors and constructors, define a procedure midpoint-segment that takes a line segment as argument and returns its midpoint (the point whose coordinates are the average of the coordinates of the endpoints). To try your procedures, you'll need a way to print points:
+#+END_QUOTE
+#+BEGIN_SRC scheme
+(define (print-point p)
+  (display "(")
+  (display (x-point p))
+  (display ",")
+  (display (y-point p))
+  (display ")")
+  (newline))
+#+END_SRC
+
+Go with points then line segments, And for the segment, I denote that the left point goes first. If it is a vertical line, then the bottom point goes first. Thus the line segment has unique representation.
+
+#+BEGIN_EXAMPLE
+
+make-point x-point y-point
+
+----------------------------------------
+
+point-add point-scalar-times
+
+----------------------------------------
+
+make-segment start-segment end-segment
+
+----------------------------------------
+
+midpoint-segment
+
+#+END_EXAMPLE
+* Exercise 2.3
+#+BEGIN_QUOTE
+ Implement a representation for rectangles in a plane. (Hint: You may want to make use of exercise 2.2.) In terms of your constructors and selectors, create procedures that compute the perimeter and the area of a given rectangle. Now implement a different representation for rectangles. Can you design your system with suitable abstraction barriers, so that the same perimeter and area procedures will work using either representation?
+#+END_QUOTE
+
+** Analysis
+It is tricky to construct such thing as we do not know what the data are for. There are many ways to construct a data type for the rectangle. The one thing that every method should pay attention is that the representaion should have uniqueness which means a rectange will only has one representation and vice versa.
+
+So naturally to adapt the line segement we have above. We represent the rectange with two line segements. And counting clockwise starting from 12 o'clock, the first segment go first and second second.
+
+*Thus we should check three things:*
+*** Whether the line segment share a point.
+Check the 4 possible combinations.
+
+*** Whether the lines crossed at an angle of 90 degree.
+This is easily checked using the forumal: k1 * k2 = -1.
+
+*** How to get the two sides we want.
+This part is tricky. There are three cases:
+**** They have the same starting point
+It is great. It is exactly what we want. So we just have to find out which is upper. It is decided by the y axis. Just compared them.
+**** They have the same ending point
+This is really opposite to the goal. However, basic algebra told us to move the line using the vector addition.So move the both line back, and we are fine.
+**** One is start, one is end
+So move the one which start from the end of the other back.
+
+** Implement
+
+*** Points
+We need to have point to tell us:
+1. whether the two points are the same point.
+
+*** Line
+We need the segments to tell us:
+
+1. whether they are met.
+2. whether they are perpendicular to each other.
+3. which points are they meet.
+4. How to decide which segment is upper.
+5. how to move the segment alone the other.
+
+For the last one, I think it is useful that we implement the /vector/, it is basically share the properties of point, but could be used to move and calculate the perpendicularity easily.
+
+*** Vector
+**** Construct
+It is composed by a line segment.
+
+**** Selector
+***** Length
+Calculate the length of the vector
+
+***** End point
+Return the end point of the vector
+
+**** Operator
+***** Point Product
+To see whether two vectors are perpendicular
+
+***** Scalar Product
+To multiply a scalar
+
+***** Move alone
+Acting on line segment, to move the line alone the vector.
+
+
+** Abstraction Barriers
+#+BEGIN_EXAMPLE
+
+points and line segments
+----------------------------------------
+
+vectors
+
+----------------------------------------
+
+rectangle
+#+END_EXAMPLE
