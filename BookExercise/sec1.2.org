@@ -151,7 +151,7 @@ to reduce the size of the argument of sin. (For purposes of this exercise an ang
 It is a recursive process, so time is the same as space. It is \Theta(\log a).
 * Exercise  1.16
 Design a procedure that evolves an iterative exponentiation process that uses successive squaring and uses a logarithmic number of steps, as does fast-expt. (Hint: Using the observation that
-(b^{n/2})^{2} = (b^{2}){n/2}, keep, along with the exponent n and the base b, an additional state variable a, and define the state transformation in such a way that the product a bn is unchanged from state to state. At the beginning of the process a is taken to be 1, and the answer is given by the value of a at the end of the process. In general, the technique of defining an invariant quantity that remains unchanged from state to state is a powerful way to think about the design of iterative algorithms.)
+(b^{n/2})^{2} = (b^{2})^{n/2}, keep, along with the exponent n and the base b, an additional state variable a, and define the state transformation in such a way that the product a bn is unchanged from state to state. At the beginning of the process a is taken to be 1, and the answer is given by the value of a at the end of the process. In general, the technique of defining an invariant quantity that remains unchanged from state to state is a powerful way to think about the design of iterative algorithms.)
 
 ** Answer
 Use the trick of adding a number to denote odd remainders.
@@ -342,7 +342,7 @@ Most Lisp implementations include a primitive called runtime that returns an int
   (display elapsed-time))
 #+END_SRC
 Using this procedure, write a procedure search-for-primes that checks the primality of consecutive odd integers in a specified range. Use your procedure to find the three smallest primes larger than 1000; larger than 10,000; larger than 100,000; larger than 1,000,000. Note the time needed to test each prime.
-Since the testing algorithm has order of growth of \Theta(\radicn), you should expect that testing for primes around 10,000 should take about \radic10 times as long as testing for primes around 1000. Do your timing data bear this out? How well do the data for 100,000 and 1,000,000 support the \radicn prediction? Is your result compatible with the notion that programs on your machine run in time proportional to the number of steps required for the computation?
+Since the testing algorithm has order of growth of \Theta(\radic n), you should expect that testing for primes around 10,000 should take about \radic10 times as long as testing for primes around 1000. Do your timing data bear this out? How well do the data for 100,000 and 1,000,000 support the \radic n prediction? Is your result compatible with the notion that programs on your machine run in time proportional to the number of steps required for the computation?
 ** Answer
 At first, I set the =count= to be 3. So I intend to find three consecutive prime numbers. The results are weird:
 
