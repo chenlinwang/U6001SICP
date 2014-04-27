@@ -1,86 +1,86 @@
-\AA                 \AElig              \Aacute             \Acirc
-\Agrave             \Alpha              \Aring              \Atilde
-\Auml               \Beta               \Ccedil             \Chi
-\Dagger             \Delta              \Diamond            \Downarrow
-\ETH                \EUR                \EURcr              \EURdig
-\EURhv              \EURtm              \Eacute             \Ecirc
-\Egrave             \Epsilon            \Eta                \Euml
-\Gamma              \Iacute             \Icirc              \Igrave
-\Iota               \Iuml               \Kappa              \Lambda
-\Leftarrow          \Leftrightarrow     \Mu                 \Ntilde
-\Nu                 \OElig              \Oacute             \Ocirc
-\Ograve             \Omega              \Omicron            \Oslash
-\Otilde             \Ouml               \Phi                \Pi
-\Pr                 \Prime              \Psi                \Rho
-\Rightarrow         \Scaron             \Sigma              \THORN
-\Tau                \Theta              \Uacute             \Ucirc
-\Ugrave             \Uparrow            \Upsilon            \Uuml
-\Xi                 \Yacute             \Yuml               \Zeta
-\aacute             \acirc              \acute              \acutex
-\aelig              \agrave             \alefsym            \alpha
-\amp                \ang                \angle              \approx
-\arccos             \arcsin             \arctan             \arg
-\aring              \asciicirc          \ast                \asymp
-\atilde             \auml               \bdquo              \beta
-\blacksmile         \brvbar             \bull               \bullet
-\cap                \ccedil             \cdot               \cedil
-\cent               \checkmark          \chi                \circ
-\clubs              \clubsuit           \cong               \copy
-\cos                \cosh               \cot                \coth
-\crarr              \csc                \cup                \curren
-\dArr               \dagger             \darr               \deg
-\delta              \det                \diamondsuit        \diams
-\dim                \div                \dots               \downarrow
-\eacute             \ecirc              \egrave             \empty
-\emptyset           \emsp               \ensp               \epsilon
-\equal              \equiv              \eta                \eth
-\euml               \euro               \exist              \exists
-\exp                \fnof               \forall             \frac12
-\frac14             \frac34             \frasl              \gamma
-\gcd                \ge                 \gets               \gt
-\hArr               \harr               \hearts             \heartsuit
-\hellip             \hom                \hookleftarrow      \iacute
-\icirc              \iexcl              \igrave             \image
-\in                 \inf                \infin              \infty
-\int                \iota               \iquest             \isin
-\iuml               \kappa              \ker                \lArr
-\lambda             \land               \lang               \laquo
-\larr               \lceil              \ldquo              \le
-\leftarrow          \leftrightarrow     \lfloor             \lg
-\lim                \liminf             \limsup             \ln
-\log                \lor                \lowast             \loz
-\lrm                \lsaquo             \lsquo              \lt
-\macr               \max                \mdash              \micro
-\middot             \min                \minus              \mu
-\nabla              \nbsp               \ndash              \ne
-\neq                \ni                 \not                \notin
-\nsub               \nsup               \ntilde             \nu
-\oacute             \ocirc              \odot               \oelig
-\ograve             \oline              \omega              \omicron
-\oplus              \ordf               \ordm               \oslash
-\otilde             \otimes             \ouml               \para
-\partial            \permil             \perp               \phi
-\pi                 \piv                \plus               \plusmn
-\pm                 \pound              \prime              \prod
-\prop               \proptp             \psi                \quot
-\rArr               \radic              \rang               \raquo
-\rarr               \rceil              \rdquo              \real
-\reg                \rfloor             \rho                \rightarrow
-\rlm                \rsaquo             \rsquo              \sad
-\sbquo              \scaron             \sdot               \sec
-\sect               \shy                \sigma              \sigmaf
-\sim                \simeq              \sin                \sinh
-\slash              \smile              \smiley             \spades
-\spadesuit          \star               \sub                \sube
-\subset             \sum                \sup                \sup1
-\sup2               \sup3               \supe               \supset
-\szlig              \tan                \tanh               \tau
-\there4             \theta              \thetasym           \thinsp
-\thorn              \tilde              \times              \to
-\trade              \uArr               \uacute             \uarr
-\ucirc              \ugrave             \uml                \under
-\uparrow            \upsih              \upsilon            \uuml
-\varepsilon         \varsigma           \vartheta           \vee
-\vert               \wedge              \weierp             \xi
-\yacute             \yen                \yuml               \zeta
-\zwj                \zwnj
+| 1 | \AA         | \AElig          | \Aacute        | \Acirc      |
+| 2 | \Agrave     | \Alpha          | \Aring         | \Atilde     |
+| 3 | \Auml       | \Beta           | \Ccedil        | \Chi        |
+| 4 | \Dagger     | \Delta          | \Diamond       | \Downarrow  |
+| 5 | \ETH        | \EUR            | \EURcr         | \EURdig     |
+| 6 | \EURhv      | \EURtm          | \Eacute        | \Ecirc      |
+| 7 | \Egrave     | \Epsilon        | \Eta           | \Euml       |
+| 8 | \Gamma      | \Iacute         | \Icirc         | \Igrave     |
+| 9 | \Iota       | \Iuml           | \Kappa         | \Lambda     |
+|10 | \Leftarrow  | \Leftrightarrow | \Mu            | \Ntilde     |
+|11 | \Nu         | \OElig          | \Oacute        | \Ocirc      |
+|12 | \Ograve     | \Omega          | \Omicron       | \Oslash     |
+|13 | \Otilde     | \Ouml           | \Phi           | \Pi         |
+|14 | \Pr         | \Prime          | \Psi           | \Rho        |
+|15 | \Rightarrow | \Scaron         | \Sigma         | \THORN      |
+|16 | \Tau        | \Theta          | \Uacute        | \Ucirc      |
+|17 | \Ugrave     | \Uparrow        | \Upsilon       | \Uuml       |
+|18 | \Xi         | \Yacute         | \Yuml          | \Zeta       |
+|19 | \aacute     | \acirc          | \acute         | \acutex     |
+|20 | \aelig      | \agrave         | \alefsym       | \alpha      |
+|21 | \amp        | \ang            | \angle         | \approx     |
+|22 | \arccos     | \arcsin         | \arctan        | \arg        |
+|23 | \aring      | \asciicirc      | \ast           | \asymp      |
+|24 | \atilde     | \auml           | \bdquo         | \beta       |
+|25 | \blacksmile | \brvbar         | \bull          | \bullet     |
+|26 | \cap        | \ccedil         | \cdot          | \cedil      |
+|27 | \cent       | \checkmark      | \chi           | \circ       |
+|28 | \clubs      | \clubsuit       | \cong          | \copy       |
+|29 | \cos        | \cosh           | \cot           | \coth       |
+|30 | \crarr      | \csc            | \cup           | \curren     |
+|31 | \dArr       | \dagger         | \darr          | \deg        |
+|32 | \delta      | \det            | \diamondsuit   | \diams      |
+|33 | \dim        | \div            | \dots          | \downarrow  |
+|34 | \eacute     | \ecirc          | \egrave        | \empty      |
+|35 | \emptyset   | \emsp           | \ensp          | \epsilon    |
+|36 | \equal      | \equiv          | \eta           | \eth        |
+|37 | \euml       | \euro           | \exist         | \exists     |
+|38 | \exp        | \fnof           | \forall        | \frac12     |
+|39 | \frac14     | \frac34         | \frasl         | \gamma      |
+|40 | \gcd        | \ge             | \gets          | \gt         |
+|41 | \hArr       | \harr           | \hearts        | \heartsuit  |
+|42 | \hellip     | \hom            | \hookleftarrow | \iacute     |
+|43 | \icirc      | \iexcl          | \igrave        | \image      |
+|44 | \in         | \inf            | \infin         | \infty      |
+|45 | \int        | \iota           | \iquest        | \isin       |
+|46 | \iuml       | \kappa          | \ker           | \lArr       |
+|47 | \lambda     | \land           | \lang          | \laquo      |
+|48 | \larr       | \lceil          | \ldquo         | \le         |
+|49 | \leftarrow  | \leftrightarrow | \lfloor        | \lg         |
+|50 | \lim        | \liminf         | \limsup        | \ln         |
+|51 | \log        | \lor            | \lowast        | \loz        |
+|52 | \lrm        | \lsaquo         | \lsquo         | \lt         |
+|53 | \macr       | \max            | \mdash         | \micro      |
+|54 | \middot     | \min            | \minus         | \mu         |
+|55 | \nabla      | \nbsp           | \ndash         | \ne         |
+|56 | \neq        | \ni             | \not           | \notin      |
+|57 | \nsub       | \nsup           | \ntilde        | \nu         |
+|58 | \oacute     | \ocirc          | \odot          | \oelig      |
+|59 | \ograve     | \oline          | \omega         | \omicron    |
+|60 | \oplus      | \ordf           | \ordm          | \oslash     |
+|61 | \otilde     | \otimes         | \ouml          | \para       |
+|62 | \partial    | \permil         | \perp          | \phi        |
+|63 | \pi         | \piv            | \plus          | \plusmn     |
+|64 | \pm         | \pound          | \prime         | \prod       |
+|65 | \prop       | \proptp         | \psi           | \quot       |
+|66 | \rArr       | \radic          | \rang          | \raquo      |
+|67 | \rarr       | \rceil          | \rdquo         | \real       |
+|68 | \reg        | \rfloor         | \rho           | \rightarrow |
+|69 | \rlm        | \rsaquo         | \rsquo         | \sad        |
+|70 | \sbquo      | \scaron         | \sdot          | \sec        |
+|71 | \sect       | \shy            | \sigma         | \sigmaf     |
+|72 | \sim        | \simeq          | \sin           | \sinh       |
+|73 | \slash      | \smile          | \smiley        | \spades     |
+|74 | \spadesuit  | \star           | \sub           | \sube       |
+|75 | \subset     | \sum            | \sup           | \sup1       |
+|76 | \sup2       | \sup3           | \supe          | \supset     |
+|77 | \szlig      | \tan            | \tanh          | \tau        |
+|78 | \there4     | \theta          | \thetasym      | \thinsp     |
+|79 | \thorn      | \tilde          | \times         | \to         |
+|80 | \trade      | \uArr           | \uacute        | \uarr       |
+|81 | \ucirc      | \ugrave         | \uml           | \under      |
+|82 | \uparrow    | \upsih          | \upsilon       | \uuml       |
+|83 | \varepsilon | \varsigma       | \vartheta      | \vee        |
+|84 | \vert       | \wedge          | \weierp        | \xi         |
+|85 | \yacute     | \yen            | \yuml          | \zeta       |
+|86 | \zwj        | \zwnj           |                |             |
