@@ -103,3 +103,20 @@ And to see it from ground up, we use =cons= , =car= and =cdr=. But that should n
 #+END_SRC
 
 With these, we could implement the rational number with exact the same code. But pay an attention, we use a procedure, =pair=, here to represent data. That is a new concept called /message passing/. For efficiency reasons, =lisp= does not implement =cons= with procedure.
+* Another Example of Designing a Abstracted Data
+
+In this part, we want to design a measure of tolerance, which basically got us to implement the mathematic abstractiion, /interval/. We also start with the stretch for constructor and selector and then the operators on that.
+
+** Constructor
+As the tolerance is basically a single interval, we has a lower bound and upper bound that could uniquely represnet the interval.
+
+** Selector
+For selectors, we could have =lower-bound=, =upper-bound= and =length=.
+
+** Operation
+For operations, we shall be careful. Especially for the division operator, for it could cause a interval to become two:
+#+BEGIN_EXAMPLE
+A = [-1, 1]
+
+1/A = (
+#+END_EXAMPLE
