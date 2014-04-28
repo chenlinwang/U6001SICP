@@ -424,3 +424,143 @@ So we should be careful about the 0.
                               (/ 1.0 (lower-bound i2))))))
 #+END_SRC
 * Exercise 2.11
+In passing, Ben also cryptically comments: ``By testing the signs of the endpoints of the intervals, it is possible to break mul-interval into nine cases, only one of which requires more than two multiplications.'' Rewrite this procedure using Ben's suggestion.
+
+** Answer
+We first discuss the nine different situations and then get each one done.
+#+BEGIN_SRC scheme
+;;Operator
+;;Decide location
+(define (dec-loc i)
+  (if (has-0 i)
+      1
+      (if (> (lower-bound i) 0)
+          2
+          0)))
+
+;;int-mul2
+(define (int-mul2 i1 i2)
+  ;;Combine two interval
+  (define (int-point loc1 loc2)
+    (* (loc1 i1)
+       (loc2 i2)))
+
+  (define flag (+ (dec-loc i1) (* 3 (dec-loc i2))))
+  ;; (newline)
+  ;; (display flag)
+  ;; (newline)
+  (cond ((or (= flag 0) (= flag 8)) (make-interval (int-point lower-bound lower-bound)
+                                                    (int-point upper-bound upper-bound)))
+        ((= flag 1) (make-interval (int-point upper-bound lower-bound)
+                                   (int-point lower-bound lower-bound)))
+        ((= flag 2) (make-interval (int-point upper-bound lower-bound)
+                                   (int-point lower-bound upper-bound)))
+        ((= flag 3) (make-interval (int-point lower-bound upper-bound)
+                                   (int-point lower-bound lower-bound)))
+        ((= flag 5) (make-interval (int-point upper-bound lower-bound)
+                                   (int-point upper-bound upper-bound)))
+        ((= flag 6) (make-interval (int-point lower-bound upper-bound)
+                                   (int-point upper-bound lower-bound)))
+        ((= flag 7) (make-interval (int-point lower-bound upper-bound)
+                                   (int-point upper-bound upper-bound)))
+        (else (make-interval (min (int-point lower-bound upper-bound)
+                                  (int-point upper-bound lower-bound))
+                             (max (int-point lower-bound lower-bound)
+                                  (int-point upper-bound upper-bound))))))
+;;Operator
+(define (int-equ i1 i2)
+  (and (= (lower-bound i1)
+          (lower-bound i2))
+       (= (upper-bound i1)
+          (upper-bound i2))))
+
+;;Test for the interval multiply 2
+(define (test-int-mul2 n)
+  (define (print-result)
+    (display i1)
+    (display " * ")
+    (display i2)
+    (display " = ")
+    (display m1)
+    (display " ? ")
+    (display m2)
+    (display r)
+    (newline))
+
+  (define a (- (* (random 7) 0.5) 1.5))
+  (define b (- (* (random 7) 0.5) 1.5))
+  (define c (- (* (random 7) 0.5) 1.5))
+  (define d (- (* (random 7) 0.5) 1.5))
+
+  (define i1 (make-interval a b))
+  (define i2 (make-interval c d))
+
+  (define m1 (int-mul i1 i2))
+  (define m2 (int-mul2 i1 i2))
+
+  (define r (int-equ m1 m2))
+
+  (if (< n 0)
+      (display "Success!\n")
+      (if (or (= a b) (= c d))
+          (test-int-mul2 n)
+          (if r
+              (begin (print-result)
+                     (test-int-mul2 (- n 1)))
+              (begin (print-result)
+                     (display "Error: not equal\n"))))))
+#+END_SRC
+* Exercise 2.12
+After debugging her program, Alyssa shows it to a potential user, who complains that her program solves the wrong problem. He wants a program that can deal with numbers represented as a center value and an additive tolerance; for example, he wants to work with intervals such as 3.5± 0.15 rather than [3.35, 3.65]. Alyssa returns to her desk and fixes this problem by supplying an alternate constructor and alternate
+
+#+BEGIN_SRC scheme
+ selectors:
+ (define (make-center-width c w)
+     (make-interval (- c w) (+ c w)))
+ (define (center i)
+     (/ (+ (lower-bound i) (upper-bound i)) 2))
+ (define (width i)
+     (/ (- (upper-bound i) (lower-bound i)) 2))
+#+END_SRC
+
+Unfortunately, most of Alyssa's users are engineers. Real engineering situations usually involve measurements with only a small uncertainty, measured as the ratio of the width of the interval to the midpoint of the interval. Engineers usually specify percentage tolerances on the parameters of devices, as in the resistor specifications given earlier.
+
+Define a constructor make-center-percent that takes a center and a percentage tolerance and produces the desired interval. You must also define a selectorpercentthat produces the percentage tolerance for a given interval. The center selector is the same as the one shown above.
+
+** Answer
+Similarly
+#+BEGIN_SRC scheme
+(define (int-mid i)
+  (/ (+ (lower-bound i) (upper-bound i)) 2.0))
+
+(define (int-tol i)
+  (abs (- (int-mid i) (upper-bound i))))
+
+(define (int-per i)
+  (abs (/ (int-tol i) (int-mid i))))
+#+END_SRC
+* Exercise 2.13
+Show that under the assumption of small percentage tolerances there is a simple formula for the approximate percentage tolerance of the product of two intervals in terms of the tolerances of the factors. You may simplify the problem by assuming that all numbers are positive.
+After considerable work, Alyssa P. Hacker delivers her finished system. Several years later, after she has forgotten all about it, she gets a frenzied call from an irate user, Lem E. Tweakit. It seems that Lem has noticed that the formula for parallel resistors can be written in two algebraically equivalent ways:
+
+(R1R2)/(R1+R2)
+
+1/(1/R1 + 1/R2)
+
+He has written the following two programs, each of which computes the parallel-resistors formula differently:
+
+#+BEGIN_SRC scheme
+(define (par1 r1 r2)
+  (int-div (int-mul r1 r2)
+           (int-sum r1 r2)))
+
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1)))
+    (int-div one
+             (int-sum (int-div one r1)
+                      (int-div one r2)))))
+#+END_SRC
+
+Lem complains that Alyssa's program gives different answers for the two ways of computing. This is a serious complaint.
+** Answer
+We can not compute in the first formula, since for the first formula, we treate the R1 upper and R1 lower differently, which is not the case.
