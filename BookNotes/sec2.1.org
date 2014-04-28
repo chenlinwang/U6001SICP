@@ -118,5 +118,7 @@ For operations, we shall be careful. Especially for the division operator, for i
 #+BEGIN_EXAMPLE
 A = [-1, 1]
 
-1/A = (
+1/A = (- \infin , -1] \cup [1 , \infin )
 #+END_EXAMPLE
+
+That would be really weird properity, that we need to be concerned of.

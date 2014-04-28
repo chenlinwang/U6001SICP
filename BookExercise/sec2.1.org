@@ -213,3 +213,214 @@ The /Church numeral/ basically use the times a procedure =f= that applied to =x=
 (define (church-add x y)
   (lambda (f) ((x f) ((y f) x))))
 #+END_SRC
+* Exercise 2.7
+Alyssa's program is incomplete because she has not specified the implementation of the interval abstraction. Here is a definition of the interval constructor:
+#+BEGIN_SRC scheme
+(define (make-interval a b) (cons a b))
+#+END_SRC
+Define selectors upper-bound and lower-bound to complete the implementation.
+** Answer
+#+BEGIN_SRC scheme
+;;Constructor
+(define (make-interval a b)
+  (if (< a b)
+      (cons a b)
+      (cons b a))
+
+;;Selector
+;;lower boundary
+(define (lower-bound i)
+  (car i))
+
+;;upper boundary
+(define (upper-bound i)
+  (cdr i))
+#+END_SRC
+
+* Exercise 2.8
+Using reasoning analogous to Alyssa's, describe how the difference of two intervals may be computed. Define a corresponding subtraction procedure, called sub-interval.
+** Answer
+#+BEGIN_SRC scheme
+;;Operator
+;;differ
+(define (int-differ i1 i2)
+  (make-interval (- (lower-bound i1) (upper-bound i2))
+                 (- (upper-bound i1) (lower-bound i2))))
+#+END_SRC
+* Exercise 2.9
+The width of an interval is half of the difference between its upper and lower bounds. The width is a measure of the uncertainty of the number specified by the interval. For some arithmetic operations the width of the result of combining two intervals is a function only of the widths of the argument intervals, whereas for others the width of the combination is not a function of the widths of the argument intervals. Show that the width of the sum (or difference) of two intervals is a function only of the widths of the intervals being added (or subtracted). Give examples to show that this is not true for multiplication or division.
+
+** Answer
+When doing the addition for intervals, we assume that:
+: (a, b) + (c, d)  = (a+c, b+d)
+
+For difference:
+: (a, b) + (c, d) = (a-d, b-c)
+
+*** Code:
+To implement and test, I write three part of code: the implement of the interval width selector, interval test and a data abstraction for guess of the formula.
+
+**** Implement
+#+BEGIN_SRC scheme
+;;Selector
+;;Width
+(define (int-width i)
+  (- (upper-bound i) (lower-bound i)))
+
+;;Operator
+;;Sum
+(define (int-sum i1 i2)
+  (make-interval (+ (lower-bound i1) (lower-bound i2))
+                 (+ (upper-bound i1) (upper-bound i2))))
+#+END_SRC
+
+**** Test
+#+BEGIN_SRC scheme
+
+;;Display a formula
+(define (disformula a b c op)
+  (display a)
+  (display " ")
+  (display op)
+  (display " ")
+  (display b)
+  (display " = ")
+  (display c))
+
+;;A Left Right Arrow
+(define (lrarrow) (display " <=> "))
+
+;;to verify just test
+(define (test-for-width n max sign? sf df)
+  ;; Generate the negtive or the positive sign
+  (define (gen-negpos x)
+    (if (= 0 (random 2))
+        (- x)
+        x))
+
+  ;; Generate the number
+  (define (gen-num)
+    (if (= 0 sign?)
+        (gen-negpos (* (/ (random 1000) 1000.0) max))
+        (* (/ (random 1000) 1000.0) max)))
+
+  ;;A single test
+  (define (single-test)
+
+    ;;Test-result
+    (define (test-result sum op1 ws op ca st)
+      (newline)
+      (disformula i1 i2 sum op1)
+      (lrarrow)
+      (op w1 w2 ws)
+      (display "?")
+      (display ca)
+      (display " ")
+      (display st))
+
+    (define i1 (make-interval (gen-num) (gen-num)))
+    (define i2 (make-interval (gen-num) (gen-num)))
+    (define w1 (int-width i1))
+    (define w2 (int-width i2))
+    (define differ (int-differ i1 i2))
+    (define wd (int-width differ))
+    (define sum (int-sum i1 i2))
+    (define ws (int-width sum))
+    (define cs ((guess-op sf) w1 w2))
+    (define cd ((guess-op df) w1 w2))
+    (define st (= cs ws))
+    (define dt (= cd wd))
+    (test-result sum "+" ws (guess-pr sf) cs st)
+    (test-result differ "-" wd (guess-pr df)  cd dt)
+    (newline)
+    (and st dt))
+
+  (if (< n 1)
+      (display "Assumption Correct!\n")
+      (if (single-test)
+          (test-for-width (- n 1) max sign? sf df)
+          (display "Error, Assumption not correct!\n"))))
+#+END_SRC
+
+**** Guess
+#+BEGIN_SRC scheme
+;;guess for addion, is a cons, the first part tells how to operator a two-input function, the second tells how to print it.
+;;Constructor
+(define (make-guess x y)
+  (cons x y))
+
+;;Selector
+;;get the operator part
+(define (guess-op x)
+  (car x))
+;;get the print part
+(define (guess-pr x)
+  (cdr x))
+
+;;Instance
+(define (print-add x y d)
+  (disformula x y d "+"))
+
+(define (print-minus x y d)
+  (disformula x y d "-"))
+
+(define simple-add (make-guess +
+                               print-add))
+
+(define simple-minus (make-guess -
+                                 print-minus))
+#+END_SRC
+*** Result
+#+BEGIN_EXAMPLE
+(test-for-width 1 10 0 simple-add simple-add)
+(4.48 . 4.72) + (-6.89 . 8.48) = (-2.41 . 13.2) <=> 0.239999999999999 + 15.37 = 15.61?15.61 #t
+(4.48 . 4.72) - (-6.89 . 8.48) = (-4.0 . 11.61) <=> 0.239999999999999 + 15.37 = 15.61?15.61 #t
+Assumption Correct!
+
+(test-for-width 1 10 0 simple-add simple-minus)
+(-5.96 . 2.51) + (-5.78 . 9.39) = (-11.74 . 11.9) <=> 8.47 + 15.17 = 23.64?23.64 #t
+(-5.96 . 2.51) - (-5.78 . 9.39) = (-15.35 . 8.29) <=> 8.47 - 15.17 = 23.64?-6.7 #f
+Error, Assumption not correct!
+
+#+END_EXAMPLE
+
+The result is that, interval substraction and addition acts on interval width are all addition, it looks like:
+#+BEGIN_EXAMPLE
+width(i1 + i2) = width(i1) + width(i2)
+
+width(i1 - i2) = width(i1) + width(i2)
+#+END_EXAMPLE
+
+So in an algebra sense, the =width= operator is distributive towards =int-add= but not =int-minus=
+* Exercise 2.10
+Ben Bitdiddle, an expert systems programmer, looks over Alyssa's shoulder and comments that it is not clear what it means to divide by an interval that spans zero. Modify Alyssa's code to check for this condition and to signal an error if it occurs.
+
+** Answer
+So we should be careful about the 0.
+#+BEGIN_SRC scheme
+;;Operator
+;;multply interval
+(define (int-mul i1 i2)
+  (let ((p1 (* (lower-bound i1) (lower-bound i2)))
+        (p2 (* (lower-bound i1) (upper-bound i2)))
+        (p3 (* (upper-bound i1) (upper-bound i2)))
+        (p4 (* (upper-bound i1) (lower-bound i2))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+
+;;has 0, determind whether 0 is in the interval
+(define (has-0 i)
+  (or (= 0 (lower-bound i))
+      (= 0 (upper-bound i))
+      (and (> 0 (lower-bound i))
+           (< 0 (upper-bound i)))))
+
+;;divide interval
+(define (int-div i1 i2)
+  (if (has-0 i)
+      (display "Error: Interval has 0 inside, causing the interval to become two!\n")
+      (int-mul i1
+               (make-interval (/ 1.0 (upper-bound i2))
+                              (/ 1.0 (lower-bound i2))))))
+#+END_SRC
+* Exercise 2.11
