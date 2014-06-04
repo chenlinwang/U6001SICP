@@ -32,3 +32,21 @@
   (define withoutdx (sumserie f incrementdx))
   (define (int a b) (* dx (withoutdx a b)))
   int)
+
+;;middle point procedure
+(define (close-enough? a b tolerance)
+    (< (abs (- a b)) tolerance))
+
+(define (average a b) (/ (+ a b) 2.0))
+
+(define (find-root f pos neg tolerance)
+    (let ((mid (average pos neg)))
+      (if (close-enough? pos neg tolerance)
+          mid
+          (let ((midf (f mid)))
+            (cond ((> midf 0) (find-root f midf neg tolerance))
+                  ((< midf 0) (find-root f pos midf tolerance))
+                  (else mid))))))
+
+(define (x a) a)
+(define (x2 a) (* a a))

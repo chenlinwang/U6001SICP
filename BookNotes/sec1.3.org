@@ -1,2 +1,4 @@
 * Formulating Abstractions with Higher-Order Procedues
 Powerful language should be able to define certain patterns of a language. We call this procedure, which defines procedures, *higher-order procedure*.
+
+** Using procedure to generate the procedure

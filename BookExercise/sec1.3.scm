@@ -77,8 +77,112 @@
 
 (define pical (map pi (list 10 100 1000 10000)))
 (define (cal-precision x r) (* 100.0 (/ (abs (- x r)) r)))
-(newline)
-(display pical)
-(newline)
-(display (map (lambda (x) (cal-precision x 3.1415926)) pical))
-(newline)
+;; ;;test for pi
+;; (newline)
+;; (display pical)
+;; (newline)
+;; (display (map (lambda (x) (cal-precision x 3.1415926)) pical))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Exercise 1.32
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 1. Show that sum and product (exercise 1.31) are both special cases of a still more general notion called accumulate that combines a collection of terms, using some general accumulation function:
+;;Accumulate takes as arguments the same term and range specifications as sum and product, together with a combiner procedure (of two arguments) that specifies how the current term is to be combined with the accumulation of the preceding terms and a null-value that specifies what base value to use when the terms run out. Write accumulate and show how sum and product can both be defined as simple calls to accumulate.
+;; 2. (accumulate combiner null-value term a next b)If your accumulate procedure generates a recursive process, write one that generates an iterative process. If it generates an iterative process, write one that generates a recursive process.
+
+(define (accumulate combiner null-value term next)
+    (define (accuiter a b s)
+        (if (> a b)
+            s
+            (accuiter (next a) b (combiner (term a) s))))
+  (lambda (a b) (accuiter a b null-value)))
+
+(define (sum term next)
+    (accumulate + 0 term next))
+
+(define (product term next)
+    (accumulate * 1 term next))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Exercise 1.33
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; You can obtain an even more general version of accumulate (exercise 1.32) by introducing the notion of a filter on the terms to be combined. That is, combine only those terms derived from values in the range that satisfy a specified condition. The resulting =filtered-accumulate= abstraction takes the same arguments as accumulate, together with an additional predicate of one argument that specifies the filter. Write =filtered-accumulate= as a procedure. Show how to express the following using =filtered-accumulate=:
+;; 1. the sum of the squares of the prime numbers in the interval a to b (assuming that you have a prime? predicate already written)
+;; 2. the product of all the positive integers less than n that are relatively prime to n (i.e., all positive integers i < n such that GCD(i,n) = 1).
+
+(define (filtered-accumulate combiner null-value term next filter)
+    (define (faiter a b s)
+        (if (> a b)
+            s
+            (faiter (next a) b (combiner (if (filter a)
+                                             (term a)
+                                             null-value)
+                                         s))))
+  (lambda (a b) (faiter a b null-value)))
+
+;;1 prime?
+(define (divide? a b)
+    (= 0 (remainder a b)))
+
+(define (all-not-divide? a plist)
+    (if (null? plist)
+        #t
+        (if (divide? a (car plist))
+            #f
+            (all-not-divide? a (cdr plist)))))
+
+(define (listor a)
+    (cond ((null? a) #t)
+          ((car a) (listor (cdr a)))
+          (else (car a))))
+
+(define (find-prime n)
+    (define (finditer i plist)
+        (if (> i n)
+            plist
+            (let ((start (+ i 1)) (end (square i)))
+              (do ((num start (+ num 1))
+                   (doplist plist (if (all-not-divide? num doplist)
+                                    (cons num doplist)
+                                    doplist)))
+                  ((or (> num end) (> num n)) (finditer end doplist))
+                ;; (begin
+                ;;  (newline)
+                ;;  (display num)
+                ;;  (display ":")
+                ;;  (display doplist)
+                ;;  (newline))
+                ))))
+  (if (< n 3)
+      '()
+      (finditer 2 '(2))))
+
+(define (prime? n)
+    (if (< n 2)
+        #f
+        (all-not-divide? n (find-prime (floor (sqrt n))))))
+
+(define (square x) (* x x))
+
+;; sum of square of prime number from a to b
+(define ssp (filtered-accumulate + 0 square increment prime?))
+
+;;2 relative prime
+;;term
+(define (identity x) x)
+;;gcd
+(define (gcd a b)
+    (if (divide? a b)
+        b
+        (gcd b (remainder a b))))
+
+(define (relative-prime? a b)
+    (= 1 (gcd a b)))
+
+;;relative prime filter maker
+(define (relative-prime-fileter-maker n)
+    (lambda (a) (relative-prime? n a)))
+
+;; product of relatively prime number to n from 0 to n
+(define prp (lambda (n) ((filtered-accumulate * 1 identity increment (relative-prime-fileter-maker n)) 1 n)))
