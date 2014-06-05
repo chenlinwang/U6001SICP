@@ -50,6 +50,7 @@
 
 (define (x a) a)
 (define (x2 a) (* a a))
+(define (rx a) (+ 1 (/ 1.0 a)))
 
 ;;Fixed point
 ;;1: by find-root
@@ -57,8 +58,65 @@
     (find-root (lambda (x) (- (f x) x)) pos neg tolerance))
 
 ;;2: by iterative method
+(define find-fix2-max-iter 100000)
 (define (find-fix2 f init tolerance)
-    (let ((next (f init)))
-      (if (close-enough? init next tolerance)
-          init
-          (find-fix2 f next tolerance))))
+    (define (inside init count)
+        (let ((next (f init)))
+          (if (or (close-enough? init next tolerance) (> count find-fix2-max-iter))
+              (list init count)
+              (inside next (+ count 1)))))
+  (inside init 0))
+
+;;To improve some iterative methods
+;;average damping
+(define (average-damping f)
+    (lambda (x) (average x (f x))))
+
+;;newton's methods
+;;derivatives
+(define (differentiate g dx)
+    (lambda (x) (/ (- (g (+ x dx)) (g x)) dx)))
+
+(define dx 0.001)
+(define (diff-cur g)
+    (differentiate g dx))
+
+(define (newton g)
+    (lambda (x) (- x (/ (g x) (let ((dg ((diff-cur g) x)))
+                                 (if (= 0 dg)
+                                     1.0
+                                     dg))))))
+
+(define (fixpoint-improve impro fun init tolerance)
+    (find-fix2 (impro fun) init tolerance))
+
+(define (make-sqrt1 x)
+    (lambda (y) (/ (* x 1.0) y)))
+
+(define (make-sqrt2 x)
+    (lambda (y) (- x (square y))))
+
+(define makefunlist (list make-sqrt1 make-sqrt2))
+
+(define init 10)
+(define tolerance 0.001)
+(define (test-on-sqrt input)
+    (define functionlist (map (lambda (f) (f input))
+                              makefunlist))
+    (newline)
+  (display "With only the fix-point iterative method:\n")
+  (define ofp (map (lambda (f) (find-fix2 f init tolerance))
+                   functionlist))
+  (display ofp)
+  (display "\nWith average damping:\n")
+  (define afp (map (lambda (f) (find-fix2 (average-damping f) init tolerance))
+                   functionlist))
+  (display afp)
+  (display "\nWith newton's method:\n")
+  (define nfp (map (lambda (f) (find-fix2 (newton f) init tolerance))
+                   functionlist))
+  (display nfp)
+  (newline)
+  (list ofp afp nfp))
+
+(test-on-sqrt 2)

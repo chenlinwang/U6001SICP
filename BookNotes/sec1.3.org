@@ -2,3 +2,23 @@
 Powerful language should be able to define certain patterns of a language. We call this procedure, which defines procedures, *higher-order procedure*.
 
 ** Using procedure to generate the procedure
+** First-class status
+The elements with fewest restriction are called first-class. Usually, they have the following properties:
+1. Could be named as variables
+2. Could be passed as variables
+3. Could be returned as variables
+4. Could be parts of the data structure.
+In lisp and its dialects, procedures are first-class status, unlike most other languages.
+*** Book Implementation
+
+sqrt1 : x/y
+sqrt2 : x - y^{2}
+
+For the third part of implementation of the =fix-point= and =avarge-damping= and =newton-method=, I have test the result on x=2, for iterative =sqrt1= and =sqrt2=, and the result yields (the maximum iterated rounds = 100001):
+
+| sqrt method          |             1 |        | 2          |        |
+|----------------------+---------------+--------+------------+--------|
+| methods\result       |        answer | rounds | answer     | rounds |
+| only fix point       |           0.2 | 100001 | -inf.0     | 100001 |
+| With average damping |    1.41452565 |      5 | -inf.0     | 100001 |
+| With newton's method | 6422530408676 |     39 | 1.41453880 |      5 |
