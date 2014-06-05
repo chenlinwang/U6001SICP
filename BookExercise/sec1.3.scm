@@ -186,3 +186,145 @@
 
 ;; product of relatively prime number to n from 0 to n
 (define prp (lambda (n) ((filtered-accumulate * 1 identity increment (relative-prime-fileter-maker n)) 1 n)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Exercise 1.35
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Show that the golden \phi ratio (section 1.2.2) is a fixed point of the transformation:
+;; x_{n+1} = 1 +1/x_{n}
+;; and use this fact to compute by means of the =fixed-point= procedure.
+(define (close-enough? a b tolerance)
+    (< (abs (- a b)) tolerance))
+
+(define (fixpoint f init tolerance)
+    (let ((next (f init)))
+      (if (close-enough? init next tolerance)
+          init
+          (fixpoint f next tolerance))))
+
+(define (gr x)
+    (+ 1 (/ 1.0 x)))
+
+(define (check-error-rate input real)
+    (* 100 (/ (abs (- input real)) real)))
+
+(define grv (/ (+ 1 (sqrt 5)) 2.0))
+
+;; (define d135 (map (lambda (t) (fixpoint gr 1 t)) '(0.1 0.01 0.001 0.0001)))
+;; (display d135)
+;; (newline)
+;; (display (map (lambda (input) (check-error-rate input grv)) d135))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Exercise 1.36
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (print-fixpoint f init tolerance step)
+    (let ((next (f init)))
+      (if (close-enough? init next tolerance)
+          init
+          (begin (newline)
+                 (display step)
+                 (display "--From init value: ")
+                 (display init)
+                 (display " to next value: ")
+                 (display next)
+                 (print-fixpoint f next tolerance (+ step 1))))))
+
+(define (average a b)
+    (/ (+ a b) 2.0))
+
+(define (iter1 x)
+    (/ (log 1000) (log x)))
+
+(define (iter2 x)
+    (average x (iter1 x)))
+
+;; (display "\nWithout damping (t=0.001):")
+;; (print-fixpoint iter1 10 0.001 1)
+;; (display "\n\nWith damping (t=0.001):")
+;; (print-fixpoint iter2 10 0.001 1)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 1.37
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 1. An infinite continued fraction is an expression of the form in book page 79.As an example, one can show that the infinite continued fraction expansion with the N_{i} and the D_{i} all equal to 1 produces 1/ \phi , where \phi is the golden ratio (described in section 1.2.2). One way to approximate an infinite continued fraction is to truncate the expansion after a given number of terms. Such a truncation -- a so-called =k-term finite continued fraction= -- has the form. Suppose that =n= and =d= are procedures of one argument (the term index =i=) that return the N_{i} and D_{i} of the terms of the continued fraction. Define a procedure =cont-frac= such that evaluating =(cont-frac n d k)= computes the value of the k-term finite continued fraction. Check your procedure by approximating 1/ \phi using:
+;; #+BEGIN_SRC scheme
+;; (cont-frac (lambda (i) 1.0) (lambda (i) 1.0) k)
+;; #+END_SRC
+;; for successive values of k. How large must you make k in order to get an approximation that is accurate to 4 decimal places?
+
+;; 2. If your =cont-frac= procedure generates a recursive process, write one that generates an iterative process.
+
+(define (make-cont-frac n d)
+    (define (cfiter k s)
+        (if (= k 0)
+            s
+            (cfiter (- k 1) (/ (n k) (+ (d k) s)))))
+  (lambda (i) (cfiter i 0)))
+
+(define (nphi x) 1.0)
+(define (dphi x) 1.0)
+
+(define (phi i)
+    (/ 1.0 ((make-cont-frac nphi dphi) i)))
+
+;;high-order procedure to test the necessary steps it takes to approach certain accuracy
+(define (find-near p r tolerance next init)
+    (if (close-enough? (p init) r tolerance)
+        init
+        (find-near p r tolerance next (next init))))
+
+;(display (find-near phi grv 0.0001 increment 2))
+
+;; (define t137 '(0.1 0.01 0.001 0.0001 0.00001))
+;; (display t137)
+;; (newline)
+;; (display (map (lambda (k)  (find-near phi grv k increment 2))
+;;               t137))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 1.38
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; In 1737, the Swiss mathematician Leonhard Euler published a memoir /De Fractionibus Continuis/, which included a continued fraction expansion for =e-2=, where e is the base of the natural logarithms. In this fraction, the N_{i}i are all 1, and the D_{i} are successively 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, .... Write a program that uses your =cont-frac= procedure from exercise 1.37 to approximate e, based on Euler's expansion.
+(define (ne i) 1.0)
+(define (de i)
+        (let ((flag (remainder i 3)))
+          (cond ((= flag 2) (* 2.0 (ceiling (/ i 3.0))))
+                (else 1.0))))
+(define p138 (make-cont-frac ne de))
+(define ecal (lambda (i) (+ 2 ((make-cont-frac ne de) i))))
+
+;; (define e 2.718281828459)
+;; (define t138 '(10 100 1000 10000))
+;; (define r1381  (map ecal t138))
+;; (display r1381)
+;; (newline)
+;; (define r1382 (map (lambda (input) (check-error-rate input e)) r1381))
+;; (display r1382)
+;; (newline)
+
+(define (print-test-accuracy f testinput realvalue)
+    (define calvalue  (map ecal testinput))
+  (display calvalue)
+  (newline)
+  (define calerror (map (lambda (input) (check-error-rate input realvalue)) calvalue))
+  (display calerror)
+  (newline)
+  (list testinput calvalue calerror))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 1.39
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; A continued fraction representation of the tangent function was published in 1770 by the
+;; German mathematician J.H. Lambert. Define a procedure =(tan-cf x k)= that computes an approximation to the tangent function based on Lambert's formula. K specifies the number of terms to compute, as in exercise 1.37.
+(define (tan-cf x k)
+    (define xsquare (* x x))
+    (define (ntan i)
+        (if (= i k)
+            (- x)
+            (- xsquare)))
+    (define (dtan i)
+        (- (* 2 i) 1))
+    ((make-cont-frac ntan dtan) k))

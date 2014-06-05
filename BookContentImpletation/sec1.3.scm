@@ -50,3 +50,15 @@
 
 (define (x a) a)
 (define (x2 a) (* a a))
+
+;;Fixed point
+;;1: by find-root
+(define (find-fix1 f pos neg tolerance)
+    (find-root (lambda (x) (- (f x) x)) pos neg tolerance))
+
+;;2: by iterative method
+(define (find-fix2 f init tolerance)
+    (let ((next (f init)))
+      (if (close-enough? init next tolerance)
+          init
+          (find-fix2 f next tolerance))))
