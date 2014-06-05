@@ -1,0 +1,16 @@
+* Types in Scheme
+Every value in scheme has a type, for instance, 3 is =integer=,and =number=; "hi" is a =string=. And if a value has multiple types, we usually refer to the type, containing the largest types. Thus, 3 is referred as =number= rather than  =integer=.
+
+For procedures, this comes a little bit complicated, + is a =number,number -> number= type.The rule of the maximum type also applies here.
+
+Most of languages ask the programmer to assure the type of input and output of a procedure. Those languages are call *strong-typed* languages. But scheme is *weak-typed*.
+
+* High-order Procedure
+If a procedure takes procedures as input, then we call it high-order procedures.
+But there is a fascinating example:
+#+BEGIN_SRC scheme
+(define (compose f g) (lambda (x) (f (g x))))
+#+END_SRC
+It composes two procedures that takes in an element and output the other. But what exactly is the type of input required,is not mentioned. Thus we write the type of =compose= as:
+
+: (B->C,A->B) -> (A->C)
