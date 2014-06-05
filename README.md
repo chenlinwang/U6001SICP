@@ -22,7 +22,7 @@ There are four directories:
 + LectureNotes: The stressed points and my thoughts from the lecture.
 + LectureReading: The reflect I have for the lecture.
 + BookNotes: The stressed points and my thoughts from the book [SICP][book].
-+ BookContentImpletation: The impletation of the example inside the book [SICP][book].
++ BookImplementation: The impletation of the example inside the book [SICP][book].
 + BookExercise: The excise solutions and explanations for the book [SICP][book].
 
 
