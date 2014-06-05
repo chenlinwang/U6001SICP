@@ -81,7 +81,8 @@
 (define (diff-cur g)
     (differentiate g dx))
 
-(define (newton g)
+(define (newton f)
+    (define (g x) (- (f x) x))
     (lambda (x) (- x (/ (g x) (let ((dg ((diff-cur g) x)))
                                  (if (= 0 dg)
                                      1.0
@@ -94,7 +95,7 @@
     (lambda (y) (/ (* x 1.0) y)))
 
 (define (make-sqrt2 x)
-    (lambda (y) (- x (square y))))
+    (lambda (y) (+ (- x (square y)) y)))
 
 (define makefunlist (list make-sqrt1 make-sqrt2))
 
@@ -119,4 +120,4 @@
   (newline)
   (list ofp afp nfp))
 
-(test-on-sqrt 2)
+;(test-on-sqrt 2)

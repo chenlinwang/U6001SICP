@@ -16,9 +16,9 @@ sqrt2 : x - y^{2}
 
 For the third part of implementation of the =fix-point= and =avarge-damping= and =newton-method=, I have test the result on x=2, for iterative =sqrt1= and =sqrt2=, and the result yields (the maximum iterated rounds = 100001):
 
-| sqrt method          |             1 |        | 2          |        |
-|----------------------+---------------+--------+------------+--------|
-| methods\result       |        answer | rounds | answer     | rounds |
-| only fix point       |           0.2 | 100001 | -inf.0     | 100001 |
-| With average damping |    1.41452565 |      5 | -inf.0     | 100001 |
-| With newton's method | 6422530408676 |     39 | 1.41453880 |      5 |
+| sqrt method          |         1 |        | 2         |        |
+|----------------------+-----------+--------+-----------+--------|
+| methods\result       |    answer | rounds | answer    | rounds |
+| only fix point       |       0.2 | 100001 | -inf.0    | 100001 |
+| With average damping | 1.4145256 |      5 | -inf.0    | 100001 |
+| With newton's method | 1.4139207 |      5 | 1.4145388 |      5 |
