@@ -15,9 +15,13 @@
     (average guess (/ x guess)))
 
 ;To iterate until meet the converage
-(define (sqrt-iter guess x) (if (good-enough? guess x)
-                                guess
-                                   (sqrt-iter (improve guess x) x)))
+(define (sqrt-iter guess x)
+    ;; Compute the approximate square root by iterative improvement. guess is the current approximation and x is the number, whose square root we try to compute.
+    ;; (number, number) -> numer
+    ;; x>= 0, guess^2 = x
+    (if (good-enough? guess x) ;; see guess good enough
+        guess ;; yes, return guess
+        (sqrt-iter (improve guess x) x))) ;; no, improve again
 
 ;Pack the thing
 (define (sqrt x) (sqrt-iter 1.0 x))

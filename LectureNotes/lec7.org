@@ -1,0 +1,40 @@
+* Good Programming Practice
+In this lecture, we are going to see some elementary practice that could improve your programming skills.
+** How do code
+It is suggested that coding a program according to a certain problem statement should involve the following procedures:
+1. Design the data structure
+2. Design the computation module
+3. Design the interface between module
+
+*** DDS
+In this part, what you have to think is mainly:
+1. What to group about the data
+2. What to divide about the data
+
+This is essential as a good data structure will ease the later design of coding, while a bad one will cause you hours to code and redesign.
+
+For example, if one would like to use coordinates, it is better to group the x and y axises together. But if you do not do that, there will be a lot of separate input and output of x and y, which is indeed waste of time and effort.
+*** DCM
+In this part you also has to worry two things:
+1. How to deeply capture the computations that are repeated and need.
+2. How to isolate the computations details from input and output styles, using the black box model.
+
+For the first part, needless to say, it is important to do that to enhance efficiency.As for the latter, it is useful as you could modify the algorithms or try new implementations without the necessity to change the whole program.
+*** DIM
+We have seen examples like the =sqrt=, we have to design how the computation procedures are put together. And also we should care about the lexial scoping.
+** Documentation
+What documentation could do is to help you understand your own code later.To formalize the problem, we have to write the following into the document for each procedure:
+1. Description of the procedure.
+2. Description of the input and output (type and constrains)
+3. Constrains of inputs or output or the relation.
+
+For example, we have:
+#+BEGIN_SRC scheme
+(define (sqrt-iter guess x)
+    ;; Compute the approximate square root by iterative improvement. guess is the current approximation and x is the number, whose square root we try to compute.
+    ;; (number, number) -> numer
+    ;; x>= 0, guess^2 = x
+    (if (good-enough? guess x) ;; see guess good enough
+        guess ;; yes, return guess
+        (sqrt-iter (improve guess x) x))) ;; no, improve again
+#+END_SRC
