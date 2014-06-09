@@ -1,0 +1,2 @@
+* Hierarchical Data and the Closure Property
+We could nestedly use =con= to form a complicated data structure. This kind of property is called =closure property=.
