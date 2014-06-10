@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; section 2.1.1
+;; section 2.2.1
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This part mainly contrains functions of list, we will try to implement all the functions that concerns list.
 ;; Constructor
@@ -53,9 +53,23 @@
 ;; Testing
 (define l (list 1 2 3 4 5 6))
 ;; own-list-ref
-(do ((index 0 (begin (display index)
-                     (display ":")
-                     (display (own-list-ref l index))
-                     (newline)
-                     (+ index 1))))
-    ((> index 5) (newline)))
+;; (do ((index 0 (begin (display index)
+;;                      (display ":")
+;;                      (display (own-list-ref l index))
+;;                      (newline)
+;;                      (+ index 1))))
+;;     ((> index 5) (newline)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; section 2.2.2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (counting-lieves l)
+    ;; Counting the lieves of a tree. l: input tree
+    ;; (list) -> (number)
+    (cond ((null? l) 0)
+          ((not (pair? l)) 1)
+          (else (+ (counting-lieves (car l))
+                   (counting-lieves (cdr l))))))
+
+;; (define t (list 1 2 3 (list 4 5 6 (list 7 8 (list 9)))))
+;; (display (counting-lieves t))
+;; (newline)

@@ -193,4 +193,336 @@
       ((null? x)))
 )
 
-(own-foreach2 (lambda (x) (display x) (newline)) (list 1 2 3))
+;; (own-foreach2 (lambda (x) (display x) (newline)) (list 1 2 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.25
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Give combinations of cars and cdrs that will pick 7 from each of the following lists:
+(define t2251 (list 1 3 (list 5 7) 9))
+(define t2252 (list (list 7)))
+(define t2253 (list 1 (list 2 (list 3 (list 4 (list 5 (list 6 7)))))))
+
+;; (display (cadr (car (cdr (cdr t2251)))))
+;; (newline)
+;; (display (car (car t2252)))
+;; (newline)
+;; (display (cadr (cadr (cadr (cadr (cadr (cadr t2253)))))))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.26
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Suppose we define x and y to be two lists:
+
+;; (define x (list 1 2 3))
+;; (define y (list 4 5 6))
+
+;; What result is printed by the interpreter in response to evaluating each of the following expressions:
+
+;; (append x y)
+;; (cons x y)
+;; (list x y)
+(define e226x (list 1 2 3))
+(define e226y (list 4 5 6))
+
+;; (display (append e226x e226y))
+;; (newline)
+;; (display (cons e226x e226y))
+;; (newline)
+;; (display (list e226x e226y))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.27
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Modify your =reverse= procedure of exercise 2.18 to produce a =deep-reverse= procedure that takes a list as argument and returns as its value the list with its elements reversed and with all sublists deep-reversed as well. For example,
+
+;; (define x (list (list 1 2) (list 3 4)))
+;; x
+;; ((1 2) (3 4))
+;; (reverse x)
+;; ((3 4) (1 2))
+;; (deep-reverse x)
+;; ((4 3) (2 1))
+
+(define (deep-reverse l)
+  ;; Reverse all lists inside l. l: tree structured list.
+  ;; (list) -> (list)
+  (list-reverse (map (lambda (l)
+                       (if (list? l) ;; test whether input is a list
+                           (deep-reverse l);; yes, then deep reverse it
+                           l;; no, then simple return it
+                           ))
+                     l)))
+
+;; (define t227 (list (list 1 2) (list 3 4)))
+;; (display (deep-reverse t227))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.28
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a procedure =fringe= that takes as argument a tree (represented as a list) and returns a list whose elements are all the leaves of the tree arranged in left-to-right order. For example,
+
+;; (define x (list (list 1 2) (list 3 4)))
+;; (fringe x)
+;; (1 2 3 4)
+;; (fringe (list x x))
+;; (1 2 3 4 1 2 3 4)
+
+(define (fringe l)
+  ;; Return a list of lieves of the input. l: tree structures list.
+  ;; (list) -> (list)
+  (cond ((null? l) l)
+        ((not (pair? l)) (list l))
+        (else (append (fringe (car l)) (fringe (cdr l))))))
+
+;; (define t228 (list (list 1 2) (list 3 4)))
+;; (display (fringe t228))
+;; (newline)
+;; (display (fringe (list t228 t228)))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.29
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; A binary mobile consists of two branches, a left branch and a right branch. Each branch is a rod of a certain length, from which hangs either a weight or another binary mobile. We can represent a binary mobile using compound data by constructing it from two branches (for example, using list):
+
+;; (define (make-mobile left right)
+;;   (list left right))
+
+;; A branch is constructed from a length (which must be a number) together with a structure, which may be either a number (representing a simple weight) or another mobile:
+
+;; (define (make-branch length structure)
+;;   (list length structure))
+
+;; 1. Write the corresponding selectors left-branch and right-branch, which return the branches of a mobile, and branch-length and branch-structure, which return the components of a branch.
+;; 2. Using your selectors, define a procedure total-weight that returns the total weight of a mobile.
+;; 3. A mobile is said to be balanced if the torque applied by its top-left branch is equal to that applied by its top-right branch (that is, if the length of the left rod multiplied by the weight hanging from that rod is equal to the corresponding product for the right side) and if each of the submobiles hanging off its branches is balanced. Design a predicate that tests whether a binary mobile is balanced.
+;; 4. Suppose we change the representation of mobiles so that the constructors are as following.How much do you need to change your programs to convert to the new representation?
+
+;; (define (make-mobile left right)
+;;   (cons left right))
+;; (define (make-branch length structure)
+;;   (cons length structure))
+
+;; 0
+(define (make-mobile left right)
+  ;; Constructor of a mobile. left: left branch; right: right branch.
+  ;; (list,list) -> (list)
+  (list left right))
+
+(define (make-branch length structure)
+  ;; Constructor of a branch. length: length of the branch; structure: structure of the branch, can be a weight(number) or a mobile.
+  ;; (number,number or list) -> (list)
+  (list length structure))
+
+;; 1
+(define (left-branch m)
+  ;; Selector of left branch of a mobile. m: a mobile.
+  ;; (list) -> (list)
+  (car m))
+
+(define (right-branch m)
+  ;; Selector of right branch of a mobile. m: a mobile.
+  ;; (list) -> (list)
+  (cadr m))
+
+(define (branch-length b)
+  ;; Selector of length of a branch. b: a branch.
+  ;; (list) -> (number)
+  (car b))
+
+(define (branch-structure b)
+  ;; Selector of structure of a branch. b: a branch.
+  ;; (list) -> (number or list)
+  (cadr b))
+
+;; 1 testing
+(define t229-1-b1 (make-branch 1 2))
+(define t229-1-b2 (make-branch 3 4))
+
+(define t229-1-m1 (make-mobile t229-1-b1 t229-1-b2))
+
+(define t229-1-b3 (make-branch 5 t229-1-m1))
+(define t229-1-m2 (make-mobile t229-1-b1 t229-1-b3))
+
+;; (display (branch-length t229-1-b1))
+;; (newline)
+;; (display (branch-structure t229-1-b3))
+;; (newline)
+;; (display (left-branch t229-1-m1))
+;; (newline)
+;; (display (right-branch t229-1-m2))
+;; (newline)
+
+;; 2
+(define (total-weight m)
+  ;; Calculate the total weight of a mobile.m: the mobile.
+  ;; (list) -> (number)
+  (let ((lb (left-branch m))
+        (rb (right-branch m)))
+    (let ((ls (branch-structure lb))
+          (rs (branch-structure rb)))
+      (+ (if (list? ls)
+             (total-weight ls)
+             ls)
+         (if (list? rs)
+             (total-weight rs)
+             rs))
+      )))
+
+;; 2 testing
+;; (display (total-weight t229-1-m1))
+;; (newline)
+;; (display (total-weight t229-1-m2))
+;; (newline)
+
+;; 3
+(define (torque b left?)
+  ;; Calculate the torque of the branch. b: input branch; left?: whether this branch is left side of the mobile
+  ;; (list) -> (number)
+  (define (titer b len)
+    ;; iteratively calculae the torq of the branch. b: input branch; len: the accumulative length at the branch.
+    ;; (list, number, boolean) -> (number)
+    (let ((st (branch-structure b)))
+      (if (list? st)
+          (let ((lb (left-branch st))
+                (rb (right-branch st)))
+            (+ (titer lb (- len (branch-length lb)))
+               (titer rb (+ len (branch-length rb)))))
+          (* len st))))
+  (titer b ((if left? - +) (branch-length b))))
+
+(define (balanced? m)
+  ;; To see whether the mobile is balanced. m: input mobile.
+  ;; (list) -> (boolean)
+  (= 0 (+ (torque (left-branch m) #t) (torque (right-branch m) #f))))
+
+;; 3 testing
+;; (display (torque t229-1-b1 #f))
+;; (newline)
+;; (display (torque t229-1-b2 #f))
+;; (newline)
+;; (display (torque t229-1-b3 #f))
+;; (newline)
+;; (display (torque t229-1-b1 #t))
+;; (newline)
+;; (display (torque t229-1-b2 #t))
+;; (newline)
+;; (display (torque t229-1-b3 #t))
+;; (newline)
+;; (display t229-1-m1)
+;; (newline)
+;; (display (balanced? t229-1-m1))
+;; (newline)
+;; (display t229-1-m2)
+;; (newline)
+;; (display (balanced? t229-1-m2))
+;; (newline)
+
+;; 4
+(define (make-mobile2 left right)
+  (cons left right))
+(define (make-branch2 length structure)
+  (cons length structure))
+
+;; 1
+(define (left-branch2 m)
+  ;; Selector of left branch of a mobile. m: a mobile.
+  ;; (list) -> (list)
+  (car m))
+
+(define (right-branch2 m)
+  ;; Selector of right branch of a mobile. m: a mobile.
+  ;; (list) -> (list)
+  (cdr m))
+
+(define (branch-length2 b)
+  ;; Selector of length of a branch. b: a branch.
+  ;; (list) -> (number)
+  (car b))
+
+(define (branch-structure2 b)
+  ;; Selector of structure of a branch. b: a branch.
+  ;; (list) -> (number or list)
+  (cdr b))
+
+;; 1 testing
+(define t229-1-b1 (make-branch2 1 2))
+(define t229-1-b2 (make-branch2 3 4))
+
+(define t229-1-m1 (make-mobile2 t229-1-b1 t229-1-b2))
+
+(define t229-1-b3 (make-branch2 5 t229-1-m1))
+(define t229-1-m2 (make-mobile2 t229-1-b1 t229-1-b3))
+
+;; (display (branch-length2 t229-1-b1))
+;; (newline)
+;; (display (branch-structure2 t229-1-b3))
+;; (newline)
+;; (display (left-branch2 t229-1-m1))
+;; (newline)
+;; (display (right-branch2 t229-1-m2))
+;; (newline)
+
+;; 2
+(define (total-weight2 m)
+  ;; Calculate the total weight of a mobile.m: the mobile.
+  ;; (list) -> (number)
+  (let ((lb (left-branch2 m))
+        (rb (right-branch2 m)))
+    (let ((ls (branch-structure2 lb))
+          (rs (branch-structure2 rb)))
+      (+ (if (pair? ls)
+             (total-weight2 ls)
+             ls)
+         (if (pair? rs)
+             (total-weight2 rs)
+             rs))
+      )))
+
+;; 2 testing
+;; (display (total-weight2 t229-1-m1))
+;; (newline)
+;; (display (total-weight2 t229-1-m2))
+;; (newline)
+
+;; 3
+(define (torque2 b left?)
+  ;; Calculate the torque of the branch. b: input branch; left?: whether this branch is left side of the mobile
+  ;; (list) -> (number)
+  (define (titer b len)
+    ;; iteratively calculae the torq of the branch. b: input branch; len: the accumulative length at the branch.
+    ;; (list, number, boolean) -> (number)
+    (let ((st (branch-structure2 b)))
+      (if (pair? st)
+          (let ((lb (left-branch2 st))
+                (rb (right-branch2 st)))
+            (+ (titer lb (- len (branch-length2 lb)))
+               (titer rb (+ len (branch-length2 rb)))))
+          (* len st))))
+  (titer b ((if left? - +) (branch-length2 b))))
+
+(define (balanced?2 m)
+  ;; To see whether the mobile is balanced. m: input mobile.
+  ;; (list) -> (boolean)
+  (= 0 (+ (torque2 (left-branch2 m) #t) (torque2 (right-branch2 m) #f))))
+;; 3 testing
+;; (display (torque2 t229-1-b1 #f))
+;; (newline)
+;; (display (torque2 t229-1-b2 #f))
+;; (newline)
+;; (display (torque2 t229-1-b3 #f))
+;; (newline)
+;; (display (torque2 t229-1-b1 #t))
+;; (newline)
+;; (display (torque2 t229-1-b2 #t))
+;; (newline)
+;; (display (torque2 t229-1-b3 #t))
+;; (newline)
+;; (display t229-1-m1)
+;; (newline)
+;; (display (balanced?2 t229-1-m1))
+;; (newline)
+;; (display t229-1-m2)
+;; (newline)
+;; (display (balanced?2 t229-1-m2))
+;; (newline)
