@@ -1,2 +1,4 @@
 * Hierarchical Data and the Closure Property
 We could nestedly use =con= to form a complicated data structure. This kind of property is called =closure property=.
+** Sequences as Conventional Interfaces
+Like signal processing, we could use gether the input as sequence first and then output it.

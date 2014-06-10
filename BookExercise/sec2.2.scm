@@ -526,3 +526,108 @@
 ;; (newline)
 ;; (display (balanced?2 t229-1-m2))
 ;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.30
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define a procedure =square-tree= analogous to the =square-list= procedure of exercise 2.21. That is, =square-list= should behave as follows:
+
+;; (square-tree
+;;   (list 1
+;;        (list 2 (list 3 4) 5)
+;;        (list 6 7)))
+;; (1 (4 (9 16) 25) (36 49))
+
+;; Define square-tree both directly (i.e., without using any higher-order procedures) and also by using map and recursion.
+
+;;Without map
+(define (square-tree1 t)
+  ;; Square the element of tree. t: a tree-structured list.
+  ;; (list) -> (list)
+  (cond ((null? t) (list))
+        ((not (pair? t)) (square t))
+        (else (cons (square-tree1 (car t)) (square-tree1 (cdr t))))))
+
+(define t230 (list 1
+                   (list 2 (list 3 4) 5)
+                   (list 6 7)))
+
+;; (display (square-tree1 t230))
+;; (newline)
+
+(define (square-tree2 t)
+  ;; Square the element of tree. t: a tree-structured list.
+  ;; (list) -> (list)
+  (map (lambda (subt)
+         (if (pair? subt)
+             (square-tree2 subt)
+             (square subt)))
+       t))
+
+;; (display (square-tree2 t230))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.31
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Abstract your answer to exercise 2.30 to produce a procedure tree-map with the property that square-tree could be defined as
+
+;; (define (square-tree tree) (tree-map square tree))
+
+(define (tree-map func t)
+  ;; A map-like tree map to deal with tree. func: the applied function; t: tree-like list.
+  ;; (list) -> (list)
+  (define (miter t)
+    ;; Iterative function to carry on. t: tree-like list.
+    ;; (list) -> (list)
+    (map (lambda (subt)
+           (if (pair? subt)
+               (miter subt)
+               (func subt)))
+         t))
+  (miter t))
+
+(define square-tree3 (lambda (x) (tree-map square x)))
+
+;; (display (square-tree3 t230))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.32
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; We can represent a set as a list of distinct elements, and we can represent the set of all subsets of the set as a list of lists. For example, if the set is (1 2 3), then the set of all subsets is (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)). Complete the following definition of a procedure that generates the set of subsets of a set and give a clear explanation of why it works:
+
+;; (define (subsets s)
+;;   (if (null? s)
+;;       (list nil)
+;;       (let ((rest (subsets (cdr s))))
+;; (append rest (map <??> rest)))))
+
+;; (define (subsets s)
+;;   (if (null? s)
+;;       (begin (display "\nEmpty Set!\n")
+;;              (list (list)))
+;;       (let ((rest (subsets (cdr s))))
+;;         (begin (display "\nHead: ")
+;;                (display (car s))
+;;                (display " - ")
+;;                (display "With Set: ")
+;;                (display rest)
+;;                (newline)
+;;                (append rest (map (lambda (news)
+;;                                    (cons (car s) news))
+;;                                  rest))))))
+
+;; (display (subsets (list 1)))
+;; (newline)
+;; (display (subsets (list 1 2)))
+;; (newline)
+
+(define (subsets s)
+  (if (null? s)
+      (list (list))
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (news)
+                            (cons (car s) news))
+                          rest)))))
+
+;; (define t232 (list 1 2 3))
+;; (display (subsets t232))
+;; (newline)
