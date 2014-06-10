@@ -526,3 +526,420 @@
 ;; (newline)
 ;; (display (balanced?2 t229-1-m2))
 ;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.30
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define a procedure =square-tree= analogous to the =square-list= procedure of exercise 2.21. That is, =square-list= should behave as follows:
+
+;; (square-tree
+;;   (list 1
+;;        (list 2 (list 3 4) 5)
+;;        (list 6 7)))
+;; (1 (4 (9 16) 25) (36 49))
+
+;; Define square-tree both directly (i.e., without using any higher-order procedures) and also by using map and recursion.
+
+;;Without map
+(define (square-tree1 t)
+  ;; Square the element of tree. t: a tree-structured list.
+  ;; (list) -> (list)
+  (cond ((null? t) (list))
+        ((not (pair? t)) (square t))
+        (else (cons (square-tree1 (car t)) (square-tree1 (cdr t))))))
+
+(define t230 (list 1
+                   (list 2 (list 3 4) 5)
+                   (list 6 7)))
+
+;; (display (square-tree1 t230))
+;; (newline)
+
+(define (square-tree2 t)
+  ;; Square the element of tree. t: a tree-structured list.
+  ;; (list) -> (list)
+  (map (lambda (subt)
+         (if (pair? subt)
+             (square-tree2 subt)
+             (square subt)))
+       t))
+
+;; (display (square-tree2 t230))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.31
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Abstract your answer to exercise 2.30 to produce a procedure tree-map with the property that square-tree could be defined as
+
+;; (define (square-tree tree) (tree-map square tree))
+
+(define (tree-map func t)
+  ;; A map-like tree map to deal with tree. func: the applied function; t: tree-like list.
+  ;; (list) -> (list)
+  (define (miter t)
+    ;; Iterative function to carry on. t: tree-like list.
+    ;; (list) -> (list)
+    (map (lambda (subt)
+           (if (pair? subt)
+               (miter subt)
+               (func subt)))
+         t))
+  (miter t))
+
+(define square-tree3 (lambda (x) (tree-map square x)))
+
+;; (display (square-tree3 t230))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.32
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; We can represent a set as a list of distinct elements, and we can represent the set of all subsets of the set as a list of lists. For example, if the set is (1 2 3), then the set of all subsets is (() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)). Complete the following definition of a procedure that generates the set of subsets of a set and give a clear explanation of why it works:
+
+;; (define (subsets s)
+;;   (if (null? s)
+;;       (list nil)
+;;       (let ((rest (subsets (cdr s))))
+;; (append rest (map <??> rest)))))
+
+;; (define (subsets s)
+;;   (if (null? s)
+;;       (begin (display "\nEmpty Set!\n")
+;;              (list (list)))
+;;       (let ((rest (subsets (cdr s))))
+;;         (begin (display "\nHead: ")
+;;                (display (car s))
+;;                (display " - ")
+;;                (display "With Set: ")
+;;                (display rest)
+;;                (newline)
+;;                (append rest (map (lambda (news)
+;;                                    (cons (car s) news))
+;;                                  rest))))))
+
+;; (display (subsets (list 1)))
+;; (newline)
+;; (display (subsets (list 1 2)))
+;; (newline)
+
+(define (subsets s)
+  (if (null? s)
+      (list (list))
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (news)
+                            (cons (car s) news))
+                          rest)))))
+
+;; (define t232 (list 1 2 3))
+;; (display (subsets t232))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.33
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Fill in the missing expressions to complete the following definitions of some basic list- manipulation operations as accumulations:
+
+;; (define (map p sequence)
+;;   (accumulate (lambda (x y) <??>) nil sequence))
+;; (define (append seq1 seq2)
+;;   (accumulate cons <??> <??>))
+;; (define (length sequence)
+;;   (accumulate <??> 0 sequence))
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (own-map p sequence)
+  (accumulate cons (list) sequence))
+
+;; (display (own-map square (list 1 2 3)))
+;; (newline)
+
+(define (own-append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+;; (display (own-append (list 1 2 3) (list 4 5 6)))
+;; (newline)
+
+(define (own-length sequence)
+  (accumulate (lambda (x y) (+ 1 y)) 0 sequence))
+
+;; (display (own-length (list 1 2 3 4)))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.34
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Evaluating a polynomial in x at a given value of x can be formulated as an accumulation. We evaluate the polynomial, using a well-known algorithm called Horner's rule, which structures the computation as
+;; : ( \dots (a_{n} x + a_{n-1})x \dots )x + a_0
+;; In other words, we start with a_{n}, multiply by x, add a_{n-1}, multiply by x, and so on, until we reach a_0. Fill in the following template to produce a procedure that evaluates a polynomial using Horner's rule. Assume that the coefficients of the polynomial are arranged in a sequence, from a0 through an.
+
+;; (define (horner-eval x coefficient-sequence)
+;;   (accumulate (lambda (this-coeff higher-terms) <??>) 0
+;;               coefficient-sequence))
+
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms) (+ this-coeff (* x higher-terms))) 0
+              coefficient-sequence))
+
+;; (display (horner-eval 2 (list 1 3 0 5 0 1)))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.35
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Redefine count-leaves from section 2.2.2 as an accumulation:
+(load "../BookImplementation/sec1.2")
+(load "../BookImplementation/sec2.2")
+
+(define (count-leaves235 t)
+  (accumulate (lambda (x y) (+ 1 y)) 0 (enumerate-tree t)))
+
+;; (define t235 (list 1 2 3 (list 4 5 6) (list 7 8 (list 9))))
+;; (display (count-leaves235 t235))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.36
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The procedure =accumulate-n= is similar to =accumulate= except that it takes as its third argument a sequence of sequences, which are all assumed to have the same number of elements. It applies the designated accumulation procedure to combine all the first elements of the sequences, all the second elements of the sequences, and so on, and returns a sequence of the results. For instance, if s is a sequence containing four sequences, ((1 2 3) (4 5 6) (7 8 9) (10 11 12)), then the value of (accumulate-n + 0 s) should be the sequence (22 26 30). Fill in the missing expressions in the following definition of accumulate-n:
+
+;; (define (accumulate-n op init seqs)
+;;   (if (null? (car seqs))
+;; ￼￼￼￼
+;; nil
+;; (cons (accumulate op init <??>)
+;; (accumulate-n op init <??>))))
+
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      (list)
+      (cons (accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))
+
+;; (define t236 (list (list 1 2 3) (list 4 5 6) (list 7 8 9)))
+;; (display (accumulate-n + 0 t236))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.37
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Suppose we represent vectors v = (vi) as sequences of numbers, and matrices m = (mij) as sequences of vectors (the rows of the matrix). For example, the matrix is represented as the sequence ((1 2 3 4) (4 5 6 6) (6 7 8 9)). With this representation, we can use sequence operations to concisely express the basic matrix and vector operations. These operations (which are described in any book on matrix algebra) are the following.
+;; We can define the dot product as:
+
+;; (define (dot-product v w)
+;;   (accumulate + 0 (map * v w)))
+
+;; Fill in the missing expressions in the following procedures for computing the othermatrix operations. (The procedure accumulate-n is defined in exercise 2.36.)
+
+;; (define (matrix-*-vector m v)
+;;   (map <??> m))
+
+;; (define (transpose mat)
+;;   (accumulate-n <??> <??> mat))
+
+;; (define (matrix-*-matrix m n) (let ((cols (transpose n)))
+;;   (map <??> m)))
+
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (x) (dot-product x v)) m))
+
+(define (transpose mat)
+  (accumulate-n  cons (list) mat))
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (x) (matrix-*-vector n x)) m)))
+
+;; (define t237v (list 1 2 3 4))
+;; (define t237w (list 1 1 1 1))
+;; (define t237m (list (list 1 1 1 1)
+;;                     (list 0 1 0 0)
+;;                     (list 0 0 0 0)
+;;                     (list 0 0 1 0)
+;;                     (list 1 1 1 1)))
+
+;; (define t237n (list t237w t237w t237w))
+
+;; (display (dot-product t237v t237w))
+;; (newline)
+;; (display (matrix-*-vector t237m t237v))
+;; (newline)
+;; (display (matrix-*-matrix t237m t237n))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.38
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The accumulate procedure is also known as fold-right, because it combines the
+;; first element of the sequence with the result of combining all the elements to the right. There is also a fold- left, which is similar to fold-right, except that it combines elements working in the opposite direction:
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+;; What are the values of
+(define fold-right accumulate)
+
+;; (display (fold-right / 1 (list 1 2 3)))
+;; (newline)
+;; (display (fold-left / 1 (list 1 2 3)))
+;; (newline)
+;; (display (fold-right list (list) (list 1 2 3)))
+;; (newline)
+;; (display (fold-left list (list) (list 1 2 3)))
+;; (newline)
+
+;; Give a property that op should satisfy to guarantee that fold-right and fold-left will produce the same values for any sequence.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.39
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Complete the following definitions of reverse (exercise 2.18) in terms of fold-right and fold-left from exercise 2.38:
+
+(define (reverse2391 sequence)
+    (fold-right (lambda (x y) (append y (list x))) (list) sequence))
+
+(define (reverse2392 sequence)
+    (fold-left (lambda (x y) (cons y x)) (list) sequence))
+
+;; (define l239 (list 1 2 3 4))
+;; (display (reverse2391 l239))
+;; (newline)
+;; (display (reverse2392 l239))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Nesting Map
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (flatmap proc seq)
+      (accumulate append (list) (map proc seq)))
+
+(define (ordered-pair n)
+    ;; Find all ordered distinctive pair that less or equal to n. n: number > 1.
+    ;; (number) -> (list)
+    (flatmap (lambda (i)
+               (map (lambda (j) (list j i))
+                    (enumerate-range (- i 1))))
+             (enumerate-interval 2 n)))
+
+;; (display (ordered-pair 5))
+;; (newline)
+(define (iter-pair i) (map (lambda (j) (list j i))
+                (enumerate-range (- i 1))))
+;; (display (map iter-pair (enumerate-interval 2 3)))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.41
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a procedure to find all ordered triplets of distinct positive integers i, j, and k less than or equal to a given integer n that sum to a given integer s.
+(define (ordered-triplet n)
+    ;; Return ordered distinctice triplet that are lest or equal to n. n: number > 2
+    ;;(number) -> (list)
+    (flatmap (lambda (i)
+               (let ((lp (ordered-pair (- i 1))))
+                 (map (lambda (p) (append p (list i)))
+                      lp)))
+             (enumerate-interval 3 n)))
+
+(define (iter-triplet i)
+    (let ((lp (ordered-pair (- i 1))))
+      (map (lambda (p) (append p (list i)))
+           lp)))
+
+;; (display (iter-triplet 3))
+;; (newline)
+
+;; (display (ordered-triplet 5))
+;; (newline)
+(define (triplet-sum-of n s)
+    ;; Find all ordered distinctive triplets that sums up to s.n: number; s: number.
+    ;; (number,number) -> (list)
+    ((filterout (lambda (t) (= s (+ (car t) (cadr t) (caddr t)))))
+     (ordered-triplet n)))
+
+;; (display (triplet-sum-of 5 10))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.42
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The ``eight-queens puzzle'' asks how to place eight queens on a chessboard so that no queen is in check from any other (i.e., no two queens are in the same row, column, or diagonal). One possible solution is shown in figure 2.8. One way to solve the puzzle is to work across the board, placing a queen in eachcolumn. Once we have placed k - 1 queens, we must place the kth queen in a position where it does not check any of the queens already on the board. We can formulate this approach recursively: Assume that we have already generated the sequence of all possible ways to place k - 1 queens in the first k - 1 columns of the board. For each of these ways, generate an extended set of positions by placing a queen in each row of the kth column. Now filter these, keeping only the positions for which the queen in the kth column is safe with respect to the other queens. This produces the sequence of all ways to place k queens in the first k columns. By continuing this process, we will produce not only one solution, but all solutions to the puzzle.We implement this solution as a procedure queens, which returns a sequence of all solutions to the problem of placing n queens on an n× n chessboard. Queens has an internal procedure queen-cols that returns the sequence of all ways to place queens in the first k columns of the board.
+
+;; In this procedure rest-of-queens is a way to place k - 1 queens in the first k - 1 columns, and new- row is a proposed row in which to place the queen for the kth column. Complete the program by implementing the representation for sets of board positions, including the procedure adjoin-position, which adjoins a new row-column position to a set of positions, and empty-board, which represents an empty set of positions. You must also write the proceduresafe?, which determines for a set of positions, whether the queen in the kth column is safe with respect to the others. (Note that we need only check whether the new queen is safe -- the other queens are already guaranteed safe with respect to each other.)
+(define empty-board (list))
+
+(define (filterbetweense s e)
+    ;; Return a filter in interval [s,e). s: number; e: number.
+    ;; (number,numer) -> (list->list)
+    (filterout (lambda (x) (and (>= x s) (< x e)))))
+
+(define (list-interval s e l)
+    ;; Return the list interval l[s:e). s: start numer, e: end number, l: the list.
+    ;; (number number list) -> (list)
+    (let ((filter (filterout (lambda (x) (and (>= x s) (< x e))))))
+      (map (lambda (x) (list-ref l x))
+           (filter (enumerate-interval 0 (- (length l) 1))))))
+
+(define (adjoin-position new-row rest-of-queens)
+    ;; Return the position with k queens on it. new-row: the row number of the kth; rest-of-queens: the rows of the k-1 queens.
+    ;; (number,number,list) -> (list)
+    (cons new-row rest-of-queens))
+
+(define (list-in ele l)
+    ;; Tell whether an element is in a list. ele: element; l: the list.
+    ;; (A,list) -> boolean
+    (cond ((null? l) #f)
+          ((= ele (car l)) #t)
+          (else (list-in ele (cdr l)))))
+
+(define (safe? k positions)
+  ;; To check whether a board is safe or not. k: the number of queens it have; position: the board position.
+  ;; (number,list) -> (boolean)
+  (or (null? positions)
+      (= (length positions) 1)
+      (not (or (list-in (car positions) (cdr positions))
+               (list-in (car positions) (map + (cdr positions) (enumerate-interval 1 (- k 1))))
+               (list-in (car positions) (map - (cdr positions) (enumerate-interval 1 (- k 1))))))))
+
+
+(define (filter f list)
+  ;; Filetr a list. filter: filter function; list: the list to be filtered.
+  ;; ((A->boolean),list) -> (list)
+  ((filterout f) list))
+
+
+(define (queens board-size)
+  ;; Give all the solution to board of board-size. board-size: size of the board.
+  ;; (number) -> (list)
+  (define (queen-col k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions) (safe? k positions))
+         (flatmap (lambda (positions)
+                    (map (lambda (new-row)
+                           (adjoin-position new-row positions))
+                         (enumerate-interval 1 board-size)))
+                  (queen-col (- k 1))))))
+  (queen-col board-size))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.43
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Louis Reasoner is having a terrible time doing exercise 2.42. His queens procedure seems to work, but it runs extremely slowly. (Louis never does manage to wait long enough for it to solve even the 6× 6 case.) When Louis asks Eva Lu Ator for help, she points out that he has interchanged the order of the nested mappings in the flatmap, writing it as
+
+;; (flatmap
+;;  (lambda (new-row)
+;;    (map (lambda (rest-of-queens)
+;;           (adjoin-position new-row k rest-of-queens))
+;;         (queen-cols (- k 1))))
+;;  (enumerate-interval 1 board-size))
+
+;; Explain why this interchange makes the program run slowly. Estimate how long it will take Louis's program to solve the eight-queens puzzle, assuming that the program in exercise 2.42 solves the puzzle in time T.
