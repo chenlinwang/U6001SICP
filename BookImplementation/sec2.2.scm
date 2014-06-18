@@ -169,7 +169,12 @@
         (list m)
         (append (enumerate-interval m (- n 1)) (list n))))
 
-(define (enumerate-range n) (enumerate-interval 1 n))
+(define (enumerate-range n)
+    ;; Return a list of number from 1 to n. n: positve number.
+    ;; (number) -> (list)
+    (if (= 1 n)
+        (list 1)
+        (append (enumerate-range (- n 1)) (list n))))
 
 (define (fib-even? n) (even? (Fib n)))
 (define even-fib2 (cr enumerate-range Fib fib-even? append (list)))
