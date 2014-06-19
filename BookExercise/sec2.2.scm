@@ -943,3 +943,52 @@
 ;;  (enumerate-interval 1 board-size))
 
 ;; Explain why this interchange makes the program run slowly. Estimate how long it will take Louis's program to solve the eight-queens puzzle, assuming that the program in exercise 2.42 solves the puzzle in time T.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.46
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; A two-dimensional vector v running from the origin to a point can be represented as a pair consisting of an x-coordinate and a y-coordinate. Implement a data abstraction for vectors by giving a constructor make-vect and corresponding selectors xcor-vect and ycor-vect. In terms of your selectors and constructor, implement procedures add-vect, sub-vect, and scale-vect that perform the operations vector addition, vector subtraction, and multiplying a vector by a scalar.
+
+;; Constructor for vector
+(define (make-vect x y) (cons x y))
+
+;; Selector for vector
+(define (x-vect v) (car v))
+(define (y-vect v) (cdr v))
+
+;; Operator for vector
+(define (add-vect v1 v2) (make-vect (+ (x-vect v1) (x-vect v2))
+                                    (+ (y-vect v1) (y-vect v2))))
+
+(define (minus-vect v1 v2)  (make-vect (- (x-vect v1) (x-vect v2))
+                                       (- (y-vect v1) (y-vect v2))))
+
+(define (scale-vect v s) (make-vect (* s (x-vect v))
+                                    (* s (y-vect v))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.47
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Here are two possible constructors for frames:
+
+;; (define (make-frame origin edge1 edge2)
+;;   (list origin edge1 edge2))
+;; (define (make-frame origin edge1 edge2)
+;;   (cons origin (cons edge1 edge2)))
+
+;; For each constructor supply the appropriate selectors to produce an implementation for frames.
+
+;; ;; For the former
+;; (define (origin f) (car f))
+;; (define (edge1 f) (cadr f))
+;; (define (edge2 f) (caddr f))
+
+;; ;; For the latter
+;; (define (origin f) (car f))
+;; (define (edge1 f) (cadr f))
+;; (define (edge2 f) (cddr f))
+
+;; testing
+;; (define t247 (make-frame 1 2 3))
+;; (display (edge1 t247))
+;; (display (edge2 t247))
