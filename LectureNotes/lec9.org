@@ -1,0 +1,12 @@
+* Symbols
+In this lecture, we define a special type of data, symbols. They belongs to =EQtype= (types except number and string). The topics mainly concerns:
+1. Symbols: constructor, seclector and operators
+2. What is the mechanism behind it.
+3. Usage
+** Symbol as a data abstruction
+Anything that has a =`= before it is a symbol element. we could not access to it but we could use =eq?= to tell whether two symbols are the same one.
+
+** Mechanism
+Like any special form, symbols are processed differently in the Reader. It will denote what symbol has been read and so on.
+
+** Usage: Symbolical computations
