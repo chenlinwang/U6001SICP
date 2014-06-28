@@ -324,7 +324,8 @@
 (define (after-add expr)
   ;; To find the first appeared addition to the end.
   ;; (list) -> (number/symbol/list)
-  (cond ((= (length expr) 3) 0)
+  (cond ((= (length expr) 3)
+         (if (product?258 expr) 0 (caddr expr)))
         ((sum?258 (cddr expr)) (if (= (length (cddddr expr)) 1)
                                    (car (cddddr expr))
                                    (cddddr expr)))
@@ -372,4 +373,381 @@
 ;; (display (diff-norm '(x + 3 * (x + y + 2)) 'x))
 ;; (newline)
 ;; (display (diff-norm '(x * x + 3 * (x + y + 2) + 3 * y + 3 + 4) 'x))
+;; (newline)
+
+
+;; Unfinished ;; Bonus, To get rid of the brackets,
+(define (get-two expr)
+    ;; Get the first two element of the expr. expr: expression.
+    ;; (list) -> (list)
+    (list-get expr 0 2))
+
+(define (get-unit expr)
+    ;; Get a single element, or multiplied elements. expr: expression.
+    ;; (list) -> (list/number/symbol)
+    (define (it expr)
+        ;; recursion process. expr: expression.
+        ;; (list) -> (list/number/symbol)
+        (cond ((= 1 (length expr)) expr)
+              ((sum?258 expr) (list (addend258 expr)))
+              (else (cons (addend258 expr) (cons '* (it (cddr expr)))))))
+  (cond ((null? expr) expr)
+        ((= 1 (length expr)) (car expr))
+        ((= 3 (length expr)) (if (sum?258 expr)
+                                 (addend258 expr)
+                                 expr))
+        ((sum?258 expr) (addend258 expr))
+        (else (it expr))))
+
+;; ;; Testing
+;; (display (get-unit (list)))
+;; (newline)
+;; (display (get-unit '(1)))
+;; (newline)
+;; (display (get-unit '(1 * 1)))
+;; (newline)
+;; (display (get-unit '(1 + 1)))
+;; (newline)
+;; (display (get-unit '(1 * 1 + 1)))
+;; (newline)
+;; (display (get-unit '(1 * 1 * 1)))
+;; (newline)
+
+(define (get-rest expr)
+    ;; Get the rest of the elements after the unit.expr: expression.
+    ;; (list) -> (list/number/symbol)
+    (let ((unit (get-unit expr))
+          (total (length expr)))
+      (if (number? unit)
+          (if (= total 1) (list) (cddr expr))
+          (let ((unitlen (length unit)))
+            (if (= total unitlen)
+                (list)
+                (list-get expr (+ 2 unitlen) -1))))))
+
+;; ;; Testing
+;; (display (get-rest (list)))
+;; (newline)
+;; (display (get-rest '(1)))
+;; (newline)
+;; (display (get-rest '(1 * 1)))
+;; (newline)
+;; (display (get-rest '(1 + 1)))
+;; (newline)
+;; (display (get-rest '(1 * 1 + 1)))
+;; (newline)
+;; (display (get-rest '(1 * 1 * 1)))
+;; (newline)
+
+
+;; UNFINISHED
+;; (define (del-bra expr)
+;;     ;; Get rid of the brackets in expression. expr: the expressions input.
+;;     ;; (list) -> (list)
+;;     (cond ((product?258 expr)
+;;            (let ((mer (multiplier2582 expr))
+;;                  (mnt (multiplicant2582 expr))
+;;                  (add (after-add expr)))
+;;              (if (list? mer)
+;;                  ;; get rid of the brackets of mer
+;;                  (let ((mernb (del-bra mer)))
+;;                    ;; put every unit of mernb into form with latter
+;;                    (del-bra (append
+;;                              (do ((left (get-rest mernb)
+;;                                         (get-rest left))
+;;                                   (unit (get-unit mernb)
+;;                                         (get-unit left))
+;;                                   (result (list)
+;;                                           (append result
+;;                                                   (list '+)
+;;                                                   mnt
+;;                                                   (list '*)
+;;                                                   unit)))
+;;                                  ((null? left) (cdr
+;;                                                 (append result
+;;                                                         (list '+)
+;;                                                         mnt
+;;                                                         (list '*)
+;;                                                         unit)))))))
+;;                  ;; if it is not a list. Only solve the first case, tired, do not want to continue.... have idea: test whether there are still brackets, if there are  change the order!
+;;                  (do if the first is an element))))
+;;           ((list? (car expr)) (append (del-bra (car expr))
+;;                                       (del-bra (cdr expr))))
+;;           ((sum?258 expr) (append (get-two expr)
+;;                                   (del-bra (cddr expr))))
+;;           ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sec 2.60
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; We specified that a set would be represented as a list with no duplicates. Now suppose we allow duplicates. For instance, the set {1,2,3} could be represented as the list (2 3 2 1 3 2 2). Design procedures =element-of-set?=, =adjoin-set=, =union-set=, and =intersection-set= that operate on this representation. How does the efficiency of each compare with the corresponding procedure for the non-duplicate representation? Are there applications for which you would use this representation in preference to the non-duplicate one?
+
+;; Constructor
+(define make-set list)
+
+;; Operation
+(define (element-of-set? e set)
+       ;; Decide whether a element is in set.e:element;set:set
+       ;; (number/symbol,list) -> (boolean)
+       (cond ((null? set) #f)
+             ((equal? e (car set)) #t)
+             (else (element-of-set? e (cdr set)))))
+
+(define adjoin-set cons)
+(define union-set append)
+(define (intersection-set s1 s2)
+  ;; To interset two sets.s1:set 1;s2:set 2.
+  ;; (list,list) -> (list)
+  (if (null? s1)
+      (list)
+      (let ((e1 (car s1))
+            (r1 (cdr s1)))
+        (if (element-of-set? e1 s2)
+            (cons e1 (intersection-set r1 s2))
+            (intersection-set r1 s2)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.6
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Give an implementation of adjoin-set using the ordered representation. By analogy with element-of-set? show how to take advantage of the ordering to produce a procedure that requires on the average about half as many steps as with the unordered representation.
+
+;; Load the ordered settings from Book
+(load "../BookImplementation/sec2.3")
+
+(define (adjoin-order-set e s)
+    ;; To insert an element into set. e:element;s:set.
+    (let ((slen (length s))
+          (half (inexact->exact (floor (/ (length s) 2)))))
+      ;; See how many elements are left
+      (cond ((= slen 0) (list e)) ;; None left
+            ((= half 0) (let ((halfele (car s))) ;; One left
+                          (cond ((= halfele e) s)
+                                ((< halfele e) (list halfele e))
+                                ((> halfele e) (cons e s)))))
+            ;; More than two left
+            (else
+             (let ((halfele (list-ref s half)) ;; Get the middle element
+                   (former (list-get s 0 half)) ;; Get the former part
+                   (latter (list-get s (+ half 1) -1))) ;; Get the latter part
+               (cond ((= halfele e) s)
+                     ((> halfele e) (append
+                                     (adjoin-order-set e former)
+                                     (cons halfele latter)))
+                     ((< halfele e) (append
+                                     former
+                                     (list halfele)
+                                     (adjoin-order-set e latter)))))))))
+
+;; ;; Testing
+;; (define os1 (make-order-set 1 2 3 4 5))
+;; (display (adjoin-order-set 1 os1))
+;; (newline)
+;; (display (adjoin-order-set 2 os1))
+;; (newline)
+;; (display (adjoin-order-set 3 os1))
+;; (newline)
+;; (display (adjoin-order-set 4 os1))
+;; (newline)
+;; (display (adjoin-order-set 5 os1))
+;; (newline)
+;; (define os2 (make-order-set 1 2 3 4))
+;; (display (adjoin-order-set 1 os2))
+;; (newline)
+;; (display (adjoin-order-set 2 os2))
+;; (newline)
+;; (display (adjoin-order-set 3 os2))
+;; (newline)
+;; (display (adjoin-order-set 4 os2))
+;; (newline)
+
+;; (define os1 (make-order-set 2 3 4))
+;; (display (adjoin-order-set 1 os1))
+;; (newline)
+;; (define os1 (make-order-set 1 3 4))
+;; (display (adjoin-order-set 2 os1))
+;; (newline)
+;; (define os1 (make-order-set 1 2 4))
+;; (display (adjoin-order-set 3 os1))
+;; (newline)
+;; (define os1 (make-order-set 1 2 3))
+;; (display (adjoin-order-set 4 os1))
+;; (newline)
+;; (define os2 (make-order-set 2 3 ))
+;; (display (adjoin-order-set 1 os2))
+;; (newline)
+;; (define os2 (make-order-set 1 3 ))
+;; (display (adjoin-order-set 2 os2))
+;; (newline)
+;; (define os2 (make-order-set 1 2 ))
+;; (display (adjoin-order-set 3 os2))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.61
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Give a \Theta (n) implementation of union-set for sets represented as ordered lists.
+(define (union-order-set s1 s2)
+    ;; To union order set.s1: order set 1; s2: order set 2.
+    ;; (list,list) -> (list)
+    ;; See if any of sets are empty
+    (cond ((null? s1) s2)
+          ((null? s2) s1)
+          ;; Both not empty, compare their first elements
+          (else (let ((e1 (car s1))
+                      (e2 (car s2)))
+                  (cond ((< e1 e2)
+                         (cons e1
+                               (union-order-set (cdr s1) s2)))
+                        ((> e1 e2)
+                         (cons e2
+                               (union-order-set s1 (cdr s2))))
+                        ;; Equal, then just get one.
+                        (else
+                         (cons e1
+                               (union-order-set (cdr s1)
+                                                (cdr s2)))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.63
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Convert tree to list
+(define (tree->list-1 t)
+    ;; version 1. t:tree.
+    ;; (list) -> (list)
+    (if (null? t)
+        t
+        (append (tree->list-1 (left-branch t))
+                (list (entry t))
+                (tree->list-1 (right-branch t))))
+  ;; (begin (display "Enter function with tree:")
+  ;;        (display t)
+  ;;        (newline))
+  )
+
+;; Testing
+;; (display (tree->list-1 tree1))
+;; (newline)
+;; (display (tree->list-1 t1))
+;; (newline)
+;; (display (tree->list-1 t2))
+;; (newline)
+
+(define (tree->list-2 t)
+    ;; version 2. t: tree.
+    ;; (list) -> (list)
+    (define (copy-to-list t rl)
+        ;; Copy the tree to the list.t:tree; rl:resultlist.
+        ;; (list,list) -> (list)
+        (if (empty-tree? t)
+            rl
+            (copy-to-list (left-branch t)
+                          (cons (entry t)
+                                (copy-to-list (right-branch t)
+                                              rl)))))
+  (copy-to-list t (list)))
+
+;; ;; Testing
+;; (display (tree->list-2 tree1))
+;; (newline)
+
+
+;; a. They do have the same result.
+;; b. They are also the same order or growth.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.64
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following procedure =list->tree= converts an ordered list to a balanced binary tree. The helper procedure =partial-tree= takes as arguments an integer n and list of at least n elements and constructs a balanced tree containing the first n elements of the list. The result returned by =partial-tree= is a pair (formed with cons) whose car is the constructed tree and whose cdr is the list of elements not included in the tree.
+
+(define (list->tree l)
+    ;; Convert a list to a tree.l:list.
+    ;; (list) -> (list)
+    (car (partial-tree l (length l))))
+
+(define (partial-tree l n)
+    ;; Convert the first n members of l to a balanced tree, and concatenate it with a list of the rest members. l:list; n: number between 0 and length of l.
+    ;; (list,number) -> (list)
+    (if (= n 0)
+        (cons (list) l)
+        (let ((left-length (quotient n 2)))
+          (let ((left-parts (partial-tree l left-length)))
+            (let ((left-tree (car left-parts))
+                  (rest-member (cdr left-parts))
+                  (right-length (- n (+ left-length 1))))
+              (let ((node (car rest-member))
+                    (right-parts (partial-tree
+                                  (cdr rest-member)
+                                  right-length)))
+                (cons (make-tree node
+                                 left-tree
+                                 (car right-parts))
+                      (cdr right-parts))))))))
+
+;; ;; Test
+;; (display (list->tree (list 1 2 3 4 5 6 7 8 9)))
+;; (newline)
+
+;;1. The partial-tree works in the following way: Given a list and a number, it first see whether the number is 0. If it is 0, then just return a pair of an empty list and the list. If not, it then figures out the left subtree size, and then use recursion to get the pair of the left subtree and the remaining elements. After that, it calculates the right subtree size and then use the recursion to get the responding pair. Make a tree out of subtrees and return a pair of them and rest members.
+
+;; 2. \Theta (\log n)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.63
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Use the results of exercises 2.63 and 2.64 to give \Theta (n) implementations of =union-set= and =intersection-set= for sets implemented as (balanced) binary trees.
+
+(define (union-tree t1 t2)
+    ;; To union two trees. t1: tree 1; t2:tree 2.
+    ;; (list,list) -> (list)
+    (let ((tl1 (tree->list-1 t1))) ;; Convert tree 1 to a list
+      (let iter ((left tl1) ;; Initialize left to be tree list
+                 (currenttree t2)) ;; Initialize result tree to be tree 2
+           (if (null? left)
+               currenttree
+               (iter (cdr left)  ;; Get rest of left member
+                     (adjoin-tree (car left) ;; Join element to reuslt tree
+                                  currenttree))))))
+
+(define (intersect-tree t1 t2)
+    ;; To intersect two trees. t1: tree 1; t2:tree 2.
+    ;; (list,list) -> (list)
+    (let ((tl1 (tree->list-1 t1))) ;; Convert tree 1 and to a list
+      (let iter ((left tl1) ;; Initialize left1 to be tree list 1
+                 (currenttree empty-tree)) ;; Initialize result tree to be empty tree.
+           (if (null? left)
+               currenttree
+               (let ((first (car left)) ;; Get first element of left.
+                     (restleft (cdr left)))
+                 (if (element-of-tree? first t2) ;; See whether tree 2 contains it.
+                     (iter restleft
+                           (adjoin-tree first currenttree))
+                     (iter restleft currenttree)))))))
+
+;; ;; Test
+;; (define t1 (list->tree (list 1 2 3 4 5)))
+;; (define t2 (list->tree (list 3 4 5 6 7)))
+;; (display (tree->list-1 (union-tree t1 t2)))
+;; (newline)
+;; (display (tree->list-1 (intersect-tree t1 t2)))
+;; (newline)
+
+
+(define (union-tree2 t1 t2)
+    ;; n verion
+    (let ((l1 (tree->list-1 t1))
+          (l2 (tree->list-1 t2)))
+      (list->tree (union-order-set l1 l2))))
+
+(define (intersect-tree2 t1 t2)
+    ;; n version
+    (let ((l1 (tree->list-1 t1))
+          (l2 (tree->list-1 t2)))
+      (list->tree (intersect-order-set l1 l2))))
+
+;; ;; Test
+;; (define t1 (list->tree (list 1 2 3 4 5)))
+;; (define t2 (list->tree (list 3 4 5 6 7)))
+;; (display (tree->list-1 (union-tree2 t1 t2)))
+;; (newline)
+;; (display (tree->list-1 (intersect-tree2 t1 t2)))
 ;; (newline)
