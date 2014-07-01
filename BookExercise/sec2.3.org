@@ -585,3 +585,220 @@ The right thing to do is convert both t1 and t2 to l1 and l2(\Theta (\log n) and
           (l2 (tree->list-1 t2)))
       (list->tree (intersect-order-set l1 l2))))
 #+END_SRC
+
+* Exercise 2.66
+Implement the lookup procedure for the case where the set of records is structured as a binary tree, ordered by the numerical values of the keys.
+
+** Answer
+#+BEGIN_SRC scheme
+(define (look-up key data-tree)
+    ;; To look up a data using key. key:key; data-tree:database as tree structure.
+    ;; (number,list) -> pair
+    (if (empty-tree? data-tree)
+        #f
+        (let ((current-key (car (entry data-tree)))
+              (node (entry data-tree)))
+          (cond ((= current-key key) node)
+                ((< current-key key) (look-up
+                                      key
+                                      (right-branch data-tree)))
+                ((> current-key key) (look-up
+                                      key
+                                      (left-branch data-tree)))))))
+#+END_SRC
+
+* Exercise 2.67
+Define an encoding tree and a sample message:
+#+BEGIN_SRC scheme
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+; symbol (cadr pair)) ; frequency
+(make-leaf 'C 1)))))
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+#+END_SRC
+Use the decode procedure to decode the message, and give the result.
+** Answer
+Just use the function and get:
+: (A D A B B C A)
+
+* Exercise 2.68
+The encode procedure takes as arguments a message and a tree and produces the list of bits that gives the encoded message.
+#+BEGIN_SRC scheme
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+#+END_SRC
+Encode-symbol is a procedure, which you must write, that returns the list of bits that encodes a given symbol according to a given tree. You should design encode-symbol so that it signals an error if the symbol is not in the tree at all. Test your procedure by encoding the result you obtained in exercise 2.67 with the sample tree and seeing whether it is the same as the original sample message.
+** Answer
+Straight forward!
+#+BEGIN_SRC scheme
+(define (encode-symbol symbol tree)
+    ;; To encode a symbol with a tree. symbol:symbol; tree: tree.
+    ;; (symbol,list) -> (list)
+    (if (belong-to-set? symbol (symbols tree))
+        (let iter ((current-tree tree))
+             (cond ((leaf? current-tree) (list))
+                   ((belong-to-set? symbol
+                                    (symbols (left-branch current-tree)))
+                    (cons 0 (iter (left-branch current-tree))))
+                   (else
+                    (cons 1 (iter (right-branch current-tree))))))
+        (errormsg "encode-symbol: no match symbol"
+                  (list symbol tree))))
+#+END_SRC
+* Exercise 2.69
+The following procedure takes as its argument a list of symbol-frequency pairs (where no symbol appears in more than one pair) and generates a Huffman encoding tree according to the Huffman algorithm.
+#+BEGIN_SRC scheme
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+#+END_SRC
+Make-leaf-set is the procedure given above that transforms the list of pairs into an ordered set of leaves. Successive-merge is the procedure you must write, using make-code-tree to successively merge the smallest-weight elements of the set until there is only one element left, which is the desired Huffman tree. (This procedure is slightly tricky, but not really complicated. If you find yourself designing a complex procedure, then you are almost certainly doing something wrong. You can take significant advantage of the fact that we are using an ordered set representation.)
+
+** Answer
+First, design the loop for =successive-merge=, we would see whether the leaf-set has only one node, then done. If not, get the last two nodes and merge them and insert them into the right place among the leaf-set.
+#+BEGIN_SRC scheme
+(define (successive-merge leaves)
+    ;; Recursively merge the leaves to a huffman tree. leaves: tree leaves set.
+    ;; (list) -> (list)
+    (cond ((null? leaves) #f)
+          ((= (length leaves) 1) (car leaves))
+          (else
+           (let iter ((last-two (list-get leaves -3 -1))
+                      (remain (list-get leaves 0 -3)))
+                (if (null? remain)
+                    (car (insert-leaf-set
+                          (make-code-tree
+                           (car last-two)
+                           (cadr last-two))
+                          remain))
+                    (iter (list-get (insert-leaf-set
+                                     (make-code-tree
+                                      (car last-two)
+                                      (cadr last-two))
+                                     remain) -3 -1)
+                          (list-get (insert-leaf-set
+                                     (make-code-tree
+                                      (car last-two)
+                                      (cadr last-two))
+                                     remain) 0 -3)))))))
+
+(define (generate-huffman-tree pairs)
+    (successive-merge (make-leaf-set pairs)))
+#+END_SRC
+Now, it is time for insertion, I write a binary insertion with \Theta (\log n). The tricky part is you have to test whether a node is a leaf or not. The input =node= in the previous procedure, has to be a node but not a leaf. But nevertheless, I put the check on so we could use it to sort the list.
+#+BEGIN_SRC scheme
+(define (insert-leaf-set node leaf-set)
+    ;; Insert the node into a leaf-set.
+    ;; (list,list) -> (list)
+    (if (null? leaf-set)
+        (list node)
+        (let ((half (inexact->exact
+                     (floor (/ (length leaf-set) 2)))))
+          (let ((halfnode (list-ref leaf-set half)))
+            (let ((nodeweight (if (leaf? node)
+                                  (weight-leaf node)
+                                  (weight node)))
+                  (halfweight (if (leaf? halfnode)
+                                  (weight-leaf halfnode)
+                                  (weight halfnode))))
+              (cond ((= nodeweight halfweight)
+                     (append (list-get leaf-set 0 half)
+                             (list halfnode node)
+                             (list-get leaf-set (+ half 1) -1)))
+                    ((> nodeweight halfweight)
+                     (append (insert-leaf-set
+                             node
+                             (list-get leaf-set 0 half))
+                            (list-get leaf-set half -1)))
+                    ((< nodeweight halfweight)
+                     (append (list-get leaf-set 0 (+ half 1))
+                             (insert-leaf-set
+                              node
+                              (list-get leaf-set (+ half 1) -1))))))))))
+#+END_SRC
+* Exercise 2.70
+The following eight-symbol alphabet with associated relative frequencies was designed to efficiently encode the lyrics of 1950s rock songs. (Note that the "symbols" of an "alphabet" need not be individual letters.)
+| symbol | code | symbol | code |
+|--------+------+--------+------|
+| A      |    2 | NA     |   16 |
+| BOOM   |    1 | SHA    |    3 |
+| GET    |    2 | YIP    |    9 |
+| JOB    |    2 | WAH    |    1 |
+Use generate-huffman-tree in (exercise 2.69) to generate a corresponding Huffman tree, and use encode (exercise 2.68) to encode the following message:
+#+BEGIN_EXAMPLE
+Get a job
+Sha na na na na na na na na
+Get a job
+Sha na na na na na na na na
+Wah yip yip yip yip yip yip yip yip yip
+Sha boom
+#+END_EXAMPLE
+How many bits are required for the encoding? What is the smallest number of bits that would be needed to encode this song if we used a fixed-length code for the eight-symbol alphabet?
+
+** Answer
+As the pairs is not naturally in order, the following procedure generate the ordered leaives set from pairs, using the procedure I wrote for the proceding exercise.
+#+BEGIN_SRC scheme
+(define (make-order-leaf-set pairs)
+    ;; To make an order leaf set from pairs.
+    ;; (list) -> (list)
+    (let iter ((current-set (list))
+               (remain (make-leaf-set pairs)))
+         (if (null? remain)
+             current-set
+             (iter (insert-leaf-set
+                    (car remain)
+                    current-set)
+                   (cdr remain)))))
+#+END_SRC
+As the generate-huffman-tree takes in ordered pairs, we use the successive-merge directly.
+#+BEGIN_SRC scheme
+;; (define leaf-set (make-order-leaf-set '((a 2) (na 16) (boom 1) (sha 3) (get 2) (yip 9) (job 2) (wah 1))))
+;; (define huffman-tree (successive-merge leaf-set))
+;; (define song-code (encode '(get a job
+;;                             sha na na na na na na na na
+;;                             get a job
+;;                             sha na na na na na na na na
+;;                             wah yip yip yip yip yip yip yip yip
+;;                             yip
+;;                             sha boom)
+;;                           huffman-tree))
+;; (display song-code)
+;; (newline)
+;; (display (decode song-code huffman-tree))
+;; (newline)
+#+END_SRC
+And the result gives:
+: (0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 1 1 1 1 1 1 1 1 1 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 0 0 1 0 0 0 0 1 0)
+It is 84 in length. For fixed length encoding, as we have 8 symbols, we have to use a length of 3. So as the song has 36 symbols, we have the coder as 108 in length.
+
+
+* Exercise 2.71
+Suppose we have a Huffman tree for an alphabet of n symbols, and that the relative frequencies of the symbols are 1, 2, 4, ..., 2^{n-1}. Sketch the tree for n=5; for n=10. In such a tree (for general n) how may bits are required to encode the most frequent symbol? the least frequent symbol?
+** Answer
+We could prove,by induction,that the order of leaves set will never change, if the frequencies of the symbols are 1, 2, 4, ..., 2^{n-1}, Thus the huffman tree will have a depth of n. So the least frequent symbol is just n and the most is 1.
+* Exercise 2.72
+Consider the encoding procedure that you designed in exercise 2.68. What is the order of growth in the number of steps needed to encode a symbol? Be sure to include the number of steps needed to search the symbol list at each node encountered. To answer this question in general is difficult. Consider the special case where the relative frequencies of the n symbols are as described in exercise 2.71, and give the order of growth (as a function of n) of the number of steps needed to encode the most frequent and least frequent symbols in the alphabet.
+** Answer
+#+BEGIN_SRC scheme
+    (if (belong-to-set? symbol (symbols tree))
+        (let iter ((current-tree tree))
+             (cond ((leaf? current-tree) (list))
+                   ((belong-to-set? symbol
+                                    (symbols (left-branch current-tree)))
+                    (cons 0 (iter (left-branch current-tree))))
+                   (else
+                    (cons 1 (iter (right-branch current-tree))))))
+        (errormsg "encode-symbol: no match symbol"
+                  (list symbol tree))))
+#+END_SRC
+Let go through the program:
+1. =belong-to-set?= go through the symbol list, so the order is \Theta (n)
+2. Other does not cost anything.
+So:
+1. For the most frequent symbol, we have \Theta (n)
+2. For the least frequent symbol, we have to dig down a depth of n. So we have \Theta (n^{2})

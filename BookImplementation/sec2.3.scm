@@ -1,6 +1,6 @@
 (load "../BookExercise/basic")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; section 2.3.1 quotations
+;; Section 2.3.1 quotations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (memq item itemlist)
     ;; To see whether a item is in itemlist. item: item; itemlist: list.
@@ -15,7 +15,7 @@
 ;; (newline)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; sec1.1.scm 2.3.2 deriverative
+;; section 2.3.2 deriverative
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constructor
 (define (make-sum e1 e2)
@@ -63,7 +63,7 @@
                      (display expr)
                      (newline)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Sec2.3.3
+;; Section 2.3.3
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sets objects
 
@@ -459,4 +459,293 @@
 ;; (display (element-of-tree? 0 tree1))
 ;; (newline)
 ;; (display (element-of-tree? 21 tree1))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Section 2.3.4
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Implementation of the Huffman trees
+
+;; order pair set to represent the symbols
+
+;;Constructor
+(define (make-symbol-set weight symbols)
+    ;; Construct weight symbol set. weight; weight of the symbol set; symbols: symbole or symbol set.
+    ;; (number,symbole/list) -> (list)
+    (if (list? symbols)
+        (list weight symbols)
+        (list weight (list symbols))))
+
+;; Test
+(define aa (make-symbol-set 8 'a))
+(define bb (make-symbol-set 3 'b))
+(define cc (make-symbol-set 1 'c))
+(define dd (make-symbol-set 1 'd))
+(define ee (make-symbol-set 1 'e))
+(define ff (make-symbol-set 1 'f))
+(define gg (make-symbol-set 1 'g))
+(define hh (make-symbol-set 1 'h))
+
+
+;; Selector
+(define get-weight car)
+(define get-symbol-set cadr)
+
+;; Operator
+(define (join-symbol-set ss1 ss2)
+    (make-symbol-set (+ (get-weight ss1)
+                        (get-weight ss2))
+                     (append (get-symbol-set ss1)
+                             (get-symbol-set ss2))))
+
+;; Test
+;; (display (get-weight aa))
+;; (newline)
+;; (display (get-symbol-set aa))
+;; (newline)
+;; (display (join-symbol-set aa bb))
+;; (newline)
+
+;; Huffman tree
+;; Constructor
+(define make-huffman-node list)
+
+(define (make-huffman-leaf ss)
+    (make-huffman-node ss (list) (list)))
+
+(define empty-huffman-leaf
+    (make-huffman-leaf (make-symbol-set 0 (list))))
+
+;; Selector
+(define get-huffman-entry car)
+(define get-huffman-left cadr)
+(define get-huffman-right caddr)
+
+;; Operator
+(define (huffman-leaf? node)
+    (and (null? (get-huffman-left node))
+         (null? (get-huffman-right node))))
+
+(define (huffman-has-left? node)
+    (not (null? (get-huffman-left node))))
+
+(define (huffman-has-right? node)
+    (not (null? (get-huffman-right node))))
+
+(define (get-node-weight node)
+    (get-weight (get-huffman-entry node)))
+
+(define (get-node-symbol-set node)
+    (get-symbol-set (get-huffman-entry node)))
+
+(define (merge-node node1 node2)
+    (let ((e1 (get-huffman-entry node1))
+          (e2 (get-huffman-entry node2)))
+      (make-huffman-node (join-symbol-set e1 e2)
+                         node1
+                         node2)))
+
+;; Test
+(define la (make-huffman-leaf aa))
+(define lb (make-huffman-leaf bb))
+(define lc (make-huffman-leaf cc))
+(define ld (make-huffman-leaf dd))
+(define le (make-huffman-leaf ee))
+(define lf (make-huffman-leaf ff))
+(define lg (make-huffman-leaf gg))
+(define lh (make-huffman-leaf hh))
+
+;; (display (huffman-leaf? la))
+;; (newline)
+;; (display (get-huffman-entry la))
+;; (newline)
+;; (display (get-huffman-left la))
+;; (newline)
+;; (display (get-huffman-right la))
+;; (newline)
+;; (display (get-node-weight la))
+;; (newline)
+;; (display (get-node-symbol-set la))
+;; (newline)
+;; (display (merge-node la lb))
+;; (newline)
+
+;; Rewrite order set for the symbol set
+;; constructor
+(define make-node-order-set list)
+
+;; Testing
+(define nodeos (make-node-order-set la lb lc ld le lf lg lh))
+
+;; selector
+(define (get-two-min-weight-node node-order-set)
+    ;; To get the two minimum weight huffman tree nodes from the order set. ss-order-set: symbol set order set.
+    ;; (list) -> (list)
+    (list-get node-order-set -3 -1))
+
+;; ;; Testing
+;; (display (get-two-min-weight-node nodeos))
+;; (newline)
+
+(define (remove-two-min-weight-node node-order-set)
+    ;; To remove the two minimum weight huffman tree nodes from the order set. ss-order-set: symbol set order set.
+    ;; (list) -> (list)
+    (list-get node-order-set 0 -3))
+
+;; ;; Testing
+;; (display (remove-two-min-weight-node nodeos))
+;; (define nodeos (remove-two-min-weight-node nodeos))
+;; (newline)
+;; (display (remove-two-min-weight-node nodeos))
+;; (define nodeos (remove-two-min-weight-node nodeos))
+;; (newline)
+
+(define (adjoin-node-order-set node node-order-set)
+    ;; To adjoin a huffman tree node to the tree node order set.node: tree node; node-order-set: symbol set order set.
+    (if (null? node-order-set)
+        (list node)
+        (let ((half (inexact->exact (floor
+                                     (/ (length node-order-set)
+                                        2)))))
+          (let ((halfnode (list-ref node-order-set half)))
+            (let ((w1 (get-node-weight node))
+                  (w2 (get-node-weight halfnode)))
+              (cond ((= w1 w2) (append
+                                    (list-get
+                                     node-order-set 0 half)
+                                    (list node)
+                                    (list-get
+                                     node-order-set half -1)))
+                    ((> w1 w2) (append
+                                (adjoin-node-order-set
+                                 node
+                                 (list-get
+                                  node-order-set 0 half))
+                                (list-get node-order-set half -1)))
+                    ((< w1 w2) (append
+                                (list-get node-order-set
+                                          0
+                                          (+ half 1))
+                                (adjoin-node-order-set
+                                 node
+                                 (list-get
+                                  node-order-set
+                                  (+ half 1)
+                                  -1))))))))))
+
+;; ;; Testing
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 8 'test)) nodeos))
+;; (newline)
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 3 'test)) nodeos))
+;; (newline)
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 1 'test)) nodeos))
+;; (newline)
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 7 'test)) nodeos))
+;; (newline)
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 2 'test)) nodeos))
+;; (newline)
+;; (display (adjoin-node-order-set (make-huffman-leaf (make-symbol-set 0 'test)) nodeos))
+;; (newline)
+
+(define (generate-huffman-tree node-order-set)
+    ;; Generate the huffman tree using the node order set. node-order-set: node order set, initialized with huffman-leaf.
+    ;; (list) -> (list)
+    (if (= (length node-order-set) 1)
+        (car node-order-set)
+        (let ((two-small-node (get-two-min-weight-node
+                               node-order-set))
+              (new-node-order-set (remove-two-min-weight-node
+                                   node-order-set)))
+          (generate-huffman-tree
+           (adjoin-node-order-set
+            (merge-node (car two-small-node)
+                        (cadr two-small-node))
+            new-node-order-set)))))
+
+(define huffmantree (generate-huffman-tree nodeos))
+;; (display huffmantree)
+;; (newline)
+
+(define (belong-to-set? symbol symbol-set)
+    ;; Test whether a symbol belongs to a symbol set. symbol:symbol; symbol-set: symbol set.
+    ;; (symbol,list) -> (boolean)
+    (cond ((null? symbol-set) #f)
+          ((eq? symbol (car symbol-set)) #t)
+          (else (belong-to-set? symbol (cdr symbol-set)))))
+
+(define (belong-to-node? symbol node)
+    ;; Huffman tree node version
+    (belong-to-set? symbol (get-node-symbol-set node)))
+
+;; Test
+;; (define rootright (get-huffman-right huffmantree))
+;; (display rootright)
+;; (newline)
+;; (display (belong-to-node? 'a rootright))
+;; (newline)
+
+(define (encode-symbol-huffman-tree symbol huffman-tree)
+    ;; Encode the symbol given a huffman tree. Left as 0, right as 1. symbol: symbol to be encode; huffman-tree: huffman tree.
+    ;; (symbol,list) -> (list)
+    (if (huffman-leaf? huffman-tree)
+        (list)
+        (let ((leftnode (if (huffman-has-left? huffman-tree)
+                            (get-huffman-left huffman-tree)
+                            empty-huffman-leaf))
+              (rightnode (if (huffman-has-right? huffman-tree)
+                            (get-huffman-right huffman-tree)
+                            empty-huffman-leaf)))
+          (cond ((belong-to-node? symbol leftnode)
+                 (cons 1 (encode-symbol-huffman-tree
+                          symbol
+                          leftnode)))
+                ((belong-to-node? symbol rightnode)
+                 (cons 0 (encode-symbol-huffman-tree
+                          symbol
+                          rightnode)))
+                (else (begin
+                       (errormsg "encode-symbol-huffman-tree"
+                                 (list symbol huffman-tree))))))))
+
+;; Test
+;; (display (encode-symbol-huffman-tree 'a huffmantree))
+;; (newline)
+
+(define (encode-string-huffman-tree string-list huffman-tree)
+    ;; Encode the string list with the given huffman tree. string-list: string list; huffman-tree: huffman tree.
+    ;; (list,list) -> (list)
+    (let iter ((sl string-list))
+         (if (null? sl)
+             (list)
+             (append (encode-symbol-huffman-tree
+                      (car sl)
+                      huffman-tree)
+                     (iter (cdr sl))))))
+;; ;; Test
+;; (define code (encode-string-huffman-tree '(h e a d) huffmantree))
+;; (display code)
+;; (newline)
+
+(define (decode-bit-huffman-tree bit-list huffman-tree)
+    ;; Decode the bit list with  the given huffman tree. bit-list: bit list; huffman-tree: huffman tree.
+    (let iter ((current-tree huffman-tree)
+               (current-bit bit-list))
+         (cond ((huffman-leaf? current-tree)
+                (append (get-node-symbol-set current-tree)
+                        (iter huffman-tree current-bit)))
+               ((null? current-bit) (list))
+               ((= (car current-bit) 1)
+                (iter (get-huffman-left current-tree)
+                      (cdr current-bit)))
+               ((= (car current-bit) 0)
+                (iter (get-huffman-right current-tree)
+                      (cdr current-bit)))
+               (else
+                (errormsg "decode-bit-huffman-tree"
+                          (list current-tree
+                                current-bit))))))
+
+;; (display (decode-bit-huffman-tree code
+;;                                  huffmantree))
 ;; (newline)

@@ -751,3 +751,268 @@
 ;; (newline)
 ;; (display (tree->list-1 (intersect-tree2 t1 t2)))
 ;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercises 2.66
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Implement the lookup procedure for the case where the set of records is structured as a binary tree, ordered by the numerical values of the keys.
+
+(define (look-up key data-tree)
+    ;; To look up a data using key. key:key; data-tree:database as tree structure.
+    ;; (number,list) -> pair
+    (if (empty-tree? data-tree)
+        #f
+        (let ((current-key (car (entry data-tree)))
+              (node (entry data-tree)))
+          (cond ((= current-key key) node)
+                ((< current-key key) (look-up
+                                      key
+                                      (right-branch data-tree)))
+                ((> current-key key) (look-up
+                                      key
+                                      (left-branch data-tree)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.67
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define an encoding tree and a sample message:
+
+;; (define sample-tree
+;;   (make-code-tree (make-leaf 'A 4)
+;;                   (make-code-tree
+;;                    (make-leaf 'B 2)
+;;                    (make-code-tree (make-leaf 'D 1)
+;; ; symbol (cadr pair)) ; frequency
+;; (make-leaf 'C 1)))))
+;; (define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+
+;; Use the decode procedure to decode the message, and give the result.
+
+;; Code from the book
+;; leaf, constructor, selector and operator
+(define (make-leaf symbol weight)
+      (list 'leaf symbol weight))
+(define (leaf? object)
+      (eq? (car object) 'leaf))
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+;; tree, constructor, selector and operator
+(define (make-code-tree left right)
+    (list left
+          right
+          (append (symbols left) (symbols right))
+          (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+
+(define (symbols tree)
+    (if (leaf? tree)
+        (list (symbol-leaf tree))
+        (caddr tree)))
+
+(define (weight tree)
+    (if (leaf? tree)
+        (weight-leaf tree)
+        (cadddr tree)))
+
+(define (choose-branch bit branch)
+    (cond ((= bit 0) (left-branch branch))
+          ((= bit 1) (right-branch branch))
+          (else (errormsg "choose-branch" bit))))
+
+;; decoder
+(define (decode bits tree)
+    (define (decode-1 bits current-branch)
+        (if (null? bits)
+            '()
+            (let ((next-branch
+                   (choose-branch (car bits) current-branch)))
+              (if (leaf? next-branch)
+                  (cons (symbol-leaf next-branch)
+                        (decode-1 (cdr bits) tree))
+                  (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+; symbol (cadr pair)) ; frequency
+(make-leaf 'C 1)))))
+
+;; (define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+;; (display (decode sample-message sample-tree))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.68
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The encode procedure takes as arguments a message and a tree and produces the list of bits that gives the encoded message.
+
+;; (define (encode message tree)
+;;   (if (null? message)
+;;       '()
+;;       (append (encode-symbol (car message) tree)
+;;               (encode (cdr message) tree))))
+
+;; Encode-symbol is a procedure, which you must write, that returns the list of bits that encodes a given symbol according to a given tree. You should design encode-symbol so that it signals an error if the symbol is not in the tree at all. Test your procedure by encoding the result you obtained in exercise 2.67 with the sample tree and seeing whether it is the same as the original sample message.
+
+(define (encode-symbol symbol tree)
+    ;; To encode a symbol with a tree. symbol:symbol; tree: tree.
+    ;; (symbol,list) -> (list)
+    (if (belong-to-set? symbol (symbols tree))
+        (let iter ((current-tree tree))
+             (cond ((leaf? current-tree) (list))
+                   ((belong-to-set? symbol
+                                    (symbols (left-branch current-tree)))
+                    (cons 0 (iter (left-branch current-tree))))
+                   (else
+                    (cons 1 (iter (right-branch current-tree))))))
+        (errormsg "encode-symbol: no match symbol"
+                  (list symbol tree))))
+
+;; (display (encode-symbol 'B sample-tree))
+;; (newline)
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+;; (display (encode '(A D A B B C A) sample-tree))
+;; (newline)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.69
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following procedure takes as its argument a list of symbol-frequency pairs (where no symbol appears in more than one pair) and generates a Huffman encoding tree according to the Huffman algorithm.
+
+;; (define (generate-huffman-tree pairs)
+;;   (successive-merge (make-leaf-set pairs)))
+
+;; Make-leaf-set is the procedure given above that transforms the list of pairs into an ordered set of leaves. Successive-merge is the procedure you must write, using make-code-tree to successively merge the smallest-weight elements of the set until there is only one element left, which is the desired Huffman tree. (This procedure is slightly tricky, but not really complicated. If you find yourself designing a complex procedure, then you are almost certainly doing something wrong. You can take significant advantage of the fact that we are using an ordered set representation.)
+
+
+(define (make-leaf-set pairs)
+    (if (null? pairs)
+        (list)
+        (let ((pair (car pairs)))
+          (adjoin-set (make-leaf (car pair)
+                                 (cadr pair))
+                      (make-leaf-set (cdr pairs))))))
+
+;; Test
+;; (display (make-leaf-set '((A 4) (B 2) (C 1) (D 1))))
+;; (newline)
+
+(define (insert-leaf-set node leaf-set)
+    ;; Insert the node into a leaf-set.
+    ;; (list,list) -> (list)
+    (if (null? leaf-set)
+        (list node)
+        (let ((half (inexact->exact
+                     (floor (/ (length leaf-set) 2)))))
+          (let ((halfnode (list-ref leaf-set half)))
+            (let ((nodeweight (if (leaf? node)
+                                  (weight-leaf node)
+                                  (weight node)))
+                  (halfweight (if (leaf? halfnode)
+                                  (weight-leaf halfnode)
+                                  (weight halfnode))))
+              (cond ((= nodeweight halfweight)
+                     (append (list-get leaf-set 0 half)
+                             (list halfnode node)
+                             (list-get leaf-set (+ half 1) -1)))
+                    ((> nodeweight halfweight)
+                     (append (insert-leaf-set
+                             node
+                             (list-get leaf-set 0 half))
+                            (list-get leaf-set half -1)))
+                    ((< nodeweight halfweight)
+                     (append (list-get leaf-set 0 (+ half 1))
+                             (insert-leaf-set
+                              node
+                              (list-get leaf-set (+ half 1) -1))))))))))
+
+(define (successive-merge leaves)
+    ;; Recursively merge the leaves to a huffman tree. leaves: tree leaves set.
+    ;; (list) -> (list)
+    (cond ((null? leaves) #f)
+          ((= (length leaves) 1) (car leaves))
+          (else
+           (let iter ((last-two (list-get leaves -3 -1))
+                      (remain (list-get leaves 0 -3)))
+                (if (null? remain)
+                    (car (insert-leaf-set
+                          (make-code-tree
+                           (car last-two)
+                           (cadr last-two))
+                          remain))
+                    (iter (list-get (insert-leaf-set
+                                     (make-code-tree
+                                      (car last-two)
+                                      (cadr last-two))
+                                     remain) -3 -1)
+                          (list-get (insert-leaf-set
+                                     (make-code-tree
+                                      (car last-two)
+                                      (cadr last-two))
+                                     remain) 0 -3)))))))
+
+(define (generate-huffman-tree pairs)
+    (successive-merge (make-leaf-set pairs)))
+
+;; ;; Testing
+;; (display (generate-huffman-tree '((A 4) (B 2) (C 1) (D 1))))
+;; (newline)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.70
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The following eight-symbol alphabet with associated relative frequencies was designed to efficiently encode the lyrics of 1950s rock songs. (Note that the "symbols" of an "alphabet" need not be individual letters.)
+;; | symbol | code | symbol | code |
+;; |--------+------+--------+------|
+;; | A      |    2 | NA     |   16 |
+;; | BOOM   |    1 | SHA    |    3 |
+;; | GET    |    2 | YIP    |    9 |
+;; | JOB    |    2 | WAH    |    1 |
+;; Use generate-huffman-tree in (exercise 2.69) to generate a corresponding Huffman tree, and use encode (exercise 2.68) to encode the following message:
+;; #+BEGIN_EXAMPLE
+;; Get a job
+;; Sha na na na na na na na na
+;; Get a job
+;; Sha na na na na na na na na
+;; Wah yip yip yip yip yip yip yip yip yip
+;; Sha boom
+;; #+END_EXAMPLE
+;; How many bits are required for the encoding? What is the smallest number of bits that would be needed to encode this song if we used a fixed-length code for the eight-symbol alphabet?
+
+(define (make-order-leaf-set pairs)
+    ;; To make an order leaf set from pairs.
+    ;; (list) -> (list)
+    (let iter ((current-set (list))
+               (remain (make-leaf-set pairs)))
+         (if (null? remain)
+             current-set
+             (iter (insert-leaf-set
+                    (car remain)
+                    current-set)
+                   (cdr remain)))))
+
+;; (define leaf-set (make-order-leaf-set '((a 2) (na 16) (boom 1) (sha 3) (get 2) (yip 9) (job 2) (wah 1))))
+;; (define huffman-tree (successive-merge leaf-set))
+;; (define song-code (encode '(get a job
+;;                             sha na na na na na na na na
+;;                             get a job
+;;                             sha na na na na na na na na
+;;                             wah yip yip yip yip yip yip yip yip
+;;                             yip
+;;                             sha boom)
+;;                           huffman-tree))
+;; (display song-code)
+;; (newline)
+;; (display (decode song-code huffman-tree))
+;; (newline)
