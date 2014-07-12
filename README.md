@@ -10,16 +10,17 @@ My goal for this project is to:
 
 ## Working Sequence
 I shall say that I mainly follow a squence of working like this:
-+ Book Content
-+ Book Exercise
 + Lecture Video and Note
 + Lecture Project
-+ Lecture Extend Reading Reflect
++ Lecture Extend Reading Reflec
++ Book Content
++ Book Exercise
 
 ## Content Guid
 There are four directories:
 
 + LectureNotes: The stressed points and my thoughts from the lecture.
++ LectureImplementaion: The implementation of the examples inside the lecture.
 + LectureReading: The reflect I have for the lecture.
 + BookNotes: The stressed points and my thoughts from the book [SICP][book].
 + BookImplementation: The impletation of the example inside the book [SICP][book].

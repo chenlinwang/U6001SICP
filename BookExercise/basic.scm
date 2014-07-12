@@ -20,6 +20,17 @@
         (exponent-iter (/ 1 base) (- exp) 1)
         (exponent-iter base exp 1)))
 
+(define (average x . y)
+    ;; Get the average number of the input.
+    ;; (number,list) -> (number)
+    (define (additer rest total)
+        ;; iteratively add rest to total. rest: list holding all addents; total: the augend.
+        ;; (list,numer) -> (number)
+        (if (null? rest)
+            total
+            (additer (cdr rest) (+ total (car rest)))))
+  (/ (additer (cons x y) 0) (+ 1 (length y))))
+
 (define (get-group n r)
     ;; Convert n to a r-group member
     ;; (number,number) -> (number)
