@@ -1,0 +1,32 @@
+* Tagged Data
+The main purpose of using tagged data is that, we could make full use of different aspects of the data. So in the case of the complex number, we have two ways to represent it, Cartesian representation, or the polar representation.
+
+And plus, we would be using two techniques called:
+1. Data directed programming.
+2. Defensive programming.
+
+The former emphasizes on the fact of treating different forms of data using different techniques. And the latter stresses on getting the error information out there.
+
+* System Design
+The goal of the system has three aims:
+1. Dealing with the numerical calculations
+2. Dealing with ranges and approximation numbers
+3. Be able to evaluate
+
+And besides these functionalities, we want the system to be:
+1. To be easily extended
+2. To be safe for any input
+
+We could easily achieve that using the *tagged data* techniques.
+
+* Implementation Process
+
+During the implementation process, we first create a data hierarchy above the =scheme= base data type by using tags. This enables us to practice the defensive programming and data directed programming. The hierarchy goes as follows:
+
+1. Only use native data type in the constant constructor and calculation process.
+2. Check tag incase of any wrong doings.
+
+As we complicate our system, we could also use the hierachy procedure to simplify the procedure like merging similar objects in the top procedures.
+
+* Lessons to be learned
+Tags are often obmitted for efficiency reasons. However, it is indeed helpful.
