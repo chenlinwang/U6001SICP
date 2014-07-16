@@ -1,0 +1,6 @@
+* Problem with tagged data
+If we try to implement with the tagged data, there are two problems:
+1. The module is not additive, meaning if we intend to add a new data type, we need to add the new methods inside every constructor, selector and operator.
+2. And we also have to guarantee that the new tag does not conflict with the present tags.
+
+It is easy for complex number system for it only involves two tags, but imagine a system with thousands of types.
