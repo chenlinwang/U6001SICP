@@ -1,0 +1,124 @@
+* Advanced Data Types
+In this lecture, we are going to show how to design a abstract data type from scratch. Along the line, we have to make tradeoffs between efficiency and ease of code and maintenance. While small compact code might desire the former style, most of the time, it is rather time-saving to choose the latter for large system, requiring good robustness.
+
+We will walk through the concept by designing a data type called table that stores keys and binding values. There are three kinds of such moves.
+
+** Conceptual Designing
+*** Motive
+At the beginning, we want to simply point out what we could give to the user. That is the frontest interface. This could gice use the raw desgin of our data structure without any underlying implementations.
+
+*** Example
+We want a table. So for users, the basic needs are creating tables, inserting binding pairs and searching for binding values with their keys. But right away, there are things to be considered:
+1. Do we delete the old value if new value are inserted?
+2. Can we search for values that are deleted
+3. Is there some restrictions on values that could be inserted?
+
+The three questions and more to come, basically involve how we are going to implement the data in the following steps.
+
+So we have the following functions:
+#+BEGIN_EXAMPLE
+make: create a new table
+put!: insert a binding pair of key and value
+get: get a value by its key
+#+END_EXAMPLE
+
+** Implementation a Simple One
+*** Example
+So naturally, we implement the binding pair and the table by using =list= in =scheme=. So the pair is just the list of key and value and the table is just the list of lists. Thus we have:
+#+BEGIN_SRC scheme
+(define (insert-assoc key value table)
+    ;; Inserting a binding into a table.
+    ;; (obj,obj,list) -> (list)
+    (cons (list key value) table))
+
+(define (search-assoc key table)
+    ;; Searching for the value of a key in a table.
+    ;; (obj,list) -> (obj/boolean)
+    (cond ((null? table) #f)
+          ((equal? key (caar table)) (cadar table))
+          (else (search-assoc key (cdr table)))))
+#+END_SRC
+
+And if we have the following test,
+#+BEGIN_SRC scheme
+;; Test
+(define t (list))
+(define t (insert-assoc 'x 15 t))
+(define t (insert-assoc 'y 20 t))
+(display t)
+(newline)
+(display (search-assoc 'x t))
+(newline)
+(display (search-assoc 'y t))
+(newline)
+(display (search-assoc 'z t))
+(newline)
+#+END_SRC
+
+We have:
+#+BEGIN_SRC bash
+((y 20) (x 15))
+15
+20
+#f
+#+END_SRC
+*** Comments
+The seemingly nice implementation is not a data abstraction, for
+1. It does not have a constructor. It does not offer the whole package.
+2. It does not separate the data with the code in =scheme=, meaning users could use =scheme= functions to manipulate the table data directly, for it is just a =list=.
+
+*So why should we use ADT?*
+Good system is usually big and frequently extended. The adt allows easy of maintenance and extension.
+And in the case of table, user would be able to manipulate data with their own functions, which would create much trouble is other user try to visit the modified table without tipped by the former user. And besides, If we would like to change or add more functionalities, we will have to rewrite the whole thing. It would seem easy when table is just a 20-line program. Imgine a 20-thousand-line one!
+** Abstract Data Type
+*** Example
+So we change the example slightly as:
+#+BEGIN_SRC scheme
+(define tag-table 'table)
+
+;; Constructor
+(define (table-make) (list tag-table))
+
+(define (table-insert val key tab)
+    ;; Insert the binding of key and value into a table.
+    ;; (obj,obj,list) -> (list)
+    (set-cdr! tab (cons (list val key) (cdr tab))))
+
+(define (table-search key tab)
+    ;; Search the value of binding with value key.
+    ;; (obj,list) -> (obj)
+    (let iter ((tablist (cdr tab)))
+         (if (null? tablist)
+             #f
+             (let ((firstkey (caar tablist)))
+               (if (equal? key firstkey)
+                   (cadar tablist)
+                   (iter (cdr tablist)))))))
+#+END_SRC
+With the test:
+#+BEGIN_SRC scheme
+;; Test
+(define t (table-make))
+(table-insert 'x 15 t)
+(table-insert 'y 20 t)
+(display t)
+(newline)
+(display (table-search 'x t))
+(newline)
+(display (table-search 'y t))
+(newline)
+(display (table-search 'z t))
+(newline)
+#+END_SRC
+And we have the result:
+#+BEGIN_SRC bash
+(table (y 20) (x 15))
+15
+20
+#f
+#+END_SRC
+*** Comments
+So what make the following code abstract but the above not?
+
+1. The user could no longer get their hand on the inner design of the table object directly now.
+2. We could change the inner design without change the user interface.
