@@ -9,10 +9,10 @@
 ;; Constructor
 (define (table-make) (list tag-table))
 
-(define (table-insert val key tab)
+(define (table-insert key val tab)
     ;; Insert the binding of key and value into a table.
     ;; (obj,obj,list) -> (list)
-    (set-cdr! tab (cons (list val key) (cdr tab))))
+    (set-cdr! tab (cons (list key val) (cdr tab))))
 
 (define (table-search key tab)
     ;; Search the value of binding with value key.
@@ -31,7 +31,7 @@
 ;; (table-insert 'y 20 t)
 ;; (display t)
 ;; (newline)
-;; (display (table-search 'x t))
+;; >(display (table-search 'x t))
 ;; (newline)
 ;; (display (table-search 'y t))
 ;; (newline)

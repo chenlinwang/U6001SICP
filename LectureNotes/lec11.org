@@ -122,3 +122,51 @@ So what make the following code abstract but the above not?
 
 1. The user could no longer get their hand on the inner design of the table object directly now.
 2. We could change the inner design without change the user interface.
+** Adding a hash function to the internal
+Notice that we now try to add a hash function to the internal implementation. And from the ADT's perspective, the user interface will should not change.
+
+To make things simpler, we claim that the keys could only be integer. So the hash funtion is just a modular function.
+*** Example
+#+BEGIN_SRC scheme
+
+(define tag-hash-table 'hash-table)
+
+;; Constructor
+(define (hash-table-make bucket-size hash-function)
+    (list tag-hash-table bucket-size hash-function
+        (make-vector bucket-size (list))))
+
+(define table-tag-of car)
+(define bucket-size-of cadr)
+(define hash-function-of caddr)
+(define buckets-of cadddr)
+
+(define (hash-table-insert key val tab)
+    ;; Insert the binding of key and value into a table.
+    ;; (obj,obj,list) -> (list)
+    (let ((index
+           ((hash-function-of tab) key))
+          (buckets (buckets-of tab)))
+      (vector-set! buckets index (cons (list key val)
+                                       (vector-ref buckets index)))))
+
+(define (hash-table-search key tab)
+    ;; Search the value of binding with value key.
+    ;; (obj,list) -> (obj)
+    (let ((index
+           ((hash-function-of tab) key)))
+      (let iter ((target-bucket
+                  (vector-ref (buckets-of tab) index)))
+           (if (null? target-bucket)
+               #f
+               (let ((firstkey (caar target-bucket)))
+                 (if (equal? firstkey key)
+                     (cadar target-bucket)
+                     (iter (cdr target-bucket))))))))
+
+(define (hash-for-num size)
+    ;; Return a function of modular size
+    (lambda (num) (remainder num size)))
+#+END_SRC
+*** Comments
+Notice except for the generation function, the apis are exactly the same as the original apis. That is the purpose of ADT, to create a barrier between users and implementations.
