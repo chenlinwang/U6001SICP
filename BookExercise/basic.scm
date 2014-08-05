@@ -55,18 +55,18 @@
             (errormsg "list-get:start passes end." (list (list n start) (list m end)))
             (gi l 0 start end)))))
 
+;; Display out
+(define (print-out line) (display line) (newline))
+
 ;; Error message handler
 (define (errormsg msg info)
     ;; Display message and information.
     (display "Error:\t")
-    (display msg)
-  (newline)
-  (display "\t")
-  (display info)
-  (newline))
+    (print-out msg)
+    (display "\t")
+    (print-out info)
+    #f)
 
-;; Display out
-(define (print-out line) (display line) (newline))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sorting Methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

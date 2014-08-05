@@ -1,0 +1,26 @@
+* Data Mutations
+
+** Introduction to Mutation Primitives
+*** Abstract Data Revisit
+We implement programs with abstract data type using the following steps:
+**** Constructor
+We form special form of data using the existing data type in =scheme=, like =pair= or =list=, to bind datas to gether to form the object that we want.
+**** Selector
+To build a barrier between users, we create selectors to get the data inside the object we created, not allowing direct access from user.
+**** Operator
+Operators apply functions on ADT, using selectors to access specific data and constructors to form new ADT.
+
+*** Mutator
+As we have seen in =scheme=, evalutions will not interfer with the values inside variables,except for the special form =define=. Mutators are another special forms, like =set!=, to set existing variables with new values.
+
+Likewise, we also have mutators like =set-car!= and =set-cdr!=.
+
+*** Attention
+The variable binding in =scheme= is using the address and object binding, meaning that values are separated from variables.That is to say, variables are pointing to their values, waiting for access. Thus, basically mutators are altering the pointing.
+
+So changing a pointing in a list, will alter all the varibles that point to that list.
+
+Consequently, for =scheme=, we have =eq?= to determind whether two variables are pointing to the same object, and =equal?= to determind whether the values of the two varibles' objects are equal.
+
+** Incompetence without mutators
+In the case with the =stack=, we see that, we could only return the object we want and leave the rest unchanged. So we should use the mutators to modify the code.

@@ -1,0 +1,9 @@
+# dispatch files that are not ready
+dispatch
+
+#Exercises that are not done yet
+BookExercise/sec2.4.org
+BookExercise/sec2.4.scm
+
+#Reflections files not ready yet
+CodingNotes/
