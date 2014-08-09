@@ -66,7 +66,14 @@
     (display "\t")
     (print-out info)
     #f)
-
+;; Warning message handler
+(define (warningmsg msg info)
+  ;; Display message and information.
+  (display "Warning:\t")
+  (print-out msg)
+  (display "\t\t")
+  (print-out info)
+  #f)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sorting Methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
