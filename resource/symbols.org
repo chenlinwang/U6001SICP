@@ -1,86 +1,88 @@
-|  1 | \AA  AA                 | \AElig  AElig                   | \Aacute  Aacute               | \Acirc  Acirc           |
-|  2 | \Agrave  Agrave         | \Alpha  Alpha                   | \Aring  Aring                 | \Atilde  Atilde         |
-|  3 | \Auml  Auml             | \Beta  Beta                     | \Ccedil  Ccedil               | \Chi  Chi               |
-|  4 | \Dagger  Dagger         | \Delta  Delta                   | \Diamond  Diamond             | \Downarrow  Downarrow   |
-|  5 | \ETH  ETH               | \EUR  EUR                       | \EURcr  EURcr                 | \EURdig  EURdig         |
-|  6 | \EURhv  EURhv           | \EURtm  EURtm                   | \Eacute  Eacute               | \Ecirc  Ecirc           |
-|  7 | \Egrave  Egrave         | \Epsilon  Epsilon               | \Eta  Eta                     | \Euml  Euml             |
-|  8 | \Gamma  Gamma           | \Iacute  Iacute                 | \Icirc  Icirc                 | \Igrave  Igrave         |
-|  9 | \Iota  Iota             | \Iuml  Iuml                     | \Kappa  Kappa                 | \Lambda  Lambda         |
-| 10 | \Leftarrow  Leftarrow   | \Leftrightarrow  Leftrightarrow | \Mu  Mu                       | \Ntilde  Ntilde         |
-| 11 | \Nu  Nu                 | \OElig  OElig                   | \Oacute  Oacute               | \Ocirc  Ocirc           |
-| 12 | \Ograve  Ograve         | \Omega  Omega                   | \Omicron  Omicron             | \Oslash  Oslash         |
-| 13 | \Otilde  Otilde         | \Ouml  Ouml                     | \Phi  Phi                     | \Pi  Pi                 |
-| 14 | \Pr  Pr                 | \Prime  Prime                   | \Psi  Psi                     | \Rho  Rho               |
-| 15 | \Rightarrow  Rightarrow | \Scaron  Scaron                 | \Sigma  Sigma                 | \THORN  THORN           |
-| 16 | \Tau  Tau               | \Theta  Theta                   | \Uacute  Uacute               | \Ucirc  Ucirc           |
-| 17 | \Ugrave  Ugrave         | \Uparrow  Uparrow               | \Upsilon  Upsilon             | \Uuml  Uuml             |
-| 18 | \Xi  Xi                 | \Yacute  Yacute                 | \Yuml  Yuml                   | \Zeta  Zeta             |
-| 19 | \aacute  aacute         | \acirc  acirc                   | \acute  acute                 | \acutex  acutex         |
-| 20 | \aelig  aelig           | \agrave  agrave                 | \alefsym  alefsym             | \alpha  alpha           |
-| 21 | \amp  amp               | \ang  ang                       | \angle  angle                 | \approx  approx         |
-| 22 | \arccos  arccos         | \arcsin  arcsin                 | \arctan  arctan               | \arg  arg               |
-| 23 | \aring  aring           | \asciicirc  asciicirc           | \ast  ast                     | \asymp  asymp           |
-| 24 | \atilde  atilde         | \auml  auml                     | \bdquo  bdquo                 | \beta  beta             |
-| 25 | \blacksmile  blacksmile | \brvbar  brvbar                 | \bull  bull                   | \bullet  bullet         |
-| 26 | \cap  cap               | \ccedil  ccedil                 | \cdot  cdot                   | \cedil  cedil           |
-| 27 | \cent  cent             | \checkmark  checkmark           | \chi  chi                     | \circ  circ             |
-| 28 | \clubs  clubs           | \clubsuit  clubsuit             | \cong  cong                   | \copy  copy             |
-| 29 | \cos  cos               | \cosh  cosh                     | \cot  cot                     | \coth  coth             |
-| 30 | \crarr  crarr           | \csc  csc                       | \cup  cup                     | \curren  curren         |
-| 31 | \dArr  dArr             | \dagger  dagger                 | \darr  darr                   | \deg  deg               |
-| 32 | \delta  delta           | \det  det                       | \diamondsuit  diamondsuit     | \diams  diams           |
-| 33 | \dim  dim               | \div  div                       | \dots  dots                   | \downarrow  downarrow   |
-| 34 | \eacute  eacute         | \ecirc  ecirc                   | \egrave  egrave               | \empty  empty           |
-| 35 | \emptyset  emptyset     | \emsp  emsp                     | \ensp  ensp                   | \epsilon  epsilon       |
-| 36 | \equal  equal           | \equiv  equiv                   | \eta  eta                     | \eth  eth               |
-| 37 | \euml  euml             | \euro  euro                     | \exist  exist                 | \exists  exists         |
-| 38 | \exp  exp               | \fnof  fnof                     | \forall  forall               | \frac12  frac12         |
-| 39 | \frac14  frac14         | \frac34  frac34                 | \frasl  frasl                 | \gamma  gamma           |
-| 40 | \gcd  gcd               | \ge  ge                         | \gets  gets                   | \gt  gt                 |
-| 41 | \hArr  hArr             | \harr  harr                     | \hearts  hearts               | \heartsuit  heartsuit   |
-| 42 | \hellip  hellip         | \hom  hom                       | \hookleftarrow  hookleftarrow | \iacute  iacute         |
-| 43 | \icirc  icirc           | \iexcl  iexcl                   | \igrave  igrave               | \image  image           |
-| 44 | \in  in                 | \inf  inf                       | \infin  infin                 | \infty  infty           |
-| 45 | \int  int               | \iota  iota                     | \iquest  iquest               | \isin  isin             |
-| 46 | \iuml  iuml             | \kappa  kappa                   | \ker  ker                     | \lArr  lArr             |
-| 47 | \lambda  lambda         | \land  land                     | \lang  lang                   | \laquo  laquo           |
-| 48 | \larr  larr             | \lceil  lceil                   | \ldquo  ldquo                 | \le  le                 |
-| 49 | \leftarrow  leftarrow   | \leftrightarrow  leftrightarrow | \lfloor  lfloor               | \lg  lg                 |
-| 50 | \lim  lim               | \liminf  liminf                 | \limsup  limsup               | \ln  ln                 |
-| 51 | \log  log               | \lor  lor                       | \lowast  lowast               | \loz  loz               |
-| 52 | \lrm  lrm               | \lsaquo  lsaquo                 | \lsquo  lsquo                 | \lt  lt                 |
-| 53 | \macr  macr             | \max  max                       | \mdash  mdash                 | \micro  micro           |
-| 54 | \middot  middot         | \min  min                       | \minus  minus                 | \mu  mu                 |
-| 55 | \nabla  nabla           | \nbsp  nbsp                     | \ndash  ndash                 | \ne  ne                 |
-| 56 | \neq  neq               | \ni  ni                         | \not  not                     | \notin  notin           |
-| 57 | \nsub  nsub             | \nsup  nsup                     | \ntilde  ntilde               | \nu  nu                 |
-| 58 | \oacute  oacute         | \ocirc  ocirc                   | \odot  odot                   | \oelig  oelig           |
-| 59 | \ograve  ograve         | \oline  oline                   | \omega  omega                 | \omicron  omicron       |
-| 60 | \oplus  oplus           | \ordf  ordf                     | \ordm  ordm                   | \oslash  oslash         |
-| 61 | \otilde  otilde         | \otimes  otimes                 | \ouml  ouml                   | \para  para             |
-| 62 | \partial  partial       | \permil  permil                 | \perp  perp                   | \phi  phi               |
-| 63 | \pi  pi                 | \piv  piv                       | \plus  plus                   | \plusmn  plusmn         |
-| 64 | \pm  pm                 | \pound  pound                   | \prime  prime                 | \prod  prod             |
-| 65 | \prop  prop             | \proptp  proptp                 | \psi  psi                     | \quot  quot             |
-| 66 | \rArr  rArr             | \radic  radic                   | \rang  rang                   | \raquo  raquo           |
-| 67 | \rarr  rarr             | \rceil  rceil                   | \rdquo  rdquo                 | \real  real             |
-| 68 | \reg  reg               | \rfloor  rfloor                 | \rho  rho                     | \rightarrow  rightarrow |
-| 69 | \rlm  rlm               | \rsaquo  rsaquo                 | \rsquo  rsquo                 | \sad  sad               |
-| 70 | \sbquo  sbquo           | \scaron  scaron                 | \sdot  sdot                   | \sec  sec               |
-| 71 | \sect  sect             | \shy  shy                       | \sigma  sigma                 | \sigmaf  sigmaf         |
-| 72 | \sim  sim               | \simeq  simeq                   | \sin  sin                     | \sinh  sinh             |
-| 73 | \slash  slash           | \smile  smile                   | \smiley  smiley               | \spades  spades         |
-| 74 | \spadesuit  spadesuit   | \star  star                     | \sub  sub                     | \sube  sube             |
-| 75 | \subset  subset         | \sum  sum                       | \sup  sup                     | \sup1  sup1             |
-| 76 | \sup2  sup2             | \sup3  sup3                     | \supe  supe                   | \supset  supset         |
-| 77 | \szlig  szlig           | \tan  tan                       | \tanh  tanh                   | \tau  tau               |
-| 78 | \there4  there4         | \theta  theta                   | \thetasym  thetasym           | \thinsp  thinsp         |
-| 79 | \thorn  thorn           | \tilde  tilde                   | \times  times                 | \to  to                 |
-| 80 | \trade  trade           | \uArr  uArr                     | \uacute  uacute               | \uarr  uarr             |
-| 81 | \ucirc  ucirc           | \ugrave  ugrave                 | \uml  uml                     | \under  under           |
-| 82 | \uparrow  uparrow       | \upsih  upsih                   | \upsilon  upsilon             | \uuml  uuml             |
-| 83 | \varepsilon  varepsilon | \varsigma  varsigma             | \vartheta  vartheta           | \vee  vee               |
-| 84 | \vert  vert             | \wedge  wedge                   | \weierp  weierp               | \xi  xi                 |
-| 85 | \yacute  yacute         | \yen  yen                       | \yuml  yuml                   | \zeta  zeta             |
-| 86 | \zwj  zwj               | \zwnj zwnj                      |                               |                         |
+| No | Symbol      | Command    | Symbol          | Command        | Symbol         | Command       | Symbol      | Command    |
+|----+-------------+------------+-----------------+----------------+----------------+---------------+-------------+------------|
+|  1 | \AA         | AA         | \AElig          | AElig          | \Aacute        | Aacute        | \Acirc      | Acirc      |
+|  2 | \Agrave     | Agrave     | \Alpha          | Alpha          | \Aring         | Aring         | \Atilde     | Atilde     |
+|  3 | \Auml       | Auml       | \Beta           | Beta           | \Ccedil        | Ccedil        | \Chi        | Chi        |
+|  4 | \Dagger     | Dagger     | \Delta          | Delta          | \Diamond       | Diamond       | \Downarrow  | Downarrow  |
+|  5 | \ETH        | ETH        | \EUR            | EUR            | \EURcr         | EURcr         | \EURdig     | EURdig     |
+|  6 | \EURhv      | EURhv      | \EURtm          | EURtm          | \Eacute        | Eacute        | \Ecirc      | Ecirc      |
+|  7 | \Egrave     | Egrave     | \Epsilon        | Epsilon        | \Eta           | Eta           | \Euml       | Euml       |
+|  8 | \Gamma      | Gamma      | \Iacute         | Iacute         | \Icirc         | Icirc         | \Igrave     | Igrave     |
+|  9 | \Iota       | Iota       | \Iuml           | Iuml           | \Kappa         | Kappa         | \Lambda     | Lambda     |
+| 10 | \Leftarrow  | Leftarrow  | \Leftrightarrow | Leftrightarrow | \Mu            | Mu            | \Ntilde     | Ntilde     |
+| 11 | \Nu         | Nu         | \OElig          | OElig          | \Oacute        | Oacute        | \Ocirc      | Ocirc      |
+| 12 | \Ograve     | Ograve     | \Omega          | Omega          | \Omicron       | Omicron       | \Oslash     | Oslash     |
+| 13 | \Otilde     | Otilde     | \Ouml           | Ouml           | \Phi           | Phi           | \Pi         | Pi         |
+| 14 | \Pr         | Pr         | \Prime          | Prime          | \Psi           | Psi           | \Rho        | Rho        |
+| 15 | \Rightarrow | Rightarrow | \Scaron         | Scaron         | \Sigma         | Sigma         | \THORN      | THORN      |
+| 16 | \Tau        | Tau        | \Theta          | Theta          | \Uacute        | Uacute        | \Ucirc      | Ucirc      |
+| 17 | \Ugrave     | Ugrave     | \Uparrow        | Uparrow        | \Upsilon       | Upsilon       | \Uuml       | Uuml       |
+| 18 | \Xi         | Xi         | \Yacute         | Yacute         | \Yuml          | Yuml          | \Zeta       | Zeta       |
+| 19 | \aacute     | aacute     | \acirc          | acirc          | \acute         | acute         | \acutex     | acutex     |
+| 20 | \aelig      | aelig      | \agrave         | agrave         | \alefsym       | alefsym       | \alpha      | alpha      |
+| 21 | \amp        | amp        | \ang            | ang            | \angle         | angle         | \approx     | approx     |
+| 22 | \arccos     | arccos     | \arcsin         | arcsin         | \arctan        | arctan        | \arg        | arg        |
+| 23 | \aring      | aring      | \asciicirc      | asciicirc      | \ast           | ast           | \asymp      | asymp      |
+| 24 | \atilde     | atilde     | \auml           | auml           | \bdquo         | bdquo         | \beta       | beta       |
+| 25 | \blacksmile | blacksmile | \brvbar         | brvbar         | \bull          | bull          | \bullet     | bullet     |
+| 26 | \cap        | cap        | \ccedil         | ccedil         | \cdot          | cdot          | \cedil      | cedil      |
+| 27 | \cent       | cent       | \checkmark      | checkmark      | \chi           | chi           | \circ       | circ       |
+| 28 | \clubs      | clubs      | \clubsuit       | clubsuit       | \cong          | cong          | \copy       | copy       |
+| 29 | \cos        | cos        | \cosh           | cosh           | \cot           | cot           | \coth       | coth       |
+| 30 | \crarr      | crarr      | \csc            | csc            | \cup           | cup           | \curren     | curren     |
+| 31 | \dArr       | dArr       | \dagger         | dagger         | \darr          | darr          | \deg        | deg        |
+| 32 | \delta      | delta      | \det            | det            | \diamondsuit   | diamondsuit   | \diams      | diams      |
+| 33 | \dim        | dim        | \div            | div            | \dots          | dots          | \downarrow  | downarrow  |
+| 34 | \eacute     | eacute     | \ecirc          | ecirc          | \egrave        | egrave        | \empty      | empty      |
+| 35 | \emptyset   | emptyset   | \emsp           | emsp           | \ensp          | ensp          | \epsilon    | epsilon    |
+| 36 | \equal      | equal      | \equiv          | equiv          | \eta           | eta           | \eth        | eth        |
+| 37 | \euml       | euml       | \euro           | euro           | \exist         | exist         | \exists     | exists     |
+| 38 | \exp        | exp        | \fnof           | fnof           | \forall        | forall        | \frac12     | frac12     |
+| 39 | \frac14     | frac14     | \frac34         | frac34         | \frasl         | frasl         | \gamma      | gamma      |
+| 40 | \gcd        | gcd        | \ge             | ge             | \gets          | gets          | \gt         | gt         |
+| 41 | \hArr       | hArr       | \harr           | harr           | \hearts        | hearts        | \heartsuit  | heartsuit  |
+| 42 | \hellip     | hellip     | \hom            | hom            | \hookleftarrow | hookleftarrow | \iacute     | iacute     |
+| 43 | \icirc      | icirc      | \iexcl          | iexcl          | \igrave        | igrave        | \image      | image      |
+| 44 | \in         | in         | \inf            | inf            | \infin         | infin         | \infty      | infty      |
+| 45 | \int        | int        | \iota           | iota           | \iquest        | iquest        | \isin       | isin       |
+| 46 | \iuml       | iuml       | \kappa          | kappa          | \ker           | ker           | \lArr       | lArr       |
+| 47 | \lambda     | lambda     | \land           | land           | \lang          | lang          | \laquo      | laquo      |
+| 48 | \larr       | larr       | \lceil          | lceil          | \ldquo         | ldquo         | \le         | le         |
+| 49 | \leftarrow  | leftarrow  | \leftrightarrow | leftrightarrow | \lfloor        | lfloor        | \lg         | lg         |
+| 50 | \lim        | lim        | \liminf         | liminf         | \limsup        | limsup        | \ln         | ln         |
+| 51 | \log        | log        | \lor            | lor            | \lowast        | lowast        | \loz        | loz        |
+| 52 | \lrm        | lrm        | \lsaquo         | lsaquo         | \lsquo         | lsquo         | \lt         | lt         |
+| 53 | \macr       | macr       | \max            | max            | \mdash         | mdash         | \micro      | micro      |
+| 54 | \middot     | middot     | \min            | min            | \minus         | minus         | \mu         | mu         |
+| 55 | \nabla      | nabla      | \nbsp           | nbsp           | \ndash         | ndash         | \ne         | ne         |
+| 56 | \neq        | neq        | \ni             | ni             | \not           | not           | \notin      | notin      |
+| 57 | \nsub       | nsub       | \nsup           | nsup           | \ntilde        | ntilde        | \nu         | nu         |
+| 58 | \oacute     | oacute     | \ocirc          | ocirc          | \odot          | odot          | \oelig      | oelig      |
+| 59 | \ograve     | ograve     | \oline          | oline          | \omega         | omega         | \omicron    | omicron    |
+| 60 | \oplus      | oplus      | \ordf           | ordf           | \ordm          | ordm          | \oslash     | oslash     |
+| 61 | \otilde     | otilde     | \otimes         | otimes         | \ouml          | ouml          | \para       | para       |
+| 62 | \partial    | partial    | \permil         | permil         | \perp          | perp          | \phi        | phi        |
+| 63 | \pi         | pi         | \piv            | piv            | \plus          | plus          | \plusmn     | plusmn     |
+| 64 | \pm         | pm         | \pound          | pound          | \prime         | prime         | \prod       | prod       |
+| 65 | \prop       | prop       | \proptp         | proptp         | \psi           | psi           | \quot       | quot       |
+| 66 | \rArr       | rArr       | \radic          | radic          | \rang          | rang          | \raquo      | raquo      |
+| 67 | \rarr       | rarr       | \rceil          | rceil          | \rdquo         | rdquo         | \real       | real       |
+| 68 | \reg        | reg        | \rfloor         | rfloor         | \rho           | rho           | \rightarrow | rightarrow |
+| 69 | \rlm        | rlm        | \rsaquo         | rsaquo         | \rsquo         | rsquo         | \sad        | sad        |
+| 70 | \sbquo      | sbquo      | \scaron         | scaron         | \sdot          | sdot          | \sec        | sec        |
+| 71 | \sect       | sect       | \shy            | shy            | \sigma         | sigma         | \sigmaf     | sigmaf     |
+| 72 | \sim        | sim        | \simeq          | simeq          | \sin           | sin           | \sinh       | sinh       |
+| 73 | \slash      | slash      | \smile          | smile          | \smiley        | smiley        | \spades     | spades     |
+| 74 | \spadesuit  | spadesuit  | \star           | star           | \sub           | sub           | \sube       | sube       |
+| 75 | \subset     | subset     | \sum            | sum            | \sup           | sup           | \sup1       | sup1       |
+| 76 | \sup2       | sup2       | \sup3           | sup3           | \supe          | supe          | \supset     | supset     |
+| 77 | \szlig      | szlig      | \tan            | tan            | \tanh          | tanh          | \tau        | tau        |
+| 78 | \there4     | there4     | \theta          | theta          | \thetasym      | thetasym      | \thinsp     | thinsp     |
+| 79 | \thorn      | thorn      | \tilde          | tilde          | \times         | times         | \to         | to         |
+| 80 | \trade      | trade      | \uArr           | uArr           | \uacute        | uacute        | \uarr       | uarr       |
+| 81 | \ucirc      | ucirc      | \ugrave         | ugrave         | \uml           | uml           | \under      | under      |
+| 82 | \uparrow    | uparrow    | \upsih          | upsih          | \upsilon       | upsilon       | \uuml       | uuml       |
+| 83 | \varepsilon | varepsilon | \varsigma       | varsigma       | \vartheta      | vartheta      | \vee        | vee        |
+| 84 | \vert       | vert       | \wedge          | wedge          | \weierp        | weierp        | \xi         | xi         |
+| 85 | \yacute     | yacute     | \yen            | yen            | \yuml          | yuml          | \zeta       | zeta       |
+| 86 | \zwj        | zwj        | \zwnj           | zwnj           |                |               |             |            |
