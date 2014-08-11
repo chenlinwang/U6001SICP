@@ -21,10 +21,10 @@
         (exponent-iter base exp 1)))
 
 (define (average x . y)
-    ;; Get the average number of the input.
-    ;; (number,list) -> (number)
+  ;; Get the average number of the input.
+  ;; (number,list) -> (number)
     (define (additer rest total)
-        ;; iteratively add rest to total. rest: list holding all addents; total: the augend.
+      ;; iteratively add rest to total. rest: list holding all addents; total: the augend.
         ;; (list,numer) -> (number)
         (if (null? rest)
             total
@@ -104,5 +104,56 @@
                             (cons l1 (iter former (cdr latter)))))))))))
 
 ;; ;; Testing
-;; (display (merge-sort (list 22 42 4 1 4 5 3)))
-;; (newline)
+;; (print-out (merge-sort (list 22 42 4 1 4 5 3)))
+
+
+;; Quick Sort
+(define (quick-sort l)
+  ;; Quick sort of list l.
+  ;; (list) -> (list)
+
+  ;; Calculating the maximum index number of list l
+  (define (listMaxRef l) (- (length l) 1))
+
+  ;; Chosing a pivot for the algorithm
+  (define (pivot l LMR)
+    (average (list-ref l 0)
+               (list-ref l LMR)
+               (list-ref l (inexact->exact (floor (/ LMR 2))))))
+
+  ;; Initially try to check the list
+  (let iter1 ((rest l)
+              (LMR (listMaxRef l)))
+    ;; If there is 1 or less element, return the list.
+    ;; (print-out rest)
+    ;; (print-out LMR)
+    (cond ((<= LMR 0) rest)
+          ;; If there are two elements, compare and return the right ordered list.
+          ((= LMR 1)
+           (if (< (car rest) (cadr rest))
+               rest
+               (list (cadr rest) (car rest))))
+          (else
+           ;; Else calculate the pivot
+           (let ((p (pivot rest LMR)))
+             ;; (print-out p)
+             ;; Process with the pivot using iters
+             (let iter2 ((rest rest)
+                         (smaller (list))
+                         (bigger (list)))
+               ;; If finishing compare, recursively use iter1
+               (cond ((null? rest) (append (iter1 smaller (listMaxRef smaller))
+                                           (iter1 bigger (listMaxRef bigger))))
+                     ;; If it is smaller or equal, put it into smaller
+                     ((<= (car rest) p)
+                      (set! smaller (cons (car rest) smaller))
+                      (iter2 (cdr rest) smaller bigger))
+                     ;; If it is bigger or equal, put it into bigger
+                     (else
+                      (set! bigger (cons (car rest) bigger))
+                      (iter2 (cdr rest) smaller bigger))))))))
+  )
+
+;; Test
+;; (print-out (quick-sort (list 22 42 4 1 4 5 3)))
+;; (exit)

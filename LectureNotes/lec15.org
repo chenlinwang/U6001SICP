@@ -1,0 +1,57 @@
+* Environment Model
+** Content
+The environment model is an complicated model when dealing with evaluations in the language. It contains the following parts:
+1. Creating variables
+2. Evaluating variables
+3. Changing variables
+4. Creating procedures
+5. Applying procedures
+** What's new?
+We have talked about the substitution model when we discuss the precedure programming. We could see what is different here.
+|            | Substitution Model                   | Environment Model                            |
+|------------+--------------------------------------+----------------------------------------------|
+| variable   | value                                | name binded with value                       |
+| procedure  | return exact result given same input | exact result with same input and environment |
+| expression |                                      | has meaning only under environments          |
+
+So, we say that expression could not be evaluated alone. It got to have the environment to decide what value it is.
+
+** Environment
+*** Frame
+Environment is consisted of frames. Frames are tables that hold the bindings between names and values. So a frame could be:
+#+BEGIN_EXAMPLE
+Frame A: x->10, y->20
+#+END_EXAMPLE
+*** Enclosing Environment Pointer
+The EEP of an environment suggusts its parent environment. It is a pointer from a certain frame to another frame. For example, we could have a parent environment E1 with its frame A and its children environment E2 with E2's frame B like:
+#+BEGIN_EXAMPLE
+E1 -> Frame A: x->10, y->20
+         |
+         |  EEP
+         |
+E2 -> Frame B: y->25,z->2
+#+END_EXAMPLE
+
+*Tips:* The only environment,without no parent, is the global environment.
+
+** Evaluation
+*** Numbers
+The numbers are self-evaluating, so what they appears to be, are what their values are.
+*** Names
+**** Creating Variables
+We create variables using the special form =define=. It will add a binding in the present environment's frame table.
+**** Evaluating Variables
+The names will be the nearest binding from the present environment.Take the example above, if we evaluate =y= in environment =E2=, it should be 25. And we say that the =y= in =Frame B= /shadows/ the =y= in =Frame A=. But if we evaluate =x= in =E2=, it should be 10. But if we evaluate =z= in =E1=, there should be an undefined variable error.
+**** Changing Variables
+We using =set!= to change the variable. But first, it will find the nearest name and change that name binding.
+*** Procedures
+**** Creating Procedures
+When a =lambda= is evaluated in certain environment, we create an procedure object that has two pointers. The frist pointer points to the code on how to carry out the procedure, and the seconde pointer points to the environment that /it is evaluated/. And then we add an binding of the name and the value of that object on the current environment table.
+**** Applying Procedures
+We applying a procedure in the table frame of environment =EP=, we follow four steps:
+1. Create an new environment =Ep=, with a new frame.
+2. Point the =Ep='s EEP to =EP=.
+3. Convert the input variables into =Ep='s frame, binded with the names from the original code.
+4. Do the code evaluation in from the code and return the value of the last variable.
+
+*Tips:* The environment that the procedure is been evaluated has nothing to do with the =Ep= environment. =Ep= points to the environment that has the procedure object on its frame.
