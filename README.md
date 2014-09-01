@@ -28,7 +28,7 @@ There are four directories:
 
 
 ## Scheme Chicken
-After reading some thoughtful suggestions from [ivanjovanovic](https://github.com/ivanjovanovic/sicp#process). i decide to test the code on the [scheme chicken](call-cc.org) for numeric benefits. you could see more tips on [here](resourse/chicken.org).
+After reading some thoughtful suggestions from [ivanjovanovic](https://github.com/ivanjovanovic/sicp#process). I decide to test the code on the [scheme chicken](call-cc.org) for numeric benefits. you could see more tips on [here](resource/chicken.org).
 
 ## Other Resource
 There are already plenty of solutions and explanations on the web, so I may as well take them down here:
