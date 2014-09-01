@@ -1,0 +1,7 @@
+* About the Extension libraries (eggs)
+The /Extension libraries/ (eggs) are libraries besides the basic functions and the libraries, provided by the /chicken/. You could install them by:
+#+BEGIN_SRC Bash
+chicken-install egg-name
+#+END_SRC
+
+[[http://wiki.call-cc.org/man/4/Extensions#installing-extensions][See more about the installation.]]

@@ -27,6 +27,9 @@ There are four directories:
 + BookExercise: The excise solutions and explanations for the book [SICP][book].
 
 
+## Scheme Chicken
+After reading some thoughtful suggestions from [ivanjovanovic](https://github.com/ivanjovanovic/sicp#process). i decide to test the code on the [scheme chicken](call-cc.org) for numeric benefits. you could see more tips on [here](resourse/chicken.org).
+
 ## Other Resource
 There are already plenty of solutions and explanations on the web, so I may as well take them down here:
 
