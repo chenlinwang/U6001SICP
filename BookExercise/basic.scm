@@ -31,12 +31,21 @@
             (additer (cdr rest) (+ total (car rest)))))
   (/ (additer (cons x y) 0) (+ 1 (length y))))
 
+(define (gcd n1 n2)
+  ;; Calculate the greatest common dividor
+  (let iter ((first n1)
+             (second n2))
+    (let ((remain (remainder first second)))
+      (if (= remain 0)
+          second
+          (iter second remain)))))
+
 (define (get-group n r)
-    ;; Convert n to a r-group member
-    ;; (number,number) -> (number)
-    (cond ((< n 0) (get-group (+ n r) r))
-          ((>= n r) (get-group (- n r) r))
-          (else n)))
+  ;; Convert n to a r-group member
+  ;; (number,number) -> (number)
+  (cond ((< n 0) (get-group (+ n r) r))
+        ((>= n r) (get-group (- n r) r))
+        (else n)))
 
 ;; Return part of the list
 (define (list-get l n m)
