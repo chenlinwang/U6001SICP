@@ -166,3 +166,29 @@
 ;; Test
 ;; (print-out (quick-sort (list 22 42 4 1 4 5 3)))
 ;; (exit)
+
+;; ;; Test
+;; (print-out (gcd 24 30))
+;; (print-out (gcd 5 7))
+;; (print-out (gcd 10 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; auxiliary functions for oop
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; for getting the method of the object
+(define (get-method object method-name)
+  (if (procedure? object)
+      (object method-name)
+      (error "Not a procedure-based object -- " object)))
+
+;; for applying the method for the object
+(define (ask object method-name . args)
+  (let ((method (get-method object method-name)))
+    (if (procedure? method)
+        (apply method (cons object args))
+        (error "Can't find the method in object -- " method-name))))
+
+(define (class-variable v)
+  (lambda (self) v))
+
+;; (exit)

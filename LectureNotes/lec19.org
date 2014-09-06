@@ -1,0 +1,13 @@
+* What does a language consist of?
+A formal language consists of the following things:
+1. Lexical Analyzer: to chop the input into language units by the rules and delimiters.
+2. Parser: to convert the language units into tree-structured data, ready for evaluation.
+3. Evaluator: to go through the tree and evaluate according to certain rules.
+4. Printer: to give back the results.
+
+* The scheme language
+As we learned that the scheme is implemented based on the environment model. The central concern is to implement the environment.
+
+Besides that, notice how we introduce the =lambda= into the evaluation. After the introduction, we alternate the evaluation between the =eval= and the =eval-procedure=. The former decides how to deal with each basic units of the language and the latter carry out the procedures in the language.
+
+And what's more, the language properties like: cbn or cbv, procedure environment inheritage, could decide in the =eval=.
