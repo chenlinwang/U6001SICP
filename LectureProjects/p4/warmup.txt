@@ -1,0 +1,21 @@
+----------------------------------------
+Warmup Exercise 2
+
+graduation-stage:       ((down great-court))
+baker:                  ((east bexley))
+6001-lab:               ((down eecs-hq))
+eecs-ug-office:         ((east eecs-hq))
+barker-library:         ((down 10-250))
+grendels-den:           ((up lobby-10))
+legal-seafood:          ((east great-court) (south edgerton-hall))
+bexley:                 ((north student-center) (west baker))
+student-center:         ((east lobby-7) (south bexley))
+building-13:            ((north edgerton-hall) (south lobby-10))
+lobby-7:                ((east lobby-10) (west student-center))
+10-250:                 ((up barker-library) (down lobby-10))
+great-court:            ((north lobby-10) (west legal-seafood) (up graduation-stage))
+34-301:                 ((east stata-center) (up eecs-hq) (down edgerton-hall))
+edgerton-hall:          ((north legal-seafood) (south building-13) (up 34-301))
+eecs-hq:                ((west eecs-ug-office) (up 6001-lab) (down 34-301))
+stata-center:           ((north stata-center) (west 34-301) (south stata-center) (up stata-center) (down stata-center))
+lobby-10:               ((north building-13) (west lobby-7) (south great-court) (up 10-250) (down grendels-den))

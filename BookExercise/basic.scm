@@ -115,6 +115,38 @@
 ;; ;; Testing
 ;; (print-out (merge-sort (list 22 42 4 1 4 5 3)))
 
+;; Extended Merger Sort
+(define (ext-merge-sort l . cal)
+  ;; Sorting list using merge sort.l:list.
+  ;; (list) -> (list)
+  (let ((cal (cond ((null? cal) (lambda (x) x))
+                   ((procedure? (car cal)) (car cal))
+                   (else (lambda (x) x)))))
+    (let iter1 ((l l))
+      (let ((llen (length l)))
+        ;; See how long is the list
+        (if (= llen 1)
+            ;; return if length is one
+            l
+            ;; Otherwise, break it into two list
+            (let iter2 ((former (iter1 (list-get l 0 (floor (/ llen 2)))))
+                        (latter (iter1 (list-get l (floor (/ llen 2)) -1))))
+              ;; If any one is empty, stop.
+              (cond ((null? former) latter)
+                    ((null? latter) former)
+                    ;; Otherwise, continue
+                    (else
+                     (let ((f1 (car former))
+                           (l1 (car latter)))
+                       (if (<= (cal f1)
+                               (cal l1))
+                           (cons f1 (iter2 (cdr former) latter))
+                           (cons l1 (iter2 former (cdr latter)))))))))))))
+
+;; ;; test
+;; (define t '((10) (2) (3) (4) (5) (8)))
+;; (print-out (ext-merge-sort t car))
+;; (exit)
 
 ;; Quick Sort
 (define (quick-sort l)
@@ -166,6 +198,65 @@
 ;; Test
 ;; (print-out (quick-sort (list 22 42 4 1 4 5 3)))
 ;; (exit)
+
+(define (ext-quick-sort l . cal)
+  ;; Quick sort of list l.
+  ;; (list) -> (list)
+
+  ;; set the calculation function
+  (set! cal (cond ((null? cal) (lambda (x) x))
+                  ((procedure? (car cal)) (car cal))
+                  (else (lambda (x) x))))
+
+  ;; Calculating the maximum index number of list l
+  (define (listMaxRef l) (- (length l) 1))
+
+  ;; Chosing a pivot for the algorithm
+  (define (pivot l LMR)
+    (/ (apply +
+              (map cal (list (list-ref l 0)
+                             (list-ref l LMR)
+                             (list-ref l (inexact->exact (floor (/ LMR 2)))))))
+       3))
+
+  ;; Initially try to check the list
+  (let iter1 ((rest l)
+              (LMR (listMaxRef l)))
+    ;; If there is 1 or less element, return the list.
+    ;; (print-out rest)
+    ;; (print-out LMR)
+    (cond ((<= LMR 0) rest)
+          ;; If there are two elements, compare and return the right ordered list.
+          ((= LMR 1)
+           (if (< (cal (car rest))
+                  (cal (cadr rest)))
+               rest
+               (list (cadr rest) (car rest))))
+          (else
+           ;; Else calculate the pivot
+           (let ((p (pivot rest LMR)))
+             ;; (print-out p)
+             ;; Process with the pivot using iters
+             (let iter2 ((rest rest)
+                         (smaller (list))
+                         (bigger (list)))
+               ;; If finishing compare, recursively use iter1
+               (cond ((null? rest) (append (iter1 smaller (listMaxRef smaller))
+                                           (iter1 bigger (listMaxRef bigger))))
+                     ;; If it is smaller or equal, put it into smaller
+                     ((<= (cal (car rest)) p)
+                      (set! smaller (cons (car rest) smaller))
+                      (iter2 (cdr rest) smaller bigger))
+                     ;; If it is bigger or equal, put it into bigger
+                     (else
+                      (set! bigger (cons (car rest) bigger))
+                      (iter2 (cdr rest) smaller bigger)))))))))
+;; Test
+(define t '(19 2 3 4 4 5 2 6))
+(print-out (ext-quick-sort t))
+(define t '((19) (2) (4) (2) (5) (19) (6)))
+(print-out (ext-quick-sort t car))
+(exit)
 
 ;; ;; Test
 ;; (print-out (gcd 24 30))
