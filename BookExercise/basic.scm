@@ -251,12 +251,12 @@
                      (else
                       (set! bigger (cons (car rest) bigger))
                       (iter2 (cdr rest) smaller bigger)))))))))
-;; Test
-(define t '(19 2 3 4 4 5 2 6))
-(print-out (ext-quick-sort t))
-(define t '((19) (2) (4) (2) (5) (19) (6)))
-(print-out (ext-quick-sort t car))
-(exit)
+;; ;; Test
+;; (define t '(19 2 3 4 4 5 2 6))
+;; (print-out (ext-quick-sort t))
+;; (define t '((19) (2) (4) (2) (5) (19) (6)))
+;; (print-out (ext-quick-sort t car))
+;; (exit)
 
 ;; ;; Test
 ;; (print-out (gcd 24 30))
