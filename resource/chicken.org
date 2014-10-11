@@ -5,3 +5,4 @@ chicken-install egg-name
 #+END_SRC
 
 [[http://wiki.call-cc.org/man/4/Extensions#installing-extensions][See more about the installation.]]
+* About special functionality

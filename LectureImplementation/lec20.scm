@@ -502,10 +502,10 @@
 
 ;;--------------------
 ;; rewrite the application
-(define application? (tag-name? 'call))
+;; (define application? (tag-name? 'call))
 
-(define application-procedure cadr)
-(define application-arg cddr)
+;; (define application-procedure cadr)
+;; (define application-arg cddr)
 
 ;; test
 ;; (geval '(call + 1 1))

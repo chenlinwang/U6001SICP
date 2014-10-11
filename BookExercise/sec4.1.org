@@ -1,0 +1,634 @@
+* Exercise 4.1
+Notice that we cannot tell whether the metacircular evaluator evaluates operands from left to right or from right to left. Its evaluation order is inherited from the underlying Lisp: If the arguments to cons in list-of-values are evaluated from left to right, then list-of-values will evaluate operands from left to right; and if the arguments to cons are evaluated from right to left, then list-of- values will evaluate operands from right to left.
+Write a version of list-of-values that evaluates operands from left to right regardless of the order of evaluation in the underlying Lisp. Also write a version of list-of-values that evaluates operands from right to left.
+** Answer
+#+BEGIN_SRC scheme
+(define (list-of-values-lr exp env)
+  (map (lambda (e) (eval e env))
+       exp))
+
+(define (list-of-values-rl exp env)
+  (define (reverse-list l)
+    (if (null? l)
+        l
+        (append (reverse-list (cdr l)) (car l))))
+  (reverse-list (list-of-values-lr (reverse-list exp) env)))
+#+END_SRC
+* Exercise 4.2
+Louis Reasoner plans to reorder the cond clauses in eval so that the clause for procedure applications appears before the clause for assignments. He argues that this will make the interpreter more efficient: Since programs usually contain more applications than assignments, definitions, and so on, his modified eval will usually check fewer clauses than the original eval before identifying the type of an expression.
+
+1. What is wrong with Louis's plan? (Hint: What will Louis's evaluator do with the expression (define x 3)?)
+2. Louis is upset that his plan didn't work. He is willing to go to any lengths to make his evaluator recognize procedure applications before it checks for most other kinds of expressions. Help him by changing the syntax of the evaluated language so that procedure applications start with call. For example, instead of (factorial 3) we will now have to write (call factorial 3) and instead of (+ 1 2) we will have to write (call + 1 2).
+** Answer
+1. The evaluator will look for a procedure named =define= and failed and generate error.
+2. Just change the application selector, done in the lecture implement.
+* Exercise 4.3
+Rewrite eval so that the dispatch is done in data-directed style. Compare this with the data-directed differentiation procedure of exercise 2.73. (You may use the car of a compound expression as the type of the expression, as is appropriate for the syntax implemented in this section.) .
+** Answer
+It is done in the book implementation section 4.1.
+
+* Exercise 4.4
+Recall the definitions of the special forms and and or from chapter 1:
+1. and: The expressions are evaluated from left to right. If any expression evaluates to false, false is returned; any remaining expressions are not evaluated. If all the expressions evaluate to true values, the value of the last expression is returned. If there are no expressions then true is returned.
+2. or: The expressions are evaluated from left to right. If any expression evaluates to a true value, that value is returned; any remaining expressions are not evaluated. If all expressions evaluate to false, or if there are no expressions, then false is returned.
+Install and and or as new special forms for the evaluator by defining appropriate syntax procedures and evaluation procedures eval-and and eval-or. Alternatively, show how to implement and and or as derived expressions.
+** Answer
+#+BEGIN_SRC scheme
+(define and? (tag-named 'and))
+(define and-body cdr)
+(define and-body-first car)
+(define and-body-remove-first cdr)
+
+(define (and-eval exp env)
+  (let iter ((body (and-body exp)))
+    (cond ((null? body) #t)
+          ((not (eval (and-body-first body) env)) #f)
+          (else (iter (and-body-remove-first body))))))
+
+(define or? (tag-named 'or))
+(define or-body cdr)
+(define or-body-first car)
+(define or-body-remove-first cdr)
+
+(define (or-eval exp env)
+  (let iter ((body (or-body exp)))
+    (cond ((null? body) #f)
+          ((eval (or-body-first body) env) #t)
+          (else (iter (or-body-remove-first body))))))
+
+(define (eval exp env)
+  (cond ((self-evaluator? exp) (self-eval exp env))
+        ((string? exp) (string-eval exp env))
+        ((define? exp) (define-eval exp env))
+        ((variable? exp) (variable-eval exp env))
+        ((set? exp) (set-eval exp env))
+        ((if? exp) (if-eval exp env))
+        ((begin? exp) (begin-eval exp env))
+        ((lambda? exp) (lambda-eval exp env))
+        ((cond? exp) (cond-eval exp env))
+        ((let? exp) (let-eval exp env))
+        ((and? exp) (and-eval exp env))
+        ((or? exp) (or-eval exp env))
+        ((application? exp) (application-eval exp env))
+        (else
+         (error "evaluation prefix not found" exp))))
+#+END_SRC
+
+* Exercise 4.5
+Scheme allows an additional syntax for cond clauses, (<test> => <recipient>). If <test> evaluates to a true value, then <recipient> is evaluated. Its value must be a procedure of one argument; this procedure is then invoked on the value of the <test>, and the result is returned as the value of the cond expression. For example
+#+BEGIN_SRC scheme
+(cond ((assoc 'b '((a 1) (b 2))) => cadr)
+      (else false))
+#+END_SRC
+returns 2. Modify the handling of cond so that it supports this extended syntax.
+** Answer
+#+BEGIN_SRC scheme
+(define (cond-eval exp env)
+  (let ((body (cond-body exp)))
+    (if (null? body)
+        'system-no-return-value
+        (let ((rest (cond-body-remove-first body))
+              (pre (cond-body-first-pre body))
+              (true (cond-body-first-true body)))
+          (if (and (not (null? true))
+                   (eq? '=> (car true)))
+              (set! true (cdr true)))
+          (if (eq? 'else pre)
+              (eval (begin-gen true) env)
+              (eval (if-gen
+                     (list pre (begin-gen true) (cond-gen rest))) env))))))
+#+END_SRC
+* Exercise 4.7
+Let* is similar to let, except that the bindings of the let variables are performed sequentially from left to right, and each binding is made in an environment in which all of the preceding bindings are visible. For example
+#+BEGIN_SRC scheme
+(let* ((x 3)
+       (y (+ x 2))
+       (z (+ x y 5)))
+  (* x z))
+#+END_SRC
+returns 39. Explain how a let* expression can be rewritten as a set of nested let expressions, and write a procedure let*->nested-lets that performs this transformation. If we have already implemented let (exercise 4.6) and we want to extend the evaluator to handle let*, is it sufficient to add a clause to eval whose action is
+#+BEGIN_SRC scheme
+(eval (let*->nested-lets exp) env)
+#+END_SRC
+or must we explicitly expand let* in terms of non-derived expressions?
+** Answer
+Yes, we could definitely use the =eval= directly, since the =let*->nested-lets= creates a let expression.
+#+BEGIN_SRC scheme
+;; selector
+(define let*-param cadr)
+(define let*-body cddr)
+(define let*-param-first-pair car)
+(define let*-param-remove-first-pair cdr)
+(define let*-param-pair-name car)
+(define let*-param-pair-value cadr)
+
+;; let generator
+(define let*-gen (tag-add 'let*))
+
+;; operator
+(define let*? (tag-named 'let*))
+
+;; the transformation
+(define (let*->nested-lets exp)
+  (let ((param (let*-param exp))
+        (body (let*-body exp)))
+    (cond ((null? param) (begin-gen body))
+          (else
+           (let ((pair (let*-param-first-pair param))
+                 (remain (let*-param-remove-first-pair param)))
+             (let-gen (list (list pair)
+                            (let*->nested-lets (let*-gen (cons remain body))))))))))
+
+;; eval
+(define (eval exp env)
+  (cond ((self-evaluator? exp) (self-eval exp env))
+        ((string? exp) (string-eval exp env))
+        ((define? exp) (define-eval exp env))
+        ((variable? exp) (variable-eval exp env))
+        ((set? exp) (set-eval exp env))
+        ((if? exp) (if-eval exp env))
+        ((begin? exp) (begin-eval exp env))
+        ((lambda? exp) (lambda-eval exp env))
+        ((cond? exp) (cond-eval exp env))
+        ((let? exp) (let-eval exp env))
+        ((let*? exp) (eval (let*->nested-lets exp) env))
+        ((and? exp) (and-eval exp env))
+        ((or? exp) (or-eval exp env))
+        ((application? exp) (application-eval exp env))
+        (else
+         (error "evaluation prefix not found" exp))))
+#+END_SRC
+* Exercise 4.8
+``Named let'' is a variant of let that has the form
+#+BEGIN_SRC scheme
+(let <var> <bindings> <body>)
+#+END_SRC
+The <bindings> and <body> are just as in ordinary let, except that <var> is bound within <body> to a procedure whose body is <body> and whose parameters are the variables in the <bindings>. Thus, one can repeatedly execute the <body> by invoking the procedure named <var>. For example, the iterative Fibonacci procedure (section 1.2.2) can be rewritten using named let as follows:
+#+BEGIN_SRC scheme
+(define (fib n)
+  (let fib-iter ((a 1)
+(b 0)
+                 (count n))
+    (if (= count 0)
+        b
+        (fib-iter (+ a b) a (- count 1)))))
+#+END_SRC
+Modify let->combination of exercise 4.6 to also support named let.
+** Answer
+#+BEGIN_SRC scheme
+;; operator
+(define (let-named? exp)
+  (symbol? (cadr exp)))
+;;selector
+(define let-name cadr)
+(define (let-without-name exp)
+  (let ((exp (cdr exp)))
+    (let-gen (cons (let-param exp)
+                   (let-body exp)))))
+
+;; rewrite the let
+(define (let->application exp)
+  (let* ((lambda-name (if (let-named? exp)
+                          (let-name exp)
+                          #f))
+         (exp (if (let-named? exp)
+                  (let-without-name exp)
+                  exp))
+         (param (let-param exp))
+         (body (let-body exp))
+         (lambda-param (list))
+         (input-param (list)))
+    ;; separate the parameter into application
+    (do ((remain param (let-param-remove-first-pair remain)))
+        ((null? remain))
+      (let ((p (let-param-first-pair remain)))
+        (set! lambda-param (append lambda-param (list (let-param-pair-name p))))
+        (set! input-param (append input-param (list (let-param-pair-value p))))))
+    ;; (print lambda-param)
+    ;; (print input-param)
+    ;; (exit)
+    (let ((lambda-fun (lambda-gen (cons lambda-param body))))
+      (cond (lambda-name
+             (begin-gen (list (define-gen (list lambda-name lambda-fun))
+                                     (cons lambda-name input-param))))
+            (else (cons lambda-fun input-param))))))
+#+END_SRC
+
+* Exercise 4.9
+Many languages support a variety of iteration constructs, such as do, for, while, and until. In Scheme, iterative processes can be expressed in terms of ordinary procedure calls, so special iteration constructs provide no essential gain in computational power. On the other hand, such constructs are often convenient. Design some iteration constructs, give examples of their use, and show how to implement them as derived expressions.
+** Answer
+#+BEGIN_SRC scheme
+(define do? (tag-named 'do))
+
+;;selector
+(define do-param cadr)
+(define do-param-remove-first cdr)
+(define do-param-first-name caar)
+(define do-param-first-value cadar)
+(define do-param-first-step caddar)
+(define do-check caddr)
+(define do-body cdddr)
+
+
+(define (do->let exp)
+  (let ((param (do-param exp))
+        (check (do-check exp))
+        (body (do-body exp))
+        (initial-param (list))
+        (step-up (list)))
+    ;; to the intial param with the step param
+    (do ((param-remain param (do-param-remove-first param-remain)))
+        ((null? param-remain))
+      (set! initial-param (append initial-param (list (list (do-param-first-name param-remain)
+                                                            (do-param-first-value param-remain)))))
+      (set! step-up (append step-up (list (do-param-first-step param-remain)))))
+
+    ;; (print initial-param)
+    ;; (print step-up)
+    ;; (exit)
+    (let-gen (list 'iter initial-param (cond-gen (list check
+                                                       (cons 'else (append body (list (cons 'iter step-up))))))))))
+
+;; rewrite the eval
+(define (eval exp env)
+  (cond ((self-evaluator? exp) (self-eval exp env))
+        ((string? exp) (string-eval exp env))
+        ((define? exp) (define-eval exp env))
+        ((variable? exp) (variable-eval exp env))
+        ((set? exp) (set-eval exp env))
+        ((if? exp) (if-eval exp env))
+        ((begin? exp) (begin-eval exp env))
+        ((lambda? exp) (lambda-eval exp env))
+        ((cond? exp) (cond-eval exp env))
+        ((and? exp) (and-eval exp env))
+        ((or? exp) (or-eval exp env))
+        ((let? exp) (eval (let->application exp) env))
+        ((let*? exp) (eval (let*->nested-lets exp) env))
+        ((do? exp) (eval (do->let exp) env))
+        ((application? exp) (application-eval exp env))
+        (else
+         (error "evaluation prefix not found" exp))))
+#+END_SRC
+
+* Exercise 4.10
+By using data abstraction, we were able to write an eval procedure that is independent of the particular syntax of the language to be evaluated. To illustrate this, design and implement a new syntax for Scheme by modifying the procedures in this section, without changing eval or apply.
+** Answer
+I will illustrate it by changing the sequence of the do, the check will be at the front and them the initials and finally, the body.
+
+#+BEGIN_SRC scheme
+(define do-param caddr)
+(define do-check cadr)
+
+;; ;; test
+;; (geval '(do ((or (= a 0)
+;;                  (= b 5))
+;;              (+ a 1)
+;;              (- b 1))
+;;             ((a 5 (- a 1))
+;;              (b 0 (+ b 1)))
+;;           (+ a a)
+;;           (+ b b)))
+;; (exit)
+#+END_SRC
+* Exercise 4.11
+Instead of representing a frame as a pair of lists, we can represent a frame as a list of bindings, where each binding is a name-value pair. Rewrite the environment operations to use this alternative representation.
+** Answer
+I originally implemented as the default settings of the frame.
+#+BEGIN_SRC scheme
+;;------------------------------
+;; the environment object
+;;------------------------------
+;; for every level of evaluation, the environment object could be look up using (env-look-up env)
+
+;; env?
+(define env? (tag-named 'env))
+
+;; operator for env
+(define env-parent-null? null?)
+
+;; generate a environment
+(define (env-gen . parent-env)
+  (if (and (not (null? parent-env))
+           (env? (car parent-env)))
+      (set! parent-env (car parent-env)))
+  (tag-gen 'env parent-env))
+
+;; selector for the env
+(define env-parent-env cadr)
+(define env-frame cddr)
+
+;; constructor for the bindings-pair
+(define bindings-pair cons)
+(define bindings-add cons)
+
+;; env-new-bindings
+(define (env-set-new-bindings env new-bindings)
+  (set-cdr! (cdr env) new-bindings))
+
+;; add a binding into the environment
+(define (env-add env name data)
+  (if (symbol? name)
+      (env-set-new-bindings env (bindings-add (bindings-pair name data)
+                                              (env-frame env)))
+      (error "name is not a symbol" name)))
+
+(define (env-adds env names values)
+  (if (= (length names) (length values))
+      (doublemap (lambda (n v) (env-add env n v))
+                      names
+                      values)
+      (error "Not equal length of names and values!" names values)))
+
+;; bindings selector
+(define bindings-next cdr)
+(define bindings-first-pair car)
+;; binding-pair selector
+(define bindings-pair-name car)
+(define bindings-pair-value cdr)
+
+;; internal search for a value
+(define (env-internal-search env name . return-when-not-found)
+  (if (symbol? name)
+      (let ((parent-env (env-parent-env env))
+            (bindings (env-frame env)))
+        (let search ((rest (bindings-next bindings))
+                     (first-pair (bindings-first-pair bindings)))
+          (cond ((eq? name (bindings-pair-name first-pair))
+                 first-pair)
+                ((not (null? rest))
+                 (search (bindings-next rest)
+                         (bindings-first-pair rest)))
+                ((env-parent-null? parent-env)
+                 (if (null? return-when-not-found)
+                     (list)
+                     (error "name not found in the current env" name)))
+                (else
+                 (env-internal-search parent-env name)))))
+      (error "name is not a symbol" name)))
+
+;; search the name
+(define (env-search env name . return-when-not-found)
+  (if (null? return-when-not-found)
+      (bindings-pair-value (env-internal-search env name))
+      (env-internal-search env name #t)))
+
+;; change the name
+(define (env-change env name value)
+  (set-cdr! (env-internal-search env name) value))
+#+END_SRC
+* Exercise 4.12
+The procedures set-variable-value!, define-variable!, and lookup-variable-value can be expressed in terms of more abstract procedures for traversing the environment structure. Define abstractions that capture the common patterns and redefine the three procedures in terms of these abstractions.
+** Answer
+Could not understand how to do it.
+* Exercise 4.13
+Scheme allows us to create new bindings for variables by means of define, but provides no way to get rid of bindings. Implement for the evaluator a special form make-unbound! that removes the binding of a given symbol from the environment in which the make-unbound! expression is evaluated. This problem is not completely specified. For example, should we remove only the binding in the first frame of the environment? Complete the specification and justify any choices you make.
+** Answer
+#+BEGIN_SRC scheme
+(define (frame-delete f name)
+  ;; function to remove the name
+  (define (remove-n l n)
+    (cond ((= n 0) (cdr l))
+          (else (cons (car l) (remove-n (cdr l) (- n 1))))))
+
+  ;; counting the location of the name
+  (let ((number (let iter ((rest (frame-name f))
+                           (number 0))
+                  (cond ((null? rest) 'name-not-found)
+                        ((eq? name (car rest)) number)
+                        (else (iter (cdr rest) (+ number 1)))))))
+    (cond ((eq? number 'name-not-found)
+           'name-not-found)
+          (else
+           (set-car! f (remove-n (frame-name f) number))
+           (set-cdr! f (remove-n (frame-value f) number))
+           #t))))
+
+(define (env-delete env name . return-when-not-found)
+  (let ((result (frame-delete (env-frame env) name)))
+    (cond ((and (null? return-when-not-found)
+                (eq? result 'name-not-found))
+           (error "name not found -- " name))
+          (else result))))
+
+(define (env-delete-all-in-this env name)
+  (let iter ((result (env-delete env name #t)))
+    (cond ((eq? result 'name-not-found)
+           #t)
+          (else (iter (env-delete env name #t))))))
+
+(define (env-delete-all-in-all env name)
+  (env-delete-all-in-this env name)
+  (cond ((env-parent-null? env) #t)
+        (else (env-delete-all-in-all (env-parent-env env) name))))
+#+END_SRC
+
+* Exercise 4.14
+Eva Lu Ator and Louis Reasoner are each experimenting with the metacircular evaluator. Eva types in the definition of map, and runs some test programs that use it. They work fine. Louis, in contrast, has installed the system version of map as a primitive for the metacircular evaluator. When he tries it, things go terribly wrong. Explain why Louis's map fails even though Eva's works.
+** Answer
+The fact that Eva's works is that the interpreter uses the scheme's map process. But Louis's primitive may has problems with implementation or so.
+* Exercise 4.15
+Given a one-argument procedure p and an object a, p is said to =halt= on a if evaluating the expression (p a) returns a value (as opposed to terminating with an error message or running forever). Show that it is impossible to write a procedure halts? that correctly determines whether p halts on a for any procedure p and object a. Use the following reasoning: If you had such a procedure halts?, you could implement the following program:
+#+BEGIN_SRC scheme
+(define (run-forever) (run-forever))
+(define (try p)
+  (if (halts? p p)
+      (run-forever)
+      'halted))
+#+END_SRC
+Now consider evaluating the expression (try try) and show that any possible outcome (either halting or running forever) violates the intended behavior of halts?.
+** Answer
+This is the famous halting problem. The logical contradiction here is that if we say =(try try)= will halt, then when we get to the code of =try=, it will actually run forever. But when we say =(try try)= will not halt, then when we get to the code of =try=, it will halt.
+* Exercise 4.19
+Ben Bitdiddle, Alyssa P. Hacker, and Eva Lu Ator are arguing about the desired result of evaluating the expression
+#+BEGIN_SRC scheme
+(let ((a 1))
+  (define (f x)
+    (define b (+ a x))
+    (define a 5)
+    (+ a b))
+(f 10))
+#+END_SRC
+Ben asserts that the result should be obtained using the sequential rule for define: b is defined to be 11, then a is defined to be 5, so the result is 16. Alyssa objects that mutual recursion requires the simultaneous scope rule for internal procedure definitions, and that it is unreasonable to treat procedure names differently from other names. Thus, she argues for the mechanism implemented in exercise 4.16. This would lead to a being unassigned at the time that the value for b is to be computed. Hence, in Alyssa's view the procedure should produce an error. Eva has a third opinion. She says that if the definitions of a and b are truly meant to be simultaneous, then the value 5 for a should be used in evaluating b. Hence, in Eva's view a should be 5, b should be 15, and the result should be 20. Which (if any) of these viewpoints do you support? Can you devise a way to implement internal definitions so that they behave as Eva prefers?
+** Answer
+The scheme chicken would generate error while executing the above code. I actually vote for the sequential evaluation. And to enable Eva's idea, we need to scan the =define= and get the direct value into the environment first and then the complex evaluation.
+
+* Exercise 4.21
+Amazingly, Louis's intuition in exercise 4.20 is correct. It is indeed possible to specify recursive procedures without using letrec (or even define), although the method for accomplishing this is much more subtle than Louis imagined. The following expression computes 10 factorial by applying a recursive factorial procedure:
+#+BEGIN_SRC scheme
+((lambda (n)
+   ((lambda (fact)
+      (fact fact n))
+    (lambda (ft k)
+      (if (= k 1) 1
+          (* k (ft ft (- k 1)))))))
+ 10)
+#+END_SRC
+1. Check (by evaluating the expression) that this really does compute factorials. Devise an analogous expression for computing Fibonacci numbers.
+2. Consider the following procedure, which includes mutually recursive internal definitions:
+#+BEGIN_SRC scheme
+(define (f x)
+  (define (even? n)
+    (if (= n 0)
+        true
+        (odd? (- n 1))))
+  (define (odd? n)
+    (if (= n 0)
+        false
+        (even? (- n 1))))
+  (even? x))
+#+END_SRC
+Fill in the missing expressions to complete an alternative definition of f, which uses neither internal definitions nor letrec:
+#+BEGIN_SRC scheme
+(define (f x)
+  ((lambda (even? odd?)
+     (even? even? odd? x))
+   (lambda (ev? od? n)
+     (if (= n 0) true (od? <??> <??> <??>)))
+   (lambda (ev? od? n)
+     (if (= n 0) false (ev? <??> <??> <??>)))))
+#+END_SRC
+** Answer
+This is called the y combinator. For more details, you could look at the =sec4.1-y-combinator.scm=.However, in the preceding text, the first attempt extracts the =n= as the first lambda parameter, making the body of the factor program unable to be independent of the recursion. That is not a standard way to abstract the common pattern of y combinator.
+#+BEGIN_SRC scheme
+(define (fib n)
+  (if (or (= n 0)
+          (= n 1))
+      1
+      (+ (fib (- n 1))
+         (fib (- n 2)))))
+
+;; the form without the define
+((lambda (x)
+  (lambda (n)
+    (if (or (= n 0)
+            (= n 1))
+        1
+        (+ ((x x) (- n 1))
+           ((x x) (- n 2))))))
+ (lambda (x)
+  (lambda (n)
+    (if (or (= n 0)
+            (= n 1))
+        1
+        (+ ((x x) (- n 1))
+           ((x x) (- n 2)))))))
+
+;; extracte the y combinator
+(define y-combinator (lambda (g)
+                       ((lambda (f)
+                          (f f))
+                        (lambda (u)
+                          (g
+                           (lambda (v) ((u u) v)))))))
+
+(define fib (y-combinator
+             (lambda (x)
+               (lambda (n)
+                 (if (or (= n 0)
+                         (= n 1))
+                     1
+                     (+ (x (- n 1))
+                        (x (- n 2))))))))
+
+;; 2 fill out
+(print ((lambda (x)
+          ((lambda (even? odd?)
+             (even? even? odd? x))
+           (lambda (ev? od? n)
+             (if (= n 0) #t (od? ev? od? (- n 1))))
+           (lambda (ev? od? n)
+             (if (= n 0) #f (ev? od? ev? (- n 1))))))
+        4))
+#+END_SRC
+For more on the y-combinator for the two functions or two parameter, see the contents inside the =sec4.1-y-combinator.scm=.
+* Exercise 4.22
+Extend the evaluator in this section to support the special form let.
+** Answer
+Done in the implementation.
+* Exercise 4.23
+Alyssa P. Hacker doesn't understand whyanalyze-sequenceneeds to be so complicated. All the other analysis procedures are straightforward transformations of the corresponding evaluation procedures (or eval clauses) in section 4.1.1. She expected analyze-sequence to look like this:
+#+BEGIN_SRC scheme
+(define (analyze-sequence exps)
+  (define (execute-sequence procs env)
+    (cond ((null? (cdr procs)) ((car procs) env))
+          (else ((car procs) env)
+                (execute-sequence (cdr procs) env))))
+  (let ((procs (map analyze exps)))
+    (if (null? procs)
+        (error "Empty sequence -- ANALYZE"))
+    (lambda (env) (execute-sequence procs env))))
+#+END_SRC
+Eva Lu Ator explains to Alyssa that the version in the text does more of the work of evaluating a sequence at analysis time. Alyssa's sequence-execution procedure, rather than having the calls to the individual execution procedures built in, loops through the procedures in order to call them: In effect, although the individual expressions in the sequence have been analyzed, the sequence itself has not been.
+Compare the two versions of analyze-sequence. For example, consider the common case (typical of procedure bodies) where the sequence has just one expression. What work will the execution procedure produced by Alyssa's program do? What about the execution procedure produced by the program in the text above? How do the two versions compare for a sequence with two expressions?
+** Answer
+The difference between the two is whether to leave the =null?= checking of the analyzers to the returned function or not. The implementation of the book returns an folded function with one analyzer at each level, while the code above, return a function that checks the analyzer lists and apply one at each recursion. For the former, the =loop= will create 2l (/the length of analyzer list/) parralleled frames during the analysis, and will release (/I guess/) them during the runtime, while the returned function will create l folded and l paralleled frames. For the latter, no frames will be created before the return, but the returned function, together with =execute-sequence= function and the analyzers, will create 3l paralleled frames in runtime given the environment model.
+* Exercise 4.24
+Design and carry out some experiments to compare the speed of the original metacircular evaluator with the version in this section. Use your results to estimate the fraction of time that is spent in analysis versus execution for various procedures.
+** Answer
+Using the recursion function like:
+#+BEGIN_SRC scheme
+;; test for performance
+(define starttime (current-milliseconds))
+(geval '(define r (lambda (n)
+                    (if (< n 0)
+                        0
+                        (r (- n 1))))))
+(geval '(r 2000))
+(define endtime (current-milliseconds))
+(print (- endtime starttime))
+(exit)
+#+END_SRC
+
+We have:
+| n imput | original eval | eval with analyzer |
+|---------+---------------+--------------------|
+|    1000 |            74 |                111 |
+|    2000 |           148 |                208 |
+|    4000 |           279 |                400 |
+
+So simple expressions are not well carried on, try some complicated ones.
+
+#+BEGIN_SRC scheme
+(define starttime (current-milliseconds))
+(geval '(define (fib n)
+                  (if (= n 0)
+                      1
+                      (if (= n 1)
+                          1
+                          (+ (fib (- n 1))
+                             (fib (- n 2)))))))
+(geval '(fib 10))
+(define endtime (current-milliseconds))
+(print (- endtime starttime))
+#+END_SRC
+
+The result is:
+| n imput | original eval | eval with analyzer |
+|---------+---------------+--------------------|
+|      10 |            31 |                 97 |
+|      20 |          2104 |               3728 |
+
+So, I product the opposite results: the analyzer actually slow down the evaluator, but we could also try on begin:
+#+BEGIN_SRC scheme
+(define starttime (current-milliseconds))
+(geval '(define (fib n)
+                  (if (= n 0)
+                      1
+                      (if (= n 1)
+                          1
+                          (+ (fib (- n 1))
+                             (fib (- n 2)))))))
+
+(define add-fib (lambda (n) (if (= 0 n)
+                                (list)
+                                (cons '(fib 2) (add-fib (- n 1))))))
+(geval (cons 'begin (add-fib 1000)))
+(define endtime (current-milliseconds))
+(print (- endtime starttime))
+#+END_SRC
+| n imput | original eval | eval with analyzer |
+|---------+---------------+--------------------|
+| 1000    | 331           | 326                |
+| 2000    | 331           | 326                |
+
+So the conclusion is not very good considering the analyzer is supposed to accelerate the process.
