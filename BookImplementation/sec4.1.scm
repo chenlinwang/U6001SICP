@@ -244,13 +244,13 @@
                                         (define-lambda-arg exp)
                                         (define-lambda-body exp)))))
     (env-add env name value)
-    (eval value env)))
+    (eval-value value env)))
 
 ;;------------------------------
 ;; variable
 (define variable? symbol?)
 (define (variable-eval exp env)
-  (eval (env-search env exp) env))
+  (env-search env exp))
 
 ;;------------------------------
 ;; set
@@ -338,7 +338,7 @@
       (env-adds env lambda-arg arg)
       ;; carried out the body
       ;;(print lambda-body)
-      (eval (begin-gen lambda-body) env))))
+      (eval-value (begin-gen lambda-body) env))))
 
 ;; the lambda
 (define lambda? (tag-named 'lambda))
@@ -374,7 +374,7 @@
     (cond ((lambda-code? name)
            (lambda-code-apply name arg env))
           (else
-           (apply name arg)))))
+           (apply name (map (lambda (e) (eval-value e env)) arg))))))
 
 ;;------------------------------
 ;; cond clause
@@ -455,11 +455,20 @@
         (else
          (error "evaluation prefix not found" exp))))
 
+;; get eval value
+(define (eval-value exp env)
+  (let ((result (eval exp env)))
+    (if (or (self-evaluator? exp)
+            (string? exp)
+            (lambda-code? exp))
+        result
+        (eval-value result env))))
+
 (define genv (env-gen-global-env '(+ - * / < > = <= >)
                                  (list + - * / < > = <= >)))
 
 (define (geval exp)
-  (let ((r (eval exp genv)))
+  (let ((r (eval-value exp genv)))
     (if (lambda-code? r)
         (lambda-code-print r)
         (print r))))
@@ -501,6 +510,11 @@
 ;;               (b 2))
 ;;           (+ a 1)
 ;;           (+ b 1)))
+;; ;; recursionally define
+;; (geval '(define a 1))
+;; (geval '(define b a))
+;; (geval '(define c b))
+;; (geval '(define d c))
 ;; (exit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -655,11 +669,11 @@
 ;; (exit)
 
 
-(define genv (env-gen-global-env '(+ - * / < > = <= >= list car cdr)
-                                 (list + - * / < > = <= >= list car cdr)))
+(define genv (env-gen-global-env '(+ - * / < > = <= >= list car cdr display newline)
+                                 (list + - * / < > = <= >= list car cdr display newline)))
 
 (define (geval exp)
-  (let ((r (eval exp genv)))
+  (let ((r (eval-value exp genv)))
     (if (lambda-code? r)
         (lambda-code-print r)
         (print r))))
@@ -701,9 +715,21 @@
 ;;               (b 2))
 ;;           (+ a 1)
 ;;           (+ b 1)))
+;; ;; the recursion definition
+;; (geval '(define a 1))
+;; (geval '(define b a))
+;; (geval '(define c b))
+;; (geval '(define d c))
 ;; (exit)
+
 ;; the list
 ;; (geval '(car (list 1 2)))
+;; the writeline
+;; (geval '(display 1))
+;; (geval '(define (double x) (+ x x)))
+;; (geval '(double (begin (display 12)
+;;                        (newline)
+;;                        12)))
 ;; (exit)
 ;; test for the reciprocal function
 ;; (geval '(define (f x)
@@ -771,7 +797,7 @@
     (if (lambda-code? value)
         (set! value (lambda-code->let-form value)))
     (env-add env name value)
-    (eval value env)))
+    (eval-value value env)))
 
 ;; ;; test for the *unassigned*
 ;; (geval '(define t *unassigned*))
@@ -806,22 +832,22 @@
 ;; (geval '(fib 20))
 ;; (define endtime (current-milliseconds))
 ;; (print (- endtime starttime))
-(define starttime (current-milliseconds))
-(geval '(define (fib n)
-                  (if (= n 0)
-                      1
-                      (if (= n 1)
-                          1
-                          (+ (fib (- n 1))
-                             (fib (- n 2)))))))
+;; (define starttime (current-milliseconds))
+;; (geval '(define (fib n)
+;;                   (if (= n 0)
+;;                       1
+;;                       (if (= n 1)
+;;                           1
+;;                           (+ (fib (- n 1))
+;;                              (fib (- n 2)))))))
 
-(define add-fib (lambda (n) (if (= 0 n)
-                                (list)
-                                (cons '(fib 2) (add-fib (- n 1))))))
-(geval (cons 'begin (add-fib 1000)))
-(define endtime (current-milliseconds))
-(print (- endtime starttime))
-(exit)
+;; (define add-fib (lambda (n) (if (= 0 n)
+;;                                 (list)
+;;                                 (cons '(fib 2) (add-fib (- n 1))))))
+;; (geval (cons 'begin (add-fib 1000)))
+;; (define endtime (current-milliseconds))
+;; (print (- endtime starttime))
+;; (exit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; analyzer instead of evaluator
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1027,19 +1053,19 @@
 ;; (geval '(fib 20))
 ;; (define endtime (current-milliseconds))
 ;; (print (- endtime starttime))
-(define starttime (current-milliseconds))
-(geval '(define (fib n)
-                  (if (= n 0)
-                      1
-                      (if (= n 1)
-                          1
-                          (+ (fib (- n 1))
-                             (fib (- n 2)))))))
+;; (define starttime (current-milliseconds))
+;; (geval '(define (fib n)
+;;                   (if (= n 0)
+;;                       1
+;;                       (if (= n 1)
+;;                           1
+;;                           (+ (fib (- n 1))
+;;                              (fib (- n 2)))))))
 
-(define add-fib (lambda (n) (if (= 0 n)
-                                (list)
-                                (cons '(fib 2) (add-fib (- n 1))))))
-(geval (cons 'begin (add-fib 2000)))
-(define endtime (current-milliseconds))
-(print (- endtime starttime))
-(exit)
+;; (define add-fib (lambda (n) (if (= 0 n)
+;;                                 (list)
+;;                                 (cons '(fib 2) (add-fib (- n 1))))))
+;; (geval (cons 'begin (add-fib 2000)))
+;; (define endtime (current-milliseconds))
+;; (print (- endtime starttime))
+;; (exit)

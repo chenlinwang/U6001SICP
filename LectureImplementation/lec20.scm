@@ -134,7 +134,7 @@
 ;; variable
 (define variable? symbol?)
 (define (variable-eval var env)
-  (eval (environment-search env var) env))
+  (environment-search env var))
 
 ;;--------------------
 ;; lambda evaluation
@@ -204,7 +204,7 @@
         (arg (application-arg exp)))
     (cond ((procedure? pro)
            (apply pro
-                  (map (lambda (a) (eval a env))
+                  (map (lambda (a) (eval-value a env))
                        arg)))
           ((lambda-code? pro)
            (let ((lambda-env (lambda-code-env pro))
@@ -253,6 +253,12 @@
         ((application? exp) (application-eval exp env))
         (else (error "Undefined expression -- " exp))))
 
+(define (eval-value exp env)
+  (let ((result (eval exp env)))
+    (if (or (self-evaluated? result)
+            (lambda-code? result))
+        result
+        (eval-value result env))))
 ;; define the global environment
 (define genv (make-global-environmet))
 ;; add some premitives
@@ -266,16 +272,15 @@
 
 ;; wrap the eval
 (define (geval exp)
-  (let ((result (eval exp genv)))
+  (let ((result (eval-value exp genv)))
     ;; check the lambda code to avoid the circular display
     (print-out (if (lambda-code? result)
                    (lambda-code-display result)
                    result))))
 
-;; ;; recursion evaluation
-;; (geval '(define a 1))
-;; (geval '(set! a (+ a 1)))
-;; (exit)
+;; recursion evaluation
+(geval '(define a 1))
+(geval '(set! a (+ a 1)))
 
 ;; ;; Test
 ;; ;; self evaluation
@@ -297,7 +302,7 @@
 ;; (geval '(set! a 2))
 ;; (geval 'a)
 
-;; if
+;; ;; if
 ;; (geval '(if (> 2 1) 2 1))
 
 ;; ;; lexical scoping
@@ -311,7 +316,7 @@
 ;; (geval '(define r (lambda () (r))))
 ;; (geval '(define t (lambda (x y) (if (= x 0) 0 y))))
 ;; (geval '(t 0 (r))) ;; run forever
-
+;; (exit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Some Syntactic Sugar
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -372,7 +377,7 @@
          (pre (cond-body-first-pre body) (cond-body-first-pre left-body))
          (body-command (cond-body-first-bod body) (cond-body-first-bod left-body)))
         ((or (eq? 'else pre)
-             (eval pre env)
+             (eval-value pre env)
              (null? left-body))
          (cond ((or (eq? 'else pre)
                     (eval pre env))

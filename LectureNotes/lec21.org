@@ -1,0 +1,28 @@
+* Normal Order Evaluation
+The normal order evaluation is different from the applicative order. It will only envaluate the procedure variable down to lambda function or primitive procedures and keep the parameters into the function process until its value is needed by the primitive procedures.
+
+To implement this order, what we need to do is to change the evaluation of the parameters in the =application evaluation=. We will define a data structure called =thunk= and bind it with the arguments in the lambda function. The =thunk= consists of the expression of the variable and in which it should be evaluated. When not required to be evaluated, it keeps its data structure and when needed, it will be evaluated by =actual-value= which will recursionally evaluate the function to its base form ( not delayed data ). So, what we need to do:
+
+1. change the data evaluation before the application-eval to adding the delayed tag.
+2. force an actual evaluation to non-delayed data when primitive procedures appears.
+3. get the =if= clause to use the actual evalution for the premise, to avoid the delay data.
+
+* Memorised Lazy Evaluation
+Very often we need to evaluate a lot of same data, so we could memorized the data using the set. The implementation goes like every time we have to evaluate a delayed data, we change the delayed data tag into a memorised data tag and replace the expression and environment with the actually value of it. We need to do:
+
+1. modify =actual-value= to make changes to delayed data and directly get value if the delayed data is already evaluated.
+
+* Problems with the second case
+In a language that mutation exists, repeatedly evaluation will have some different effects very time, like:
+#+BEGIN_SRC Scheme
+(begin (set! x (+ x 1)) x)
+#+END_SRC
+Every time, the expression is evaluated, it increases by 1. However, the memorised lazy evaluation takes alway this kinds of feature.
+
+* Define types in the lambda
+So why not define the evaluation type in the lambda, we could go with applicative order, lazy evaluation or memorised lazy evaluation.
+We just need to:
+
+1. modify the definition for the lambda.
+2. verify the type for the arguments in the =applicative-eval= and keep the case.
+3. modify the =actual-value= so that it acts according to the type of the data.
