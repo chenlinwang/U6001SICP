@@ -7,3 +7,7 @@ BookExercise/sec2.4.scm
 
 #Reflections files not ready yet
 CodingNotes.org
+course
+
+# output logs
+*.out

@@ -250,6 +250,7 @@
 (define define-gen (tag-add-name-function 'define))
 
 (define (define-eval exp env)
+  ;;(print "enter define")
   (let ((name (define-name exp))
         (value (define-value exp)))
     ;; add the syntax sugar for the define
@@ -260,8 +261,10 @@
            (set! value (lambda-code-gen env
                                         (define-lambda-arg exp)
                                         (define-lambda-body exp)))))
-    (env-add env name value)
-    (eval value env)))
+    ;; (print "end")
+    (env-add env name '*unassigned*)
+    (env-change env name (eval value env))
+    (env-search env name)))
 
 ;;------------------------------
 ;; variable
@@ -379,12 +382,18 @@
                           lambda-arg arg))
           (lambda-arg (map (lambda (la) (if (list? la) (lambda-arg-name la) la)) lambda-arg)))
 
-      ;;(print "enter lambda-code-apply")
-      ;;(print arg)
+      ;; (print "enter lambda-code-apply")
+      ;; (env-check-print arg)
+      ;; (print "current old env")
+      ;; (env-check-print (cdr old-env))
+      ;; (print "current lambda env")
+      ;; (env-check-print (cdr lambda-env))
       ;;lexical-or-dynamic-coping
       (let ((env (env-gen-empty-env lambda-env)))
         ;; add the name value bindings into the env
         (env-adds env lambda-arg arg)
+        ;; (print "current new env")
+        ;; (env-check-print (cdr env))
         ;; carried out the body
         ;;(print lambda-body)
         (eval (begin-gen lambda-body) env)))))
@@ -460,21 +469,31 @@
 
 ;; new force-it
 (define (force-it exp)
+  ;; (write-line "force-it:")
+    ;; (if (lambda-code? exp)
+    ;;   (lambda-code-print exp)
+    ;;   exp)
   (cond ((delay-tag? exp)
+         ;; (print "delay-tag")
          (actual-value (delay-exp exp) (delay-env exp)))
         ((memoried-tag? exp)
+         ;; (print "memoried-tag")
          (let ((result (actual-value (delay-exp exp) (delay-env exp))))
            (solve-thunk-memoried exp result)
+           ;; (print result)
            result))
-        ((solved-tag? exp) (solved-value exp))
-        (else exp)))
+        ((solved-tag? exp)
+         ;; (print "solved-tag")
+         (solved-value exp))
+        (else
+         ;; (print "base value")
+         exp)))
 ;; 3 end
 
 (define (actual-value exp env)
   ;; (write-line "actual value:")
   ;; (print exp)
   (force-it (eval exp env)))
-
 (define (list-of-actual-exp exp env)
   ;; (write-line "list-of-actual-exp:")
   ;; (print exp)
@@ -493,6 +512,7 @@
   (map (lambda (e) (eval e env)) arg))
 
 (define (application-eval exp env)
+  ;;(print "enter application eval")
   (let ((name (actual-value (application-name exp) env))
         ;; adjust the args-eval-order and cbn-or-cbv
         (arg (application-arg exp)))
@@ -502,8 +522,9 @@
            ;; (print name)
            ;; (print (list-of-actual-exp arg env))
            ;; (print "---")
-           (apply name (map (lambda (e) (eval-value e env))
-                            (list-of-actual-exp arg env)))))))
+           (if (equal? name cons)
+               (apply name (list-of-values arg env))
+               (apply name (list-of-actual-exp arg env)))))))
 
 ;;------------------------------
 ;; cond clause
@@ -566,7 +587,7 @@
   (cond (debug
          (write-line "eval input exp:")
          (cond ((lambda-code? exp) (lambda-code-print exp))
-               ((else (print exp))))))
+               (else (env-check-print exp)))))
 
   (cond ((internal-represent? exp) exp)
         ((self-evaluator? exp) (self-eval exp env))
@@ -579,26 +600,66 @@
         ((lambda? exp) (lambda-eval exp env))
         ((cond? exp) (cond-eval exp env))
         ((let? exp) (eval (let->application exp) env))
+        ;; ((cons? exp) (cons-eval exp env))
+        ;; ((car? exp) (car-eval exp env))
+        ;; ((cdr? exp) (cdr-eval exp env))
         ((application? exp) (application-eval exp env))
         (else
          (error "evaluation prefix not found" exp))))
 
-(define (eval-value exp env)
-  (if (or (self-evaluator? exp)
-            (lambda-code? exp)
-            (internal-represent? exp)
-            (string? exp))
-      exp
-      (eval-value (eval exp env) env)))
 
-(define genv (env-gen-global-env '(+ - * / < > = <= > print)
-                                 (list + - * / < > = <= > print)))
+(define genv (env-gen-global-env
+              '(+ - * / < > = <= > >= print null? cons car cdr list remainder not)
+              (list + - * / < > = <= > >= print null? cons car cdr list remainder not)))
 
+(define (env-check-print exp)
+  (define (write-prefix distance)
+    (do ((start distance (- start 1)))
+        ((= start 0) (write ""))
+      (write "")))
+  (let outsideiter ((start exp)
+                    (distance 5))
+    (cond ((env? start)
+           (write '(env)))
+          ((list? start)
+           (write "(")
+           (let insideiter ((l start)
+                            (thefirst #t))
+             (cond ((null? l)
+                    ;;(write "")
+                    )
+                   ((env? (car l))
+                    (write '(env))
+                    (insideiter (cdr l) #f))
+                   ((list? (car l))
+                    (cond ((not thefirst)
+                           (write "")
+                           (newline)
+                           (write-prefix distance)))
+                    (outsideiter (car l) (+ 1 distance))
+                    (cond ((not (null? (cdr l)))
+                           (newline)
+                           (write-prefix (+ 1 distance))
+                           (insideiter (cdr l) #f))))
+                   (else
+                    (write (car l))
+                    (write "")
+                    (insideiter (cdr l) #f))))
+           (write ")"))
+          (else
+           (write start)
+           (write ""))))
+  (newline))
+
+(define gevalnum 1)
+(define output-promt "-out >>>")
 (define (geval exp)
-  (let ((r (eval-value exp genv)))
-    (if (lambda-code? r)
-        (lambda-code-print r)
-        (print r))))
+  (let ((r (eval exp genv)))
+    (write gevalnum)
+    (write output-promt)
+    (set! gevalnum (+ 1 gevalnum))
+    (env-check-print r))
+  (newline))
 
 ;; ;; test
 ;; ;; self evlautor
@@ -645,3 +706,115 @@
 ;;           (+ x x y y z z)))
 ;; (geval '(foo (begin (print 2) 2) (begin (print 3) 3) (begin (print 4) 4)))
 ;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; the recursion input module
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define input-prompt "-in  >>>")
+
+(define (driver-loop)
+  (write gevalnum)
+  (write input-prompt)
+  (let ((input (read)))
+    (cond ((and (list? input)
+                (eq? (car input) 'exit))
+           (print "end of recursion ;P"))
+          ((geval input)
+           (driver-loop)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; the stream control
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; check for the cons and car and cdr
+;; (geval '(define a (cons 1 2)))
+;; (geval 'a)
+;; (geval '(car a))
+;; (geval '(cdr a))
+;; (geval '(define b (cons 3 a)))
+;; (geval '(car (cdr b)))
+;; (geval 'nil)
+;; (geval '(null? nil))
+;; (exit)
+
+;; ;; construct the stream object
+(geval '(define (stream-cons x (y thunk-memoried))
+          (cons x y)))
+;; ;; (print "end first")
+(geval '(define ones (stream-cons 1 ones)))
+;; (geval '(cdr ones))
+;; (geval '(car (cdr ones)))
+;; ;; (geval 'ones)
+;; (exit)
+;; ;; construct the int interval
+(geval '(define (stream-int start end)
+          (if (>= start end)
+              (list)
+              (stream-cons start (stream-int (+ start 1) end)))))
+(geval '(define (stream-ref s n)
+          (cond ((null? s)
+                 (print (list 'end 'of 'the 'stream)))
+                ((= n 0)
+                 (car s))
+                (else
+                 (stream-ref (cdr s) (- n 1))))))
+;; (geval '(define intval (stream-int 1 10000000)))
+;; (geval '(car (cdr intval)))
+;; (geval '(cdr (cdr intval)))
+;; (geval '(null? (cdr (cdr intval))))
+(geval '(define (stream-filter pre s)
+          (cond ((null? s)
+                 (list))
+                (else
+                 (let ((first (car s))
+                       (second (cdr s)))
+                   (cond ((pre first)
+                          (stream-cons first (stream-filter pre second)))
+                         (else
+                          (stream-filter pre second))))))))
+(geval '(define (add-stream s1 s2)
+          (cond ((null? s1) (list))
+                ((null? s2) (list))
+                (else
+                 (stream-cons (+ (car s1)
+                                 (car s2))
+                              (add-stream (cdr s1)
+                                          (cdr s2)))))))
+
+;; ;; the seise test
+(geval '(define ints (stream-cons 2 (add-stream ones ints))))
+;; (geval '(define (devide? d1 d2) (= (remainder d1 d2) 0)))
+;; (geval '(define (seive str)
+;;           (stream-cons (car str)
+;;                        (seive (stream-filter (lambda (x)
+;;                                                (not (devide? x (car str))))
+;;                                              (cdr str))))))
+;; (geval '(define prime (seive ints)))
+;; ;; (driver-loop)
+;; ;; (exit)
+
+(geval '(define (stream-scale dt integrand)
+          (define (inner-scale accumulate-dt in)
+            (cond ((null? in) 0)
+                  ((= accumulate-dt 0)
+                   (stream-cons 0 (stream-scale dt in)))
+                  (else
+                   (let ((correct-stream (inner-scale (- accumulate-dt 1)
+                                                      (cdr in))))
+                     (stream-cons (+ (car in)
+                                     (car correct-stream))
+                                  (cdr correct-stream))))))
+          (inner-scale dt integrand)))
+
+;; (geval '(car (stream-scale 3 ones)))
+;; (geval '(car (stream-scale 4 ones)))
+(geval '(define (integral integrand init dt)
+          (define int
+            (stream-cons init
+                         (add-stream (stream-scale dt integrand)
+                                     int)))
+          int))
+(geval '(define int-ones (integral ones 0 2)))
+;; (geval '(define scale-ints (stream-scale 2 ints)))
+;; (geval '(define scale-ones (stream-scale 2 ones)))
+;; (exit)
+;; (driver-loop)

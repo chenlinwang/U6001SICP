@@ -243,8 +243,10 @@
            (set! value (lambda-code-gen env
                                         (define-lambda-arg exp)
                                         (define-lambda-body exp)))))
-    (env-add env name value)
-    (eval-value value env)))
+    (let ((r (eval value env)))
+      (env-add env name '*unassigned*)
+      (env-change env name r)
+      r)))
 
 ;;------------------------------
 ;; variable
@@ -264,9 +266,9 @@
   (let ((name (set-name exp))
         (value (set-value exp)))
     (if (env-exist? env name)
-        (env-change env name value)
-        (env-add env name value))
-    (eval value env)))
+        (env-change env name (eval value env))
+        (env-add env name (eval value env)))
+    (env-search env name)))
 ;;------------------------------
 ;; if clause
 (define if? (tag-named 'if))
@@ -338,7 +340,7 @@
       (env-adds env lambda-arg arg)
       ;; carried out the body
       ;;(print lambda-body)
-      (eval-value (begin-gen lambda-body) env))))
+      (eval (begin-gen lambda-body) env))))
 
 ;; the lambda
 (define lambda? (tag-named 'lambda))
@@ -371,10 +373,17 @@
   (let ((name (eval (application-name exp) env))
         ;; adjust the args-eval-order and cbn-or-cbv
         (arg (list-of-values (application-arg exp) env)))
+    (cond (debug
+           (print "enter application eval:")
+           (write "name:")
+           (env-check-print name)
+           (write "arg:")
+           (env-check-print arg)
+           (newline)))
     (cond ((lambda-code? name)
            (lambda-code-apply name arg env))
           (else
-           (apply name (map (lambda (e) (eval-value e env)) arg))))))
+           (apply name (list-of-values arg env))))))
 
 ;;------------------------------
 ;; cond clause
@@ -435,9 +444,8 @@
 ;; evaluator
 (define (eval exp env)
   (cond (debug
-         (if (lambda-code? exp)
-             (lambda-code-print exp)
-             (print exp))
+         (print "enter eval")
+         (env-check-print exp)
          (newline)))
 
   (cond ((internal-represent? exp) exp)
@@ -455,23 +463,63 @@
         (else
          (error "evaluation prefix not found" exp))))
 
-;; get eval value
-(define (eval-value exp env)
-  (let ((result (eval exp env)))
-    (if (or (self-evaluator? exp)
-            (string? exp)
-            (lambda-code? exp))
-        result
-        (eval-value result env))))
 
 (define genv (env-gen-global-env '(+ - * / < > = <= >)
                                  (list + - * / < > = <= >)))
 
+(define (env-check-print exp)
+  (define (write-prefix distance)
+    (do ((start distance (- start 1)))
+        ((= start 0) (write ""))
+      (write "")))
+  (let outsideiter ((start exp)
+                    (distance 3))
+    (cond ((env? start)
+           (write '(env)))
+          ((list? start)
+           (write "(")
+           (let insideiter ((l start)
+                            (thefirst #t))
+             (cond ((null? l)
+                    ;;(write "")
+                    )
+                   ((env? (car l))
+                    (write '(env))
+                    (insideiter (cdr l) #f))
+                   ((list? (car l))
+                    (cond ((not thefirst)
+                           (write "")
+                           (newline)
+                           (write-prefix distance)))
+                    (outsideiter (car l) (+ 1 distance))
+                    (cond ((not (null? (cdr l)))
+                           (newline)
+                           (write-prefix (+ 1 distance))
+                           (insideiter (cdr l) #f))))
+                   (else
+                    (write (car l))
+                    (write "")
+                    (insideiter (cdr l) #f))))
+           (write ")"))
+          (else
+           (write start)
+           (write ""))))
+  (newline))
+
+(define gevalnum 1)
 (define (geval exp)
-  (let ((r (eval-value exp genv)))
-    (if (lambda-code? r)
-        (lambda-code-print r)
-        (print r))))
+  (let ((r (eval exp genv)))
+    (cond ((lambda-code? r)
+           (write gevalnum)
+           (write ">>>")
+           (set! gevalnum (+ 1 gevalnum))
+           (lambda-code-print r))
+          (else
+           (write gevalnum)
+           (write ">>>")
+           (set! gevalnum (+ 1 gevalnum))
+           (env-check-print r)))))
+
 
 ;; ;; test
 ;; ;; self evlautor
@@ -672,11 +720,39 @@
 (define genv (env-gen-global-env '(+ - * / < > = <= >= list car cdr display newline)
                                  (list + - * / < > = <= >= list car cdr display newline)))
 
+(define (env-check-print exp)
+  (let outsideiter ((start exp))
+        (cond ((env? start)
+               (write '(env)))
+              ((list? start)
+               (write "(")
+               (let insideiter ((l start))
+                     (cond ((null? l)
+                            (write "")
+                            )
+                           ((list? (car l))
+                            (write "")
+                            (outsideiter (car l))
+                            (insideiter (cdr l)))
+                           (else
+                            (write (car l))
+                            (write "")
+                            (insideiter (cdr l)))))
+               (write ")"))
+              (else
+               (write start)
+               (write "")
+               )))
+  (newline))
+
+(define gevalnum 1)
 (define (geval exp)
-  (let ((r (eval-value exp genv)))
-    (if (lambda-code? r)
-        (lambda-code-print r)
-        (print r))))
+  (let ((r (eval exp genv)))
+    (write gevalnum)
+    (write ">>>")
+    (set! gevalnum (+ 1 gevalnum))
+    (env-check-print r)))
+
 
 ;; ;; test
 ;; ;; self evlautor
@@ -796,8 +872,9 @@
                                         (define-lambda-body exp)))))
     (if (lambda-code? value)
         (set! value (lambda-code->let-form value)))
-    (env-add env name value)
-    (eval-value value env)))
+    (env-add env name '*unassigned*)
+    (env-add env name (eval value env))
+    (env-search env name)))
 
 ;; ;; test for the *unassigned*
 ;; (geval '(define t *unassigned*))
@@ -855,17 +932,25 @@
 ;; rewrite the eval
 (define (eval exp env)
   (cond (debug
-          (if (lambda-code? exp)
-              (lambda-code-print exp)
-              (print exp))))
+         (print "enter eval")
+         (env-check-print exp)
+         (newline)))
 
   ((analyze exp) env))
 
+(define gevalnum 1)
 (define (geval exp)
-  (let ((result (eval exp genv)))
-    (if (lambda-code? result)
-        (lambda-code-print result)
-        (print result))))
+  (let ((r (eval exp genv)))
+    (cond ((lambda-code? r)
+           (write gevalnum)
+           (write ">>>")
+           (set! gevalnum (+ 1 gevalnum))
+           (lambda-code-print r))
+          (else
+           (write gevalnum)
+           (write ">>>")
+           (set! gevalnum (+ 1 gevalnum))
+           (env-check-print r)))))
 
 ;;--------------------
 ;; self-analyze
@@ -977,9 +1062,9 @@
 
 (define (analyze exp)
   (cond (debug
-         (if (lambda-code? exp)
-             (lambda-code-print exp)
-             (print exp))))
+         (print "enter analyzer")
+         (env-check-print exp)
+         (newline)))
 
   (cond ((internal-represent? exp) (self-analyze exp))
         ((self-evaluator? exp) (self-analyze exp))
@@ -1018,22 +1103,19 @@
 ;; (geval '(begin (define a 1)
 ;;                (set a 2)
 ;;                a))
-;; lambda and lambda code
+;; ;; lambda and lambda code
 ;; (geval '(define tmp (lambda (x) (* 2 x) (+ 2 x))))
 ;; (geval '(define (tmp x) (* 2 x) (+ 2 x)))
 ;; (geval '(tmp 4))
 
-;; ;; cond
-;; (geval '(cond ((= 1 2) 2)
-;;               ((< 1 1) 3)
-;;               (else 4)))
-;; let
+;; ;; let
 ;; (geval '(let ((a 1)
 ;;               (b 2))
 ;;           (+ a 1)
 ;;           (+ b 1)))
 ;; (exit)
-;; test for performance
+
+;; ;; test for performance
 ;; (define starttime (current-milliseconds))
 ;; (geval '(define r (lambda (n)
 ;;                     (if (< n 0)

@@ -27,6 +27,8 @@
     (and (tag? data)
          (eq? name (car data)))))
 
+(define env? (tag-name? 'environment))
+
 (define (environment-init enclosed-env)
   (list 'environment (list) enclosed-env))
 
@@ -121,12 +123,8 @@
 (define (define-eval exp env)
   (let ((name (define-name exp))
         (value (define-value exp)))
-    (cond ((lambda? value)
-           ;; if the value is a lambda definition, evaluate it here to denote the ee
-           (environment-add env name (eval value env)))
-          (else
-           ;; otherwise, just store the text
-           (environment-add env name value)))
+    ;; add the value to the environment
+    (environment-add env name (eval value env))
     ;; return the value evaluation to the upper function
     (eval value env)))
 
@@ -204,8 +202,7 @@
         (arg (application-arg exp)))
     (cond ((procedure? pro)
            (apply pro
-                  (map (lambda (a) (eval-value a env))
-                       arg)))
+                  (map (lambda (a) (eval a env)) arg)))
           ((lambda-code? pro)
            (let ((lambda-env (lambda-code-env pro))
                  (def-arg (lambda-code-arg pro))
@@ -253,12 +250,7 @@
         ((application? exp) (application-eval exp env))
         (else (error "Undefined expression -- " exp))))
 
-(define (eval-value exp env)
-  (let ((result (eval exp env)))
-    (if (or (self-evaluated? result)
-            (lambda-code? result))
-        result
-        (eval-value result env))))
+
 ;; define the global environment
 (define genv (make-global-environmet))
 ;; add some premitives
@@ -271,16 +263,52 @@
 (environment-add genv '< <)
 
 ;; wrap the eval
-(define (geval exp)
-  (let ((result (eval-value exp genv)))
-    ;; check the lambda code to avoid the circular display
-    (print-out (if (lambda-code? result)
-                   (lambda-code-display result)
-                   result))))
+(define (env-check-print exp)
+  (define (write-prefix distance)
+    (do ((start distance (- start 1)))
+        ((= start 0) (write ""))
+      (write "")))
+  (let outsideiter ((start exp)
+                    (distance 3))
+    (cond ((env? start)
+           (write '(env)))
+          ((list? start)
+           (write "(")
+           (let insideiter ((l start)
+                            (thefirst #t))
+             (cond ((null? l)
+                    ;;(write "")
+                    )
+                   ((env? (car l))
+                    (write '(env))
+                    (insideiter (cdr l) #f))
+                   ((list? (car l))
+                    (cond ((not thefirst)
+                           (write "")
+                           (newline)
+                           (write-prefix distance)))
+                    (outsideiter (car l) (+ 1 distance))
+                    (cond ((not (null? (cdr l)))
+                           (newline)
+                           (write-prefix (+ 1 distance))
+                           (insideiter (cdr l) #f))))
+                   (else
+                    (write (car l))
+                    (write "")
+                    (insideiter (cdr l) #f))))
+           (write ")"))
+          (else
+           (write start)
+           (write ""))))
+  (newline))
 
-;; recursion evaluation
-(geval '(define a 1))
-(geval '(set! a (+ a 1)))
+(define gevalnum 1)
+(define (geval exp)
+  (let ((r (eval exp genv)))
+    (write gevalnum)
+    (write ">>>")
+    (set! gevalnum (+ 1 gevalnum))
+    (env-check-print r)))
 
 ;; ;; Test
 ;; ;; self evaluation
@@ -301,6 +329,10 @@
 ;; (geval '(define 'a 1))
 ;; (geval '(set! a 2))
 ;; (geval 'a)
+
+;; ;; recursion evaluation
+;; (geval '(define a 1))
+;; (geval '(set! a (+ a 1)))
 
 ;; ;; if
 ;; (geval '(if (> 2 1) 2 1))
@@ -349,12 +381,8 @@
       (set! exp (define-abbre->normal exp)))
   (let ((name (define-name exp))
         (value (define-value exp)))
-    (cond ((lambda? value)
-           ;; if the value is a lambda definition, evaluate it here to denote the ee
-           (environment-add env name (eval value env)))
-          (else
-           ;; otherwise, just store the text
-           (environment-add env name value)))
+    ;; add the value to the environment
+    (environment-add env name (eval value env))
     ;; return the value evaluation to the upper function
     (eval value env)))
 
@@ -377,7 +405,7 @@
          (pre (cond-body-first-pre body) (cond-body-first-pre left-body))
          (body-command (cond-body-first-bod body) (cond-body-first-bod left-body)))
         ((or (eq? 'else pre)
-             (eval-value pre env)
+             (eval pre env)
              (null? left-body))
          (cond ((or (eq? 'else pre)
                     (eval pre env))
@@ -402,12 +430,12 @@
         ((application? exp) (application-eval exp env))
         (else (error "Undefined expression -- " exp))))
 
-;; test
+;; ;; test
 ;; (geval '(= 2 1))
 ;; (geval '(cond ((= 2 1) 1)
 ;;               ((< 2 1) 2)
 ;;               ((> 1 2) 3)))
-
+;; (exit)
 ;;--------------------
 ;; begin
 (define begin? (tag-name? 'begin))
@@ -437,10 +465,11 @@
         (else (error "Undefined expression -- " exp))))
 
 
-;; test
+;; ;; test
 ;; (geval '(begin (define a 1)
 ;;                (set! a 2)
 ;;                a))
+;; (exit)
 
 ;;--------------------
 ;; let
@@ -488,7 +517,7 @@
         ((application? exp) (application-eval exp env))
         (else (error "Undefined expression -- " exp))))
 
-;; test
+;; ;; test
 ;; (geval '(let ((a 1)
 ;;               (b 2))
 ;;           (set! a (+ 1 a))
@@ -499,7 +528,7 @@
 ;; (geval '(define (a x) (+ x y)))
 ;; (geval '(define (b y) (a y)))
 ;; (geval '(b 3))
-
+;; (exit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Try another way of the application call
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
