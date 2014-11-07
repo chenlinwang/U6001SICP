@@ -39,5 +39,7 @@ There are already plenty of solutions and explanations on the web, so I may as w
 + http://community.schemewiki.org/?SICP-Solutions
 + https://github.com/Pluies/SICP
 
+## License
+This project is licensed under the terms of the MIT license.
 
 [book]: http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-38.html#%_index_start (mit open source for the SICP book)
