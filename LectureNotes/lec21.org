@@ -26,3 +26,5 @@ We just need to:
 1. modify the definition for the lambda.
 2. verify the type for the arguments in the =applicative-eval= and keep the case.
 3. modify the =actual-value= so that it acts according to the type of the data.
+
+* Stream of Data

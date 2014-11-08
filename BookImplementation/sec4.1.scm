@@ -70,7 +70,7 @@
 
 ;; generate an environment
 (define (env-gen parent-env names values)
-  (tag-gen 'env parent-env (doublemap (lambda (n v) (bindings-pair n v)) names values)))
+  (tag-gen 'env parent-env (map (lambda (n v) (bindings-pair n v)) names values)))
 
 ;; generate an empty global environment
 (define (env-gen-empty-global-env)
@@ -106,7 +106,7 @@
 
 (define (env-adds env names values)
   (if (= (length names) (length values))
-      (env-set-new-bindings env (bindings-append (doublemap (lambda (n v) (bindings-pair n v))
+      (env-set-new-bindings env (bindings-append (map (lambda (n v) (bindings-pair n v))
                                                             names
                                                             values)
                                                  (env-frame env)))

@@ -334,7 +334,7 @@ I originally implemented as the default settings of the frame.
 
 (define (env-adds env names values)
   (if (= (length names) (length values))
-      (doublemap (lambda (n v) (env-add env n v))
+      (map (lambda (n v) (env-add env n v))
                       names
                       values)
       (error "Not equal length of names and values!" names values)))

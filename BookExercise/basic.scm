@@ -84,20 +84,6 @@
   (print-out info)
   #f)
 
-;; double map
-(define (doublemap dm a1 a2)
-  (if (not (= (length a1)
-              (length a2)))
-      (error "inputs are not equal -- " a1 a2))
-  (let iter ((r1 a1)
-             (r2 a2))
-    (cond ((null? r1) (list))
-          (else
-           (cons (dm (car r1)
-                     (car r2))
-                 (iter (cdr r1)
-                       (cdr r2)))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sorting Methods
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
