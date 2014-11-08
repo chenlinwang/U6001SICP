@@ -40,6 +40,12 @@
           second
           (iter second remain)))))
 
+;; generate the range from 0 to n-1
+(define (range n)
+  (let iter ((rest 0))
+    (cond ((>= rest n) (list))
+          (else (cons rest (iter (+ 1 rest)))))))
+
 (define (get-group n r)
   ;; Convert n to a r-group member
   ;; (number,number) -> (number)
@@ -283,4 +289,69 @@
 (define (class-variable v)
   (lambda (self) v))
 
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; logical operators
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (all l)
+  (cond ((null? l) #t)
+        ((not (car l)) #f)
+        (else (all (cdr l)))))
+
+(define (any l)
+  (cond ((null? l) #f)
+        ((car l) #t)
+        (else (any (cdr l)))))
+
+;; ;; test
+;; (print (all (list #t #t #t #f)))
+;; (print (any (list #f #f #f #t)))
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; accumulate
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; accumulate the list with certain connection after some computation
+(define (accumulate connect compute init . l)
+  (let iter ((rest l))
+    (cond ((any (map null? rest)) init)
+          (else (connect (apply compute (map car rest))
+                         (iter (map cdr rest)))))))
+;; ;; test
+;; (print (accumulate cons + (list) (range 5) (range 10)))
+;; (print (accumulate + square 0 (range 5)))
+;; (exit)
+
+(define (recursion connect compute first rest terminate init . l)
+  (let iter ((remain l))
+    (cond ((any (map terminate remain)) init)
+          (else (connect (apply compute (map first remain))
+                         (iter (map rest remain)))))))
+
+;; test
+;; (print (recursion + square car cdr null? 0 (range 5)))
+;; (exit)
+
+;; filter
+(define (filter pre l)
+  (let iter ((rest l))
+    (cond ((null? rest) (list))
+          ((pre (car rest)) (cons (car rest)
+                                  (iter (cdr rest))))
+          (else (iter (cdr rest))))))
+
+;; ;; test
+;; (print (filter even? (range 10)))
+;; (exit)
+
+;; found map:
+(define (foundmap pre connect compute init l)
+  (let iter ((rest l))
+    (cond ((null? rest) init)
+          ((pre (car rest)) (connect (compute (car rest)) (cdr rest)))
+          (else (connect (car rest) (iter (cdr rest)))))))
+
+;; ;; test
+;; (print (foundmap even? cons square (list) (list 1 3 5 8 2 4)))
 ;; (exit)
