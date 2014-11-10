@@ -190,3 +190,129 @@
 ;; (print 'end)
 ;; (display-stream-ref s 15)
 ;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.59
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; In section 2.5.3 we saw how to implement a polynomial arithmetic system representing polynomials as lists of terms. In a similar way, we can work with power series, such as whose elements are the coefficients a0, a1, a2, a3, ....
+
+;; a. The integral of the series a0 + a1 x + a2 x2 + a3 x3 +···is the series where c is any constant. Define a procedure integrate-series that takes as input a stream a0, a1, a2, ... representing a power series and returns the stream a0, (1/2)a1, (1/3)a2, ... of coefficients of the non-constant terms of the integral of the series. (Since the result has no constant term, it doesn't represent a power series; when we use integrate-series, we will cons on the appropriate constant.)
+;; b. The function x ￼ ex is its own derivative. This implies that ex and the integral of ex are the same series, except for the constant term, which is e0 = 1. Accordingly, we can generate the series for ex as
+;; (define exp-series
+;;   (cons-stream 1 (integrate-series exp-series)))
+
+;; Show how to generate the series for sine and cosine, starting from the facts that the derivative of sine is cosine and the derivative of cosine is the negative of sine:
+;; (define cosine-series
+;;   (cons-stream 1 <??>))
+;; (define sine-series
+;;   (cons-stream 0 <??>))
+;; (define exp-series
+;;   (cons-stream 1 (integrate-series exp-series)))
+
+;; a
+(define (integrate-series stream)
+  (stream-divide stream (intsinitwith 1)))
+;; ;; test
+;; (define tmp (integrate-series ones))
+;; (display-stream-ref tmp 10)
+;; (exit)
+
+(define exp-series (cons 1 (memo-proc (lambda ()
+                                        (integrate-series exp-series)))))
+;; ;; test
+;; (display-stream-ref exp-series 15)
+;; (exit)
+
+;; b
+(define cosine-series
+  (cons 1 (memo-proc (lambda ()
+                       (stream-scale (integrate-series sine-series)
+                                     -1)))))
+(define sine-series
+  (cons 0 (memo-proc (lambda ()
+                       (integrate-series cosine-series)))))
+
+;; ;; ;; test
+;; (print "the cosine:")
+;; (display-stream-ref cosine-series 10)
+;; (print "the sine:")
+;; (display-stream-ref sine-series 10)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.60
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; With power series represented as streams of coefficients as in exercise 3.59, adding series is implemented by add-streams. Complete the definition of the following procedure for multiplying series:
+
+;; (define (mul-series s1 s2)
+;;   (cons-stream <??> (add-streams <??> <??>)))
+
+;; You can test your procedure by verifying that sin^{2}x + cos^{2}x = 1, using the series from exercise 3.59.
+
+(define (mul-series s1 s2)
+  (cons (* (stream-car s1)
+           (stream-car s2))
+        (memo-proc (lambda ()
+                     (stream-plus (stream-scale (stream-cdr s1)
+                                                (stream-car s2))
+                                  (mul-series s1
+                                              (stream-cdr s2)))))))
+
+;; ;; test
+;; (define one-sum (stream-plus (mul-series sine-series sine-series)
+;;                              (mul-series cosine-series cosine-series)))
+;; (print "one-sum:")
+;; (display-stream-ref one-sum 10)
+
+;; (define powerx (exponient-stream 0.5))
+
+;; (define one-accumulate (stream-integral (stream-multiply one-sum
+;;                                                         powerx)
+;;                                        0))
+
+;; (print "ones:")
+;; (display-stream-ref one-accumulate 10)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.61
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Let S be a power series (exercise 3.59) whose constant term is 1. Suppose we want to find the power series 1/S, that is, the series X such that S · X = 1. Write S = 1 + SR where SR is the part of S after the constant term. Then we can solve for X as following.
+;; n other words, X is the power series whose constant term is 1 and whose higher-order terms are given by the negative of SR times X. Use this idea to write a procedure invert-unit-series that computes 1/S for a power series S with constant term 1. You will need to usemul-seriesfrom exercise 3.60.
+
+(define (invert-unit-series stream)
+  (cond ((= (stream-car stream) 0)
+         (error "first element equal to 0 -- " (stream-car stream)))
+        (else
+         (let ((scalar (/ 1 (stream-car stream)))
+               (stream-rest (stream-cdr stream))
+               (invert-stream #f))
+           (set! invert-stream (cons scalar
+                                     (memo-proc (lambda ()
+                                                  (stream-scale (mul-series stream-rest
+                                                                            invert-stream)
+                                                                (- scalar))))))
+           invert-stream))))
+
+;; ;; test
+;; (define invert-cosine-series (invert-unit-series cosine-series))
+;; (print "invert cosine series:")
+;; (display-stream-ref invert-cosine-series 10)
+;; (define power2 (exponient-stream 0.5))
+;; (define one-sum (mul-series cosine-series
+;;                             invert-cosine-series))
+;; (define one-accumulate (stream-integral (stream-multiply power2 one-sum) 0))
+;; (print "one accumulate:")
+;; (display-stream-ref one-accumulate 10)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.62
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Use the results of exercises 3.60 and 3.61 to define a procedure div-series that divides two power series. Div-series should work for any two series, provided that the denominator series begins with a nonzero constant term. (If the denominator has a zero constant term, then div-series should signal an error.) Show how to use div-series together with the result of exercise 3.59 to generate the power series for tangent.
+
+;; Division is just multiplication with the invert.
+
+(define (div-series s1 s2)
+  (let ((invert-s2 (invert-unit-series s2)))
+    (mul-series s1 invert-s2)))

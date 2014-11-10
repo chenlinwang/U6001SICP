@@ -135,12 +135,12 @@
                        (intsinitwith (+ a 1))))))
 
 ;; test
-(define intsinitwith1 (intsinitwith 1))
+;; (define intsinitwith1 (intsinitwith 1))
 
 (define (divide? a b) (= (remainder a b) 0))
 
-(define intsdividewith7 (stream-filter (lambda (a) (divide? a 7))
-                                       intsinitwith1))
+;; (define intsdividewith7 (stream-filter (lambda (a) (divide? a 7))
+;;                                        intsinitwith1))
 
 ;; fibonacci
 (define fib (cons 0
@@ -169,7 +169,7 @@
     constant))
 
 (define ones (constant-stream 1))
-(define twos (constant-stream 2))
+;; (define twos (constant-stream 2))
 ;; (display-stream-ref twos 5)
 
 (define (stream-plus s1 s2) (stream-map + s1 s2))
@@ -180,6 +180,27 @@
 
 ;; (define threes (stream-plus ones twos))
 ;; (display-stream-ref threes 5)
+
+(define (exponient-stream a)
+  (let ((exponient #f))
+    (set! exponient (cons 1 (memo-proc (lambda ()
+                                         (stream-scale exponient a)))))
+    exponient))
+
+;; (define power2 (exponient-stream 2))
+;; (display-stream-ref power2 10)
+;; (exit)
+
+(define (self-producted-stream init procede)
+  (let ((stream #f))
+    (set! stream (cons init (memo-proc (lambda ()
+                                         (self-producted-stream (procede (stream-car stream)) procede)))))
+    stream))
+
+;; ;;test
+;; (define power3 (self-producted-stream 1 (lambda (x) (* x 3))))
+;; (display-stream-ref power3 10)
+;; (exit)
 
 (define (stream-accumulate stream dt)
   (apply stream-map (cons +
@@ -192,10 +213,21 @@
                                             (list)
                                             (range (- dt 1)))))))
 
-(define fours (stream-accumulate twos 2))
-;; (display-stream-ref fours 5)
-(define fives (stream-scale ones 5))
-;; (display-stream-ref fives 5)
+;; (define fours (stream-accumulate twos 2))
+;; ;; (display-stream-ref fours 5)
+;; (define fives (stream-scale ones 5))
+;; ;; (display-stream-ref fives 5)
+(define (stream-integral stream init)
+  (let ((integral #f))
+    (set! integral (cons (+ init
+                            (stream-car stream))
+                         (memo-proc (lambda ()
+                                      (stream-plus integral
+                                                   (stream-cdr stream))))))
+    integral))
+;; (define ints (stream-integral ones 0))
+;; ;; (display-stream-ref ints 5)
+;; ;; (exit)
 
 ;; the prime again
 (define prime (cons 2 (memo-proc (lambda ()
