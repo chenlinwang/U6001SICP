@@ -316,3 +316,72 @@
 (define (div-series s1 s2)
   (let ((invert-s2 (invert-unit-series s2)))
     (mul-series s1 invert-s2)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.63
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Louis Reasoner asks why the sqrt-stream procedure was not written in the following more straightforward way, without the local variable guesses:
+;; (define (sqrt-stream x)
+;;   (cons-stream 1.0
+;;                (stream-map (lambda (guess)
+;;                              (sqrt-improve guess x))
+;;                            (sqrt-stream x))))
+;; Alyssa P. Hacker replies that this version of the procedure is considerably less efficient because it performs redundant computation. Explain Alyssa's answer. Would the two versions still differ in efficiency if our implementation of delay used only (lambda () <exp>) without using the optimization provided by memo-proc (section 3.5.1)?
+
+;; The process uses a new =sqrt-stream= for map every time, thus it repeatedly recalculate the sequence again. So for one iteration, it needs to redo from the first x, wasting a lot of efficiency since the values are all memorized. It is of the same order of the growth as the non-memorized version of the lazy evaluation. We could proof it by:
+(define (sqrt-improve guess x)
+  (average guess (/ x guess)))
+
+(define (sqrt-stream x)
+  (let iter ((former 1.0))
+    (cons former
+          (memo-proc (lambda ()
+                       (iter (sqrt-improve former x)))))))
+
+;; test
+;; (define sqrt2 (sqrt-stream 2))
+;; (display-stream-ref sqrt2 15)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.64
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a procedure stream-limit that takes as arguments a stream and a number (the tolerance). It should examine the stream until it finds two successive elements that differ in absolute value by less than the tolerance, and return the second of the two elements. Using this, we could compute square roots up to a given tolerance by
+(define (stream-limit s tolerance)
+  (let ((next-s (stream-cdr s)))
+    (cond ((stream-null? next-s) (stream-car s))
+          ((< (square (- (stream-car s)
+                         (stream-car next-s)))
+              tolerance) (stream-car next-s))
+          (else (stream-limit next-s tolerance)))))
+
+(define (sqrt x tolerance)
+  (stream-limit (sqrt-stream x) tolerance))
+
+;; test
+;; (print (sqrt 2 0.01))
+;; (exit)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.65
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Use the series￼to compute three sequences of approximations to the natural logarithm of 2, in the same way we did above for \ln. How rapidly do these sequences converge?
+(define (ln2-sum n)
+  (cons (/ 1 n)
+        (memo-proc (lambda ()
+                     (stream-scale (ln2-sum (+ n 1))
+                                   -1)))))
+
+(define ln-sum-sequence (ln2-sum 1))
+
+(define ln2-stream (stream-integral ln-sum-sequence
+                                    0))
+(define ln2-aitken (aitken-delte-square ln2-stream))
+(define ln2-aitken-recursion (accelerate-stream ln2-stream aitken-delte-square))
+
+;; (print "origin:")
+;; (display-stream-ref ln2-stream 5)
+;; (print "aitken:")
+;; (display-stream-ref ln2-aitken 5)
+;; (print "repeated aitken:")
+;; (display-stream-ref ln2-aitken-recursion 5)
+;; (exit)

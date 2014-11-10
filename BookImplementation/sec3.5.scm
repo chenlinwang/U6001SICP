@@ -28,7 +28,9 @@
 ;;------------------------------
 ;; the stream object
 (define stream-car car)
-(define (stream-cdr stream) (force-it (cdr stream)))
+(define (stream-cdr stream)
+  (cond ((stream-null? stream) stream)
+        (else (force-it (cdr stream)))))
 (define the-empty-stream (list))
 (define stream-null? null?)
 
@@ -70,9 +72,11 @@
   (stream-for-each print stream))
 
 (define (display-stream-ref stream ref)
-  (display-stream (stream-map (lambda (a b) a)
-                              stream
-                              (stream-enumerate-interval 1 ref))))
+  (cond ((or (stream-null? stream)
+             (< ref 0))
+         'done)
+        (else (print (stream-car stream))
+              (display-stream-ref (stream-cdr stream) (- ref 1)))))
 
 (define (stream-filter pre stream)
   (cond ((stream-null? stream) the-empty-stream)
@@ -239,3 +243,69 @@
           (else (iter (stream-cdr rest-stream))))))
 ;; (display-stream-ref prime 1000)
 ;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; section 3.5.3
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; formulating the iterations as stream processes
+
+;; approximation to square root of 2
+(define (newton-sqrt-approximation a)
+  (lambda (x)
+    (/ (+ (square x) a) (* 2 x))))
+
+(define newton-sqrt-2 (newton-sqrt-approximation 2))
+
+(define newton-sqrt-2-stream (self-producted-stream 3 newton-sqrt-2))
+;; (display-stream-ref newton-sqrt-2-stream 10)
+;; (exit)
+
+;; approximation of pi
+(define (pi-sum n)
+  (cons (/ 4 n)
+        (memo-proc (lambda ()
+                     (stream-scale (pi-sum (+ n 2))
+                                   -1)))))
+;; (display-stream-ref (pi-sum 1) 15)
+;; (exit)
+
+(define pi-sum-sequence (pi-sum 1))
+(define pi-stream (stream-integral pi-sum-sequence 0))
+;; (display-stream-ref pi-stream 15)
+;; (exit)
+
+(define (aitken-delte-square stream)
+  (let iter ((s1 stream)
+             (s2 (stream-cdr stream))
+             (s3 (stream-cdr (stream-cdr stream))))
+    (cond ((stream-null? s3)
+           the-empty-stream)
+          (else
+           (let ((v1 (stream-car s1))
+                 (v2 (stream-car s2))
+                 (v3 (stream-car s3)))
+             (let ((numerator (square (- v3 v2)) )
+                   (denominator (+ v1 (- (* 2 v2)) v3)))
+               (if (= denominator 0)
+                   the-empty-stream
+                   (cons (- v3 (/ numerator denominator))
+                         (memo-proc (lambda ()
+                                      (iter s2 s3 (stream-cdr s3))))))))))))
+
+;; (define pi-stream-aitken (aitken-delte-square pi-stream))
+;; (display-stream-ref pi-stream-aitken 15)
+;; (exit)
+
+(define (accelerate-stream stream method)
+  (let ((a-stream (method stream)))
+    (cond ((stream-null? a-stream)
+           the-empty-stream)
+          (else
+           (cons (stream-car a-stream)
+                 (memo-proc (lambda ()
+                              (accelerate-stream a-stream method))))))))
+
+;; (display-stream-ref (accelerate-stream pi-stream aitken-delte-square) 15)
+;; (exit)
+
+;; the aitken's delta square process would introduce the denominator as 0, thus create an empty stream.  At the equality, s(n+1) - 2s(n) + s(n-1) = 0, reaches the computers' precision. But we could acturally build an infinity precision system using the stream.
