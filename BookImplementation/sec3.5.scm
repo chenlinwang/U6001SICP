@@ -173,7 +173,7 @@
     constant))
 
 (define ones (constant-stream 1))
-;; (define twos (constant-stream 2))
+(define twos (constant-stream 2))
 ;; (display-stream-ref twos 5)
 
 (define (stream-plus s1 s2) (stream-map + s1 s2))
@@ -182,16 +182,16 @@
 (define (stream-divide s1 s2) (stream-map / s1 s2))
 (define (stream-scale stream scalar) (stream-map (lambda (x) (* x scalar)) stream))
 
-;; (define threes (stream-plus ones twos))
+(define threes (stream-plus ones twos))
 ;; (display-stream-ref threes 5)
 
-(define (exponient-stream a)
-  (let ((exponient #f))
-    (set! exponient (cons 1 (memo-proc (lambda ()
-                                         (stream-scale exponient a)))))
-    exponient))
+(define (exponent-stream a)
+  (let ((exponent #f))
+    (set! exponent (cons 1 (memo-proc (lambda ()
+                                         (stream-scale exponent a)))))
+    exponent))
 
-;; (define power2 (exponient-stream 2))
+;; (define power2 (exponent-stream 2))
 ;; (display-stream-ref power2 10)
 ;; (exit)
 
@@ -309,3 +309,51 @@
 ;; (exit)
 
 ;; the aitken's delta square process would introduce the denominator as 0, thus create an empty stream.  At the equality, s(n+1) - 2s(n) + s(n-1) = 0, reaches the computers' precision. But we could acturally build an infinity precision system using the stream.
+
+;;--------------------
+;; to generate all the pairs with i <= j, belonging to all natural numbers
+
+(define (interleave s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons (stream-car s1)
+            (memo-proc (lambda ()
+                         (interleave s2 (stream-cdr s1)))))))
+
+;; devide the triangle into three parts, the first element of the first row, the rest of the first row and the rest triangle
+(define (ordered-pairs s t)
+  (cons (cons (stream-car s)
+              (stream-car t))
+        (memo-proc (lambda ()
+                     (interleave (stream-map (lambda (n) (cons (stream-car s)
+                                                               n))
+                                             (stream-cdr t))
+                                 (ordered-pairs (stream-cdr s)
+                                                (stream-cdr t)))))))
+
+(define ints (intsinitwith 1))
+(define ordered-ints (ordered-pairs ints ints))
+
+;; (display-stream-ref ordered-ints 20)
+;;(exit)
+
+(define prime-pairs  (stream-filter (lambda (s) (prime? (+ (car s)
+                                                           (cdr s))))
+                                    ordered-ints))
+
+;; (display-stream-ref prime-pairs 20)
+;; (exit)
+
+;;--------------------
+
+(define (stream-integral-dt integrand init dt)
+  (let ((result #f))
+    (set! result (cons init
+                       (memo-proc (lambda ()
+                                    (stream-plus (stream-scale integrand dt)
+                                                 result)))))
+    result))
+
+;; (define one-integral-2 (stream-integral-dt ones 0 2))
+;; (display-stream-ref one-integral-2 10)
+;; (exit)

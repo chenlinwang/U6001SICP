@@ -264,7 +264,7 @@
 ;; (print "one-sum:")
 ;; (display-stream-ref one-sum 10)
 
-;; (define powerx (exponient-stream 0.5))
+;; (define powerx (exponent-stream 0.5))
 
 ;; (define one-accumulate (stream-integral (stream-multiply one-sum
 ;;                                                         powerx)
@@ -298,7 +298,7 @@
 ;; (define invert-cosine-series (invert-unit-series cosine-series))
 ;; (print "invert cosine series:")
 ;; (display-stream-ref invert-cosine-series 10)
-;; (define power2 (exponient-stream 0.5))
+;; (define power2 (exponent-stream 0.5))
 ;; (define one-sum (mul-series cosine-series
 ;;                             invert-cosine-series))
 ;; (define one-accumulate (stream-integral (stream-multiply power2 one-sum) 0))
@@ -384,4 +384,264 @@
 ;; (display-stream-ref ln2-aitken 5)
 ;; (print "repeated aitken:")
 ;; (display-stream-ref ln2-aitken-recursion 5)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.66
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Examine the stream (pairs integers integers). Can you make any general comments about the order in which the pairs are placed into the stream? For example, about how many pairs precede the pair (1,100)? the pair (99,100)? the pair (100,100)? (If you can make precise mathematical statements here, all the better. But feel free to give more qualitative answers if you find yourself getting bogged down.)
+;; ** Answer
+;; It is easy to prove using the induction on k, and we have:
+;; (s(k),t(k)) = T(2^{k+1}-2),
+;; (s(k),t(k+l)) = T(2^{k+1}l+2^{k}-2),
+;; (k > -1), (l > 0)
+
+;; Thus:
+;; (1,100) = (s(0),t(0+99)) = T(197)
+;; (99,100) = (s(98),t(98+1)) = T(2^{98}3-2)
+;; (100,100) = (s(99),t(99)) = T(2^{100}-2)
+
+;; (print (stream-ref ordered-ints 197))
+;; (print (stream-ref ordered-ints 94))
+;; (print (stream-ref ordered-ints (- (* 3 (exponentiation 2 98)) 2))) too big to calculate
+;; (print (stream-ref ordered-ints (- (exponentiation 2 100) 2))) too big to calculate
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.67
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Modify the pairs procedure so that (pairs integers integers) will produce the stream of all pairs of integers (i,j) (without the condition i < j). Hint: You will need to mix in an additional stream.
+
+;; Still we will implement it as four parts: the first diagnoal element, the row followed, the column followed and the rest.
+
+(define (all-interleave first . rest)
+  (cond ((null? rest) first)
+        ((stream-null? first)
+         (apply all-interleave rest))
+        (else
+         (cons (stream-car first)
+               (memo-proc (lambda ()
+                            (apply all-interleave (append rest (list (stream-cdr first))))))))))
+
+;; ;; test
+;; (define one-twos (all-interleave ones twos))
+;; (define one-two-threes (all-interleave ones twos threes))
+;; (display-stream-ref one-twos 10)
+;; (print "\n")
+;; (display-stream-ref one-two-threes 10)
+;; (exit)
+
+(define (all-pairs s t)
+  (cons (cons (stream-car s)
+              (stream-car t))
+        (memo-proc (lambda ()
+                     (all-interleave (stream-map (lambda (m) (cons (stream-car s) m))
+                                                 (stream-cdr t))
+                                     (stream-map (lambda (n) (cons n (stream-car t)))
+                                                 (stream-cdr s))
+                                     (all-pairs (stream-cdr s)
+                                                (stream-cdr t)))))))
+
+;; (define all-ints (all-pairs ints ints))
+;; (display-stream-ref all-ints 20)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.68
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Louis Reasoner thinks that building a stream of pairs from three parts is unnecessarily complicated. Instead of separating the pair (S0,T0) from the rest of the pairs in the first row, he proposes to work with the whole first row, as follows:
+
+;; (define (pairs s t)
+;;   (display "enter pair with:")
+;;   (display s)
+;;   (display t)
+;;   (newline)
+;;   (interleave
+;;    (stream-map (lambda (x) (cons (stream-car s) x))
+;;                t)
+;;    (pairs (stream-cdr s) (stream-cdr t))))
+
+;; Does this work? Consider what happens if we evaluate (pairs integers integers) using Louis's definition of pairs.
+
+;; (print 'started)
+;; (define l-ordered-pairs (pairs ints ints))
+;; (print (stream-car l-ordered-pairs))
+;; ;;(display-stream-ref l-ordered-pairs 15)
+;; (exit)
+
+;; as the applicative order, the scheme will go into pairs again and again with infinity looping.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.69
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Write a procedure triples that takes three infinite streams, S, T, and U, and produces the stream of triples (Si,Tj,Uk) such that i < j < k. Use triples to generate the stream of all Pythagorean triples of positive integers, i.e., the triples (i,j,k) such that i < j and i2 + j2 = k2.
+
+;; we will have to use the ordered pairs
+(define (ordered-triplet s t u)
+  (cons (cons (stream-car s)
+              (cons (stream-car t)
+                    (stream-car u)))
+        (memo-proc (lambda ()
+                     (all-interleave (stream-map (lambda (x) (cons (stream-car s)
+                                                                   x))
+                                                 (stream-cdr (ordered-pairs t u)))
+                                     (ordered-triplet (stream-cdr s)
+                                                      (stream-cdr t)
+                                                      (stream-cdr u)))))))
+
+;; test
+(define tri-ordered-ints (ordered-triplet ints ints ints))
+;; (display-stream-ref tri-ordered-ints 20)
+;; (exit)
+
+(define pythogorean-triple (stream-filter (lambda (s) (let ((f (car s))
+                                                            (s (cadr s))
+                                                            (t (cddr s)))
+                                                        (= (square t) (+ (square f)
+                                                                         (square s)))))
+                                          tri-ordered-ints))
+;; (display-stream-ref pythogorean-triple 3)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.70
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; It would be nice to be able to generate streams in which the pairs appear in some useful order, rather than in the order that results from an ad hoc interleaving process. We can use a technique similar to the merge procedure of exercise 3.56, if we define a way to say that one pair of integers is ``less than'' another. One way to do this is to define a ``weighting function'' W(i,j) and stipulate that (i1,j1) is less than (i2,j2) if W(i1,j1) < W(i2,j2). Write a procedure merge-weighted that is like merge, except that merge-weighted takes an additional argument weight, which is a procedure that computes the weight of a pair, and is used to determine the order in which elements should appear in the resulting merged stream. Using this, generalize pairs to a procedure weighted-pairs that takes two streams, together with a procedure that computes a weighting function, and generates the stream of pairs, ordered according to weight. Use your procedure to generate
+;; a. the stream of all pairs of positive integers (i,j) with i < j ordered according to the sum i + j
+;; b. the stream of all pairs of positive integers (i,j) with i < j, where neither i nor j is divisible by 2, 3, or 5, and the pairs are ordered according to the sum 2 i + 3 j + 5 i j.
+
+
+(define (stream-compare-merge rank . streams)
+  (cond ((null? streams) the-empty-stream)
+        (else
+         (let ((ordered-streams (ext-quick-sort streams (lambda (x)
+                                                          (rank (stream-car x))))))
+           (cons (stream-car (car ordered-streams))
+                 (memo-proc (lambda ()
+                              (apply stream-compare-merge (cons rank (cons (stream-cdr (car ordered-streams))
+                                                                           (cdr ordered-streams)))))))))))
+
+(define pair-rank (lambda (ele) (+ (car ele) (cdr ele))))
+
+(define (ranked-pairs s t rank)
+  (cons (cons (stream-car s)
+              (stream-car (stream-cdr t)))
+        (memo-proc (lambda ()
+                     (stream-compare-merge rank
+                                           (stream-map (lambda (x) (cons (stream-car s) x))
+                                                       (stream-cdr (stream-cdr t)))
+                                           (ranked-pairs (stream-cdr s)
+                                                               (stream-cdr t)
+                                                               rank))))))
+
+;; test
+(define sum-sequenced-int (ranked-pairs ints ints pair-rank))
+;;(display-stream-ref sum-sequenced-int 10)
+;;(exit)
+
+;; the desired pair
+(define desired-pair (stream-filter (lambda (s) (let ((f (car s))
+                                                      (s (cdr s)))
+                                                  (all (append (map (lambda (x) (not (divide? f x)))
+                                                                    (list 2 3 5))
+                                                               (map (lambda (x) (not (divide? s x)))
+                                                                    (list 2 3 5))))))
+                                    (ranked-pairs ints ints (lambda (ele) (+ (* 2 (car ele))
+                                                                                   (* 3 (cdr ele))
+                                                                                   (* 5 (car ele)
+                                                                                      (cdr ele)))))))
+
+;; (display-stream-ref desired-pair 10)
+;; (exit)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.71
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Numbers that can be expressed as the sum of two cubes in more than one way are sometimes called Ramanujan numbers, in honor of the mathematician Srinivasa Ramanujan.70 Ordered streams of pairs provide an elegant solution to the problem of computing these numbers. To find a number that can be written as the sum of two cubes in two different ways, we need only generate the stream of pairs of integers (i,j) weighted according to the sum i3 + j3 (see exercise 3.70), then search the stream for two consecutive pairs with the same weight. Write a procedure to generate the Ramanujan numbers. The first such number is 1,729. What are the next five?
+(define (cube-sum ele)
+  (+ (cube (car ele))
+     (cube (cdr ele))))
+
+(define ordered-by-cube-sum (ranked-pairs ints ints cube-sum))
+
+(define (remanujan-stream stream lastpairs sum)
+  (cond ((null? lastpairs) (remanujan-stream (stream-cdr stream)
+                                             (list (stream-car stream))
+                                             (cube-sum (stream-car stream))))
+        ((= sum
+            (cube-sum (stream-car stream)))
+         (remanujan-stream (stream-cdr stream)
+                           (cons (stream-car stream)
+                                 lastpairs)
+                           sum))
+        ((> (length lastpairs) 1)
+         (cons (cons sum lastpairs)
+               (memo-proc (lambda ()
+                            (remanujan-stream (stream-cdr stream)
+                                              (list (stream-car stream))
+                                              (cube-sum (stream-car stream)))))))
+        (else
+         (remanujan-stream (stream-cdr stream)
+                           (list (stream-car stream))
+                           (cube-sum (stream-car stream))))))
+
+;; (define rs (remanujan-stream ordered-by-cube-sum (list) 0))
+;; (display-stream-ref rs 4)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.72
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; In a similar way to exercise 3.71 generate a stream of all numbers that can be written as the sum of two squares in three different ways (showing how they can be so written).
+
+(define (square-sum ele)
+  (+ (square (car ele))
+     (square (cdr ele))))
+
+(define ordered-by-square-sum (ranked-pairs ints ints square-sum))
+
+(define (select-length-pairs len stream rank)
+  (let iter ((stream stream)
+             (lastpairs (list))
+             (sum #f))
+    (cond ((null? lastpairs)
+           (iter (stream-cdr stream)
+                 (list (stream-car stream))
+                 (rank (stream-car stream))))
+          ((= sum
+              (rank (stream-car stream)))
+           (iter (stream-cdr stream)
+                 (cons (stream-car stream)
+                       lastpairs)
+                 sum))
+          ((>= (length lastpairs) len)
+           (cons (cons sum lastpairs)
+                 (memo-proc (lambda ()
+                              (iter (stream-cdr stream)
+                                    (list (stream-car stream))
+                                    (rank (stream-car stream)))))))
+          (else
+           (iter (stream-cdr stream)
+                 (list (stream-car stream))
+                 (rank (stream-car stream)))))))
+
+(define triple-square-sum (select-length-pairs 3 ordered-by-square-sum square-sum))
+;; (display-stream-ref triple-square-sum 1)
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 3.73
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;Write a procedure RC that models this circuit. RC should take as inputs the values of R, C, and dt and should return a procedure that takes as inputs a stream representing the current i and an initial value for the capacitor voltage v0 and produces as output the stream of voltages v. For example, you should be able to use RC to model an RC circuit with R = 5 ohms, C = 1 farad, and a 0.5-second time step by evaluating (define RC1 (RC 5 1 0.5)). This defines RC1 as a procedure that takes a stream representing the time sequence of currents and an initial capacitor voltage and produces the output stream of voltages.
+
+(define (RC r c dt)
+  (lambda (v0 i)
+    (stream-map +
+                (constant-stream v0)
+                (stream-scale (stream-integral-dt i 0 dt)
+                              (/ 1 c))
+                (stream-scale i r))))
+
+(define rc1 (RC 5 1 0.5))
+;; (display-stream-ref (rc1 0 ones) 10)
 ;; (exit)
