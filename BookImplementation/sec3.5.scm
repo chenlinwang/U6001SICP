@@ -357,3 +357,34 @@
 ;; (define one-integral-2 (stream-integral-dt ones 0 2))
 ;; (display-stream-ref one-integral-2 10)
 ;; (exit)
+
+;;--------------------
+;; solve the ODE
+(define f square)
+
+;; ;; solve dy/dt = f note working as dy will be copied into the function as #f value
+;; (define (solve f y0 dt)
+;;   (let ((y #f)
+;;         (dy #f))
+;;     (set! y (stream-integral-dt dy y0 dt))
+;;     (set! dy (stream-map f y))
+;;     y))
+
+(define (stream-integral-dt-delay delay-integrand init dt)
+  (define int (cons init
+                    (memo-proc (lambda ()
+                                 (let ((integrand (force-it delay-integrand)))
+                                   (stream-plus (stream-scale integrand dt)
+                                                int))))))
+  int)
+
+(define (solve f y0 dt)
+  (let ((y #f)
+        (dy #f))
+    (set! y (stream-integral-dt-delay (lambda () dy) y0 dt))
+    (set! dy (stream-map f y))
+    y))
+
+;; (define y (solve f -1 0.5))
+;; (display-stream-ref y 10)
+;; (exit)
