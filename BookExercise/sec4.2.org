@@ -1,0 +1,198 @@
+* Exercise 4.25
+Suppose that (in ordinary applicative-order Scheme) we define unless as shown above and then define factorial in terms of unless as
+#+BEGIN_SRC scheme
+(define (factorial n)
+  (unless (= n 1)
+          (* n (factorial (- n 1)))
+          1))
+#+END_SRC
+What happens if we attempt to evaluate (factorial 5)? Will our definitions work in a normal-order language?
+
+** Answer
+If it is evaluated under the applicative order, the function will not terminates as it will go through =factorial(n)= to =unless= and then to =factorial(n-1)= and so on and so forth. The parameters will never reach the inner =if= of the =unless=, thus program will never stop. But if it is evaluated under the normal order, it will be fine, as every arguments in each recursion will reach the =if= clause, it will bring to a stop.
+
+* Exercise 4.26
+Ben Bitdiddle and Alyssa P. Hacker disagree over the importance of lazy evaluation for implementing things such as unless. Ben points out that it's possible to implement unless in applicative order as a special form. Alyssa counters that, if one did that, unless would be merely syntax, not a procedure that could be used in conjunction with higher-order procedures. Fill in the details on both sides of the argument. Show how to implement unless as a derived expression (like cond or let), and give an example of a situation where it might be useful to have unless available as a procedure, rather than as a special form.
+
+** Answer
+For implementing the unless as a syntax
+#+BEGIN_SRC scheme
+(define (unless-eval exp env)
+  (let ((contion (unless-condition exp))
+        (usual-value (unless-usual-value exp))
+        (excepational-value (unless-exceptional-value exp)))
+    (if (eval contion env)
+        (eval excepational-value env)
+        (eval usual-value env))))
+#+END_SRC
+
+For benefits of implementing it as a procedure, say, we we want to use unless as an argument, it will be helpful if we implement it as a procedure.
+* Exercise 4.27
+Suppose we type in the following definitions to the lazy evaluator:
+#+BEGIN_SRC scheme
+(define count 0)
+(define (id x)
+  (set! count (+ count 1))
+  x)
+#+END_SRC
+Give the missing values in the following sequence of interactions, and explain your answers.
+#+BEGIN_SRC scheme
+(define w (id (id 10)))
+;;; L-Eval input:
+count
+;;; L-Eval value: <response>
+;;; L-Eval input:
+w
+;;; L-Eval value: <response>
+;;; L-Eval input:
+count
+;;; L-Eval value: <response>
+#+END_SRC
+** Answers
+Lazy without memorized:
+#+BEGIN_EXAMPLE
+count: 2
+w: 10
+count: 3
+#+END_EXAMPLE
+
+Lazy with memorized:
+#+BEGIN_EXAMPLE
+count: 2
+w: 10
+count: 2
+#+END_EXAMPLE
+* Exercise 4.28
+Eval uses actual-value rather than eval to evaluate the operator before passing it to apply, in order to force the value of the operator. Give an example that demonstrates the need for this forcing.
+** Answers
+When we have a operator as a variable of some thunk primitive procedure, we will have to do that, else, it will use a =thunk= object for the =apple=.For example:
+#+BEGIN_SRC scheme
+(define (get-arithmetic ar-op n1 n2)
+  (ar-op n1 n2))
+#+END_SRC
+* Exercise 4.29
+Exhibit a program that you would expect to run much more slowly without memoization than with memoization. Also, consider the following interaction, where the id procedure is defined as in exercise 4.27 and count starts at 0:
+#+BEGIN_SRC scheme
+(define (square x)
+  (* x x))
+;;; L-Eval input:
+(square (id 10))
+;;; L-Eval value: <response>
+;;; L-Eval input:
+count
+;;; L-Eval value: <response>
+#+END_SRC
+Give the responses both when the evaluator memoizes and when it does not.
+** Answers
+#+BEGIN_SRC scheme
+(define (sum-iter n sum)
+  (cond ((= n 0) sum)
+        (else (sum-iter (- n 1) (+ sum n)))))
+(define (sum-int n)
+  (sum-iter n 0))
+(define sum-10000 (sum-int 10000))
+#+END_SRC
+In the above example, the =sum-10000= is a recursive thunk with 10000 layers. Thus, without memorized, every time we summon the =sum-10000=, we have to get it done sumed up from the beginning.
+
+without memorized
+#+BEGIN_EXAMPLE
+(square (id 10)) : 100
+count: 2
+#+END_EXAMPLE
+with memorized
+#+BEGIN_EXAMPLE
+(square (id 10)) : 100
+count: 1
+#+END_EXAMPLE
+* Exercise 4.30
+Cy D. Fect, a reformed C programmer, is worried that some side effects may never take place, because the lazy evaluator doesn't force the expressions in a sequence. Since the value of an expression in a sequence other than the last one is not used (the expression is there only for its effect, such as assigning to a variable or printing), there can be no subsequent use of this value (e.g., as an argument to a primitive procedure) that will cause it to be forced. Cy thus thinks that when evaluating sequences, we must force all expressions in the sequence except the final one. He proposes to modify eval-sequence from section 4.1.1 to use actual-value rather than eval:
+#+BEGIN_SRC scheme
+(define (eval-sequence exps env)
+  (cond ((last-exp? exps) (eval (first-exp exps) env))
+        (else (actual-value (first-exp exps) env)
+              (eval-sequence (rest-exps exps) env))))
+#+END_SRC
+a. Ben Bitdiddle thinks Cy is wrong. He shows Cy the for-each procedure described in exercise 2.23, which gives an important example of a sequence with side effects:
+#+BEGIN_SRC scheme
+(define (for-each proc items)
+  (if (null? items)
+      'done
+      (begin (proc (car items))
+             (for-each proc (cdr items)))))
+#+END_SRC
+He claims that the evaluator in the text (with the original eval-sequence) handles this correctly:
+#+BEGIN_SRC scheme
+;;; L-Eval input:
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
+57
+321
+88
+;;; L-Eval value:
+done
+#+END_SRC
+Explain why Ben is right about the behavior of for-each.
+
+b. Cy agrees that Ben is right about the for-each example, but says that that's not the kind of program he was thinking about when he proposed his change to eval-sequence. He defines the following two procedures in the lazy evaluator:
+#+BEGIN_SRC scheme
+(define (p1 x)
+  (set! x (cons x '(2)))
+  x)
+(define (p2 x)
+  (define (p e)
+    e
+    x)
+  (p (set! x (cons x '(2)))))
+#+END_SRC
+What are the values of (p1 1) and (p2 1) with the original eval-sequence? What would the values be with Cy's proposed change to eval-sequence?
+
+c. Cy also points out that changing eval-sequence as he proposes does not affect the behavior of the example in part a. Explain why this is true.
+
+d. How do you think sequences ought to be treated in the lazy evaluator? Do you like Cy's approach, the approach in the text, or some other approach?
+** Answers
+*** a
+As the =car= and =display= are both primitive procedures, there will be a =force-it= added to them in the =application-eval=. Thus, for-each is correct.
+*** b
+For the original eval, the former will give =(1 2)= and the later will generate an key error, as the =set!= is not evaluated. It is passed as thunk to binded with =e=, so eval will simply return the =set!= thunk. And =x= is not defined.
+
+For the suggested eval, they will both return =(1 2)=.
+*** c
+Of course it will not. =actual-value= has =eval= inside, for primitive procedures, it is the same.
+*** d
+Though Cy has made some points, but I do not think we should be using it. The whole goal of using the lazy evaluation is to maintain the variable no evaluated for non-primitive procedures. If it is evaluated in the sequence evaluation, the interpreter will not has a consistent behavior. Thus it could result in many obscure errors.
+
+* Exercise 4.31
+The approach taken in this section is somewhat unpleasant, because it makes an incompatible change to Scheme. It might be nicer to implement lazy evaluation as an upward-compatible extension, that is, so that ordinary Scheme programs will work as before. We can do this by extending the syntax of procedure declarations to let the user control whether or not arguments are to be delayed. While we're at it, we may as well also give the user the choice between delaying with and without memoization. For example, the definition
+#+BEGIN_SRC scheme
+(define (f a (b lazy) c (d lazy-memo))
+  ...)
+#+END_SRC
+would define f to be a procedure of four arguments, where the first and third arguments are evaluated when the procedure is called, the second argument is delayed, and the fourth argument is both delayed and memoized. Thus, ordinary procedure definitions will produce the same behavior as ordinary Scheme, while adding the lazy-memo declaration to each parameter of every compound procedure will produce the behavior of the lazy evaluator defined in this section. Design and implement the changes required to produce such an extension to Scheme. You will have to implement new syntax procedures to handle the new syntax fordefine. You must also arrange forevalorapplyto determine when arguments are to be delayed, and to force or delay arguments accordingly, and you must arrange for forcing to memoize or not, as appropriate.
+
+** Answers
+Implemented in the =BookImplementation/sec4.2.scm=.
+
+* Exercise 4.32
+Give some examples that illustrate the difference between the streams of chapter 3 and the ''lazier'' lazy lists described in this section. How can you take advantage of this extra laziness?
+
+** Answers
+As we could see that the evaluator uses the normal order instead of the applicative order, which means that the arguments in a lambda function is a thunk instead of the actual value. Thus for procedures like sovle, we don't need to worry that the input is not defined or defined as something not capable of using yet. The normal order guarantees that we will be able to use the desired value if we get the actual value after we defines all the necessary varibles.
+
+And to the extreme, as we implement the =cons= as a procedure, the first element should also be a thunk. thus the following definition works as well:
+#+BEGIN_SRC scheme
+(define dy (cons (car y) y))
+(define y (integral dy y0 dt))
+#+END_SRC
+
+* Exercise 4.33
+Ben Bitdiddle tests the lazy list implementation given above by evaluating the expression
+#+BEGIN_SRC scheme
+(car '(a b c))
+#+END_SRC
+To his surprise, this produces an error. After some thought, he realizes that the ''lists'' obtained by reading in quoted expressions are different from the lists manipulated by the new definitions of cons, car, and cdr. Modify the evaluator's treatment of quoted expressions so that quoted lists typed at the driver loop will produce true lazy lists.
+
+** Answers
+As the intepretor is already using the quotes, we could not be using the quotes again, thus I could not give the code implementation, but the idea is simple, use a dispatch in the =eval= to make it a list.
+
+* Exercise 4.34
+Modify the driver loop for the evaluator so that lazy pairs and lists will print in some reasonable way. (What are you going to do about infinite lists?) You may also need to modify the representation of lazy pairs so that the evaluator can identify them in order to print them.

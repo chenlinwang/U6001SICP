@@ -236,7 +236,8 @@
   (let ((name (define-name exp))
         (value (define-value exp)))
     ;; add the syntax sugar for the define
-    (cond ((lambda? value)
+    (cond ((and (lambda? value)
+                (symbol? name))
            (set! value (eval value env)))
           ((define-lambda? name)
            (set! name (define-lambda-name exp))
@@ -863,7 +864,8 @@
   (let ((name (define-name exp))
         (value (define-value exp)))
     ;; add the syntax sugar for the define
-    (cond ((lambda? value)
+    (cond ((and (lambda? value)
+                (symbol? name))
            (set! value (eval value env)))
           ((define-lambda? name)
            (set! name (define-lambda-name exp))
