@@ -1,0 +1,231 @@
+* Exercise 3.38
+Suppose that Peter, Paul, and Mary share a joint bank account that initially contains $100. Concurrently, Peter deposits $10, Paul withdraws $20, and Mary withdraws half the money in the account, by executing the following commands:
+#+BEGIN_EXAMPLE
+Peter: (set! balance (+ balance 10))
+Paul: (set! balance (- balance 20))
+Mary: (set! balance (- balance (/ balance 2)))
+#+END_EXAMPLE
+a. List all the different possible values for balance after these three transactions have been completed, assuming that the banking system forces the three processes to run sequentially in some order.
+b. What are some other values that could be produced if the system allows the processes to be interleaved? Draw timing diagrams like the one in figure 3.29 to explain how these values can occur.
+** Answer
+*** a
+| order   |  a |  b |  c |
+|---------+----+----+----|
+| Pe,Pa,M | 90 | 70 | 35 |
+| Pa,Pe,M | 80 | 70 | 35 |
+| Pa,M,Pe | 80 | 40 | 30 |
+| Pe,M,Pa | 90 | 45 | 25 |
+| M,Pa,Pe | 50 | 40 | 20 |
+| M,Pe,Pa | 50 | 30 | 20 |
+* Exercise 3.39
+Which of the five possibilities in the parallel execution shown above remain if we instead serialize execution as follows:
+#+BEGIN_SRC scheme
+(define x 10)
+(define s (make-serializer))
+(parallel-execute (lambda () (set! x ((s (lambda () (* x x))))))
+                  (s (lambda () (set! x (+ x 1)))))
+#+END_SRC
+** Answer
+namely the serialized operator is =(lambda () (* x x))= and =(lambda () (set! x (+ x 1)))=, so another =set!= could be happening after the first. let name other procedures a , b and c.
+| order | first | second | third |
+|-------+-------+--------+-------|
+| a,b,c | 10    | 11     | 100   |
+| a,c,b | 10    | 100    | 101   |
+| b,a,c | 11    | 11     | 121   |
+
+* Exercise 3.40
+Give all possible values of x that can result from executing (define x 10)
+#+BEGIN_SRC scheme
+(parallel-execute (lambda () (set! x (* x x)))
+                  (lambda () (set! x (* x x x))))
+#+END_SRC
+Which of these possibilities remain if we instead use serialized procedures:
+#+BEGIN_SRC scheme
+(define x 10)
+(define s (make-serializer))
+(parallel-execute (s (lambda () (set! x (* x x))))
+                  (s (lambda () (set! x (* x x x)))))
+#+END_SRC
+** Answer
+Similarly, name them a,b
+| order | first |  second |
+|-------+-------+---------|
+| a,b   |   100 | 1000000 |
+| b,a   |  1000 | 1000000 |
+
+* Exercise 3.41
+Ben Bitdiddle worries that it would be better to implement the bank account as follows (where the commented line has been changed):
+#+BEGIN_SRC scheme
+(define (make-account balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  ;; continued on next page
+  (let ((protected (make-serializer)))
+    (define (dispatch m)
+      (cond ((eq? m 'withdraw) (protected withdraw))
+            ((eq? m 'deposit) (protected deposit))
+            ((eq? m 'balance)
+             ((protected (lambda () balance)))) ; serialized (else (error "Unknown request -- MAKE-ACCOUNT" m))))
+    dispatch))
+#+END_SRC
+because allowing unserialized access to the bank balance can result in anomalous behavior. Do you agree? Is there any scenario that demonstrates Ben's concern?
+** Answer
+Yes, like if say we are withdrawing 100 to an account with 100. A person happends to check the number in the midle of my read and mutation. He would get the idea there is still 100 left but actually there is nothing left.
+
+But on the other hand, the inquiry could only the correct number at one exact time point and it is correct at that exact time point.
+
+* Exercise 3.42
+Ben Bitdiddle suggests that it's a waste of time to create a new serialized procedure in response to every withdraw and deposit message. He says that make-account could be changed so that the calls to protected are done outside the dispatch procedure. That is, an account would return the same serialized procedure (which was created at the same time as the account) each time it is asked for a withdrawal procedure.
+#+BEGIN_SRC scheme
+(define (make-account balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  (let ((protected (make-serializer)))
+    (let ((protected-withdraw (protected withdraw))
+          (protected-deposit (protected deposit)))
+      (define (dispatch m)
+        (cond ((eq? m 'withdraw) protected-withdraw)
+              ((eq? m 'deposit) protected-deposit)
+              ((eq? m 'balance) balance)
+              (else (error "Unknown request -- MAKE-ACCOUNT" m))))
+      dispatch)))
+#+END_SRC
+Is this a safe change to make? In particular, is there any difference in what concurrency is allowed by these two versions of make-account ?
+** Answer
+For the previous veirsion, two concurrent call to one deposite would get two different procedures while this would return the same procedure. But I have no idea what are the differences for same procedure to be called concurrently and procedures with same code to be called concurrently.
+
+So the question remains unknown.
+
+* Exercise 3.43
+Suppose that the balances in three accounts start out as $10, $20, and $30, and that multiple processes run, exchanging the balances in the accounts. Argue that if the processes are run sequentially, after any number of concurrent exchanges, the account balances should be $10, $20, and $30 in some order. Draw a timing diagram like the one in figure 3.29 to show how this condition can be violated if the exchanges are implemented using the first version of the account-exchange program in this section. On the other hand, argue that even with this exchange program, the sum of the balances in the accounts will be preserved. Draw a timing diagram to show how even this condition would be violated if we did not serialize the transactions on individual accounts.
+** Answer
+Suppose the accounts are call a1, a2, a3. Two exchanges on (a1,a2) and (a1,a3) are concurrent. So there are eight transactions, namely:
+1. t1: read a1 in e1
+2. t2: read a2 in e1
+3. t3: withdraw from a1 in e1
+4. t4: deposite from a2 in e1
+5. t5: read a1 in e2
+6. t6: read a3 in e2
+7. t7: withdraw from a1 in e2
+8. t8: deposite from a3 in e2
+
+The first four and last four are sequenced indevidually and t3 and t7 are in the same serialization set, meaning can't run concurrently. Other than that, nothing is restricted.
+
+For t1 and t5, no mater which go first, the first one must have a number of 10. And the followed could be different. And for t2 and t5, their readings are exact 20 and 30. Now we only have to discuss about the t1 and t5, and the sequence of t3 and t7 are not matters as the plus minus on real number is associative.
+
+| t1 | t5 | t3 | t7 | result   |
+|----+----+----+----+----------|
+| 10 | 10 | 20 | 50 | 50,10,10 |
+| 10 | 20 | 20 | 30 | 30,10,20 |
+| 30 | 10 | 20 | 30 | 20,30,10 |
+
+So there are these three possibilities.
+
+* Exercise 3.44
+Consider the problem of transferring an amount from one account to another. Ben Bitdiddle claims that this can be accomplished with the following procedure, even if there are multiple people concurrently transferring money among multiple accounts, using any account mechanism that serializes deposit and withdrawal transactions, for example, the version of make-account in the text above.
+#+BEGIN_SRC scheme
+(define (transfer from-account to-account amount)
+  ((from-account 'withdraw) amount)
+  ((to-account 'deposit) amount))
+#+END_SRC
+Louis Reasoner claims that there is a problem here, and that we need to use a more sophisticated method, such as the one required for dealing with the exchange problem. Is Louis right? If not, what is the essential difference between the transfer problem and the exchange problem? (You should assume that the balance in from-account is at least amount.)
+
+** Answer
+There is no problem with procedure if the amount is always guaranteed to be less than the balance.The difference that between the transfer and exchange is that, the exchange has to calculate the a number =difference= and then use the difference to transfer. The problem here is the =difference= is an number effective at that exact time point. When we do the transfer later in the exchange, we have no guarantee that the =difference= is still effective.
+
+* Exercise 3.45
+Louis Reasoner thinks our bank-account system is unnecessarily complex and error-prone now that deposits and withdrawals aren't automatically serialized. He suggests that make-account- and-serializer should have exported the serializer (for use by such procedures as serialized- exchange) in addition to (rather than instead of) using it to serialize accounts and deposits as make- account did. He proposes to redefine accounts as follows:
+#+BEGIN_SRC scheme
+(define (make-account-and-serializer balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  (let ((balance-serializer (make-serializer)))
+    (define (dispatch m)
+      (cond ((eq? m 'withdraw) (balance-serializer withdraw))
+            ((eq? m 'deposit) (balance-serializer deposit))
+            ((eq? m 'balance) balance)
+            ((eq? m 'serializer) balance-serializer)
+            (else (error "Unknown request -- MAKE-ACCOUNT" m))))
+    dispatch))
+#+END_SRC
+Then deposits are handled as with the original make-account:
+#+BEGIN_SRC scheme
+(define (deposit account amount)
+  ((account 'deposit) amount))
+#+END_SRC
+Explain what is wrong with Louis's reasoning. In particular, consider what happens when serialized- exchange is called.
+
+** Answer
+It will be in an infinity loop, as the =serializer= is called twice within one to the other. The mutex will never released from the first call and the second will continue waiting for release.
+
+* Exercise 3.46
+Suppose that we implement test-and-set! using an ordinary procedure as shown in the text, without attempting to make the operation atomic. Draw a timing diagram like the one in figure 3.29 to demonstrate how the mutex implementation can fail by allowing two processes to acquire the mutex at the same time.
+** Answer
+Now image the mutex as the account with serialization. The mutex could be read by two requiries concurrently, both of which get #f.
+
+* Exercise 3.47
+A semaphore (of size n) is a generalization of a mutex. Like a mutex, a semaphore supports acquire and release operations, but it is more general in that up to n processes can acquire it concurrently. Additional processes that attempt to acquire the semaphore must wait for release operations. Give implementations of semaphores.
+a. in terms of mutexes
+b. in terms of atomic test-and-set! operations.
+
+** Answer
+#+BEGIN_SRC scheme
+(define (make-semaphore n)
+  (let ((the-semaphore (cons 0 n)))
+    (define (dispatch m)
+      (cond ((eq? m 'acquire)
+             (if (test-and-set! the-semaphore)
+                 (dispatch 'acquire)))
+            ((eq? m 'release)
+             (clear-semaphore the-semaphore))
+            (else
+             (error "undefined operator -- " m))))
+    dispatch))
+
+(define (test-and-set! the-semaphore)
+  (cond ((= (car the-semaphore)
+            (cdr the-semaphore))
+         #t)
+        (else (set-car! the-semaphore
+                        (+ 1 (car the-semaphore)))
+              #f)))
+
+(define (clear-semaphore the-semaphore)
+  (set-car! the-semaphore (- (car the-semaphore) 1)))
+#+END_SRC
+
+* Exercise 3.48
+Explain in detail why the deadlock-avoidance method described above, (i.e., the accounts are numbered, and each process attempts to acquire the smaller-numbered account first) avoids deadlock in the exchange problem. Rewrite serialized-exchange to incorporate this idea. (You will also need to modify make-account so that each account is created with a number, which can be accessed by sending an appropriate message.)
+
+** Answer
+the reason why two will become dead lock is that two procedures in the same serialization would lock the one of the needed accounts and wait for the other to unlock, which takes forever.
+#+BEGIN_SRC scheme
+(define (ordered-serialized-exchange-account a1 a2)
+  ((let ((s (if (< (a1 'number)
+                     (a2 'number))
+                 (cons (a1 'serializer)
+                       (a2 'serializer))
+                 (cons (a2 'serializer)
+                       (a1 'serializer)))))
+     (((car s) ((cdr s) exchange-account)) a1 a2))))
+#+END_SRC
+* exercise 3.49
+Give a scenario where the deadlock-avoidance mechanism described above does not work. (Hint: In the exchange problem, each process knows in advance which accounts it will need to get access to. Consider a situation where a process must get access to some shared resources before it can know which additional shared resources it will require.)

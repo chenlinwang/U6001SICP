@@ -1,0 +1,13 @@
+* Referential Transparency
+It requires the programming language to have the capability, where the exact same code will produce the exact same result no matter wherever it is placed in a program. Such cases would elimilate assignments or mutations, as they could be changing the bahavior of certain codes according to their location.
+
+* Concurrent System
+Concurrency could bring great messies to system, so there should restrictions:
+1. No two transactions could be done in the same time if they share the same data.
+2. The system will produce the same results as if procedures are run in *some* order.
+
+* Serialization
+The idea of serialization is to categorize procedures into different sets where no two procedures in the same set should be run in the same time. But for procedures from different sets, it should be ok to execute them concurrently.
+
+* Deadlock
+Even with serialization, there could be some kinds of trouble, like the *deadlock*, which could happen if we have procedures that control multiple shared datas at the same time. It could be a huge problem, like wrong results or infinity loops.
