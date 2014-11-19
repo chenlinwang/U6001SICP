@@ -355,3 +355,14 @@
 ;; ;; test
 ;; (print (foundmap even? cons square (list) (list 1 3 5 8 2 4)))
 ;; (exit)
+
+;; remove map:
+(define (removemap pre connect init l)
+  (let iter ((rest l))
+    (cond ((null? rest) init)
+          ((pre (car rest)) (cdr rest))
+          (else (connect (car rest) (iter (cdr rest)))))))
+
+;; ;; test
+;; (print (removemap even? cons (list) (list 1 3 5 8 2 4)))
+;; (exit)
