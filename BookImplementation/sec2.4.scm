@@ -2,17 +2,19 @@
 (define (loadimp24) (load "../BookImplementation/sec2.4.scm"))
 (require-extension mathh)
 (include "mathh-constants")
-;; utility for the angle from two dimension coordinates
+;; utility for the angle from two dimension coordinates, the degree will be [0,2PI)
 (define (xy2angle x y)
   (cond ((= x 0)
          (cond ((= y 0) 0)
                ((> y 0) (/ PI 2))
-               ((< y 0) (- (/ PI 2)))))
-        ((> x 0) (atan (/ y x)))
+               ((< y 0) (* (/ PI 2) 3))))
+        ((> x 0)
+         (cond ((>= y 0) (atan (/ y x)))
+               (else (+ (* 2 PI) (atan (/ y x))))))
         ((< x 0)
          (cond ((= y 0) PI)
                ((> y 0) (+ PI (atan (/ y x))))
-               ((< y 0) (- (atan (/ y x)) PI))))))
+               ((< y 0) (+ (atan (/ y x)) PI))))))
 
 ;; ;; test
 ;; (print (map xy2angle
@@ -26,7 +28,7 @@
 ;; omit the underlying data representation, using the wishful thinkng
 ;; suppost for any complex data, we have the generator make-from-rectangular and make-from-polar, operation the  real-part, imag-part, magn-part and angl-part already, we could implement the data arithmetic as:
 
-;; complex data arithmetic
+;; complex data arithmetic, using the wishful thinking
 (define (complex-add z1 z2)
   (make-from-rectangular (+ (real-part z1)
                             (real-part z2))
@@ -79,7 +81,7 @@
 
 ;; 2 all from polar representation
 (define (make-from-polar magn angl)
-  (cons magn angl))
+  (cons magn (get-group angl PI)))
 (define magn-part car)
 (define angl-part cdr)
 (define (make-from-rectangular real imag)
@@ -141,7 +143,7 @@
 
 ;; the polar
 (define (make-from-polar magn angl)
-  (make-tag-gen 'polar (cons magn angl)))
+  (make-tag-gen 'polar (cons magn (get-group angl PI))))
 (define polar-complex? (make-tag-rec 'polar))
 (define pola-magn-part cadr)
 (define pola-angl-part cddr)
@@ -179,18 +181,19 @@
 ;;             (list complex-add complex-sub complex-mul complex-div)))
 ;; (exit)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; section 2.4.3
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; using the put and get method instead of the recreating the generic methods
 
 ;; the put and get, we will be using the property list
-(define (put-complex op type proc)
-  (put! 'complex-number (symbol-append op type) proc))
+(define (put-wrap op type proc)
+  (put! 'arithmetic (symbol-append op type) proc))
 
-(define (get-complex op type)
-  (get 'complex-number (symbol-append op type)))
+(define (get-wrap op type)
+  (let ((proc (get 'arithmetic (symbol-append op type))))
+    (cond (proc proc)
+          (else (error "unregistered operator and type -- " op type)))))
 
 
 ;; the rectangular form
@@ -210,14 +213,14 @@
     (xy2angle (real-part z)
               (imag-part z)))
   (map (lambda (op proc)
-         (put-complex op 'rectangular proc))
+         (put-wrap op 'rectangular proc))
        (list 'complex? 'real-part 'imag-part 'magn-part 'angl-part)
        (list complex? real-part imag-part magn-part angl-part))
   (print "rectangular complex number installed!"))
 
 ;; the polar form
 (define (make-from-polar magn angl)
-  (make-tag-gen 'polar (cons magn angl)))
+  (make-tag-gen 'polar (cons magn (get-group angl PI))))
 
 ;; install the polar package
 (define (install-polar-package)
@@ -230,28 +233,29 @@
   (define (imag-part z) (* (magn-part z)
                            (sin (angl-part z))))
   (map (lambda (op proc)
-         (put-complex op 'polar proc))
+         (put-wrap op 'polar proc))
        (list 'complex? 'real-part 'imag-part 'magn-part 'angl-part)
        (list complex? real-part imag-part magn-part angl-part))
   (print "polar complex number installed!"))
 
 ;; generic apply
-(define (generic-apply op type . arg)
-  (apply (get-complex op type) arg))
+(define (generic-apply op . arg)
+  (let ((type (apply symbol-append (map tag-name arg))))
+    (apply (get-wrap op type) arg)))
 
 ;; generic selector
 (define (real-part z)
-  (generic-apply 'real-part (tag-name z) z))
+  (generic-apply 'real-part z))
 (define (imag-part z)
-  (generic-apply 'imag-part (tag-name z) z))
+  (generic-apply 'imag-part z))
 (define (magn-part z)
-  (generic-apply 'magn-part (tag-name z) z))
+  (generic-apply 'magn-part z))
 (define (angl-part z)
-  (generic-apply 'angl-part (tag-name z) z))
+  (generic-apply 'angl-part z))
 
 ;; ;; install
-;; (install-rectangular-package)
-;; (install-polar-package)
+(install-rectangular-package)
+(install-polar-package)
 ;; ;; test
 ;; (define x (make-from-rectangular 1 2))
 ;; (print x)
@@ -263,4 +267,6 @@
 ;; (print (map (lambda (proc) (apply proc (list y)))
 ;;             (list real-part imag-part magn-part angl-part)))
 
+;; (print (map (lambda (p) (p x y))
+;;             (list complex-add complex-sub complex-mul complex-div)))
 ;; (exit)

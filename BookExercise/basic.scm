@@ -7,6 +7,7 @@
 (define (odd? x) (= (remainder x 2) 1))
 
 ;; Mathmatics
+(define (absolute x) (if (> x 0) x (- x)))
 (define (square x) (* x x))
 (define (cube x) (* x x x))
 (define (exponent-iter base exp product)
