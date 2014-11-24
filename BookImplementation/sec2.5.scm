@@ -185,3 +185,93 @@
 ;; (print (map (lambda (p) (p x y))
 ;;             (list add sub mul div)))
 ;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; section 2.5.2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;------------------------------
+;; working on the coercion
+;; we have: r->o, r->c, o->c
+
+(define (put-coercion t1 t2 proc)
+  (put! 'coercion (symbol-append t1 t2) proc))
+
+(define (get-coercion t1 t2)
+  (get 'coercion (symbol-append t1 t2) #f))
+
+;; coersion installer
+(define (install-coercion)
+  ;; coercion operator
+  (define (r->o r) (make-ordinary (/ (nume r) (deno r))))
+  (define (r->c r) (make-complex-rectangular (/ (nume r) (deno r)) 0))
+  (define (o->c o) (make-complex-rectangular (num o) 0))
+
+  ;; register with the coercion
+  (map put-coercion
+       (list 'rational 'rational 'number)
+       (list 'number 'complex 'complex)
+       (list r->o r->c o->c))
+  ;; print result
+  (print "coercion operator installed!"))
+
+;; install
+(install-coercion)
+
+;; raise table to get the upper class coersion name
+(define (put-raise t1 t2) (put! 'raise t1 t2))
+(define (get-raise t) (get 'raise t #f))
+
+;; raise table install for existing type
+(define (install-raise)
+  (map put-raise
+       (list 'rational 'number)
+       (list 'number 'complex))
+  (print "raise hierarchy installed!"))
+;; install
+(install-raise)
+
+;; rewrite the generic-apply to one or two
+(define (generic-apply op . arg)
+  (let ((type (apply symbol-append (map tag-name arg))))
+    (let ((proc (get-wrap op type)))
+      (cond (proc (apply proc arg))
+            ((= 1 (length arg))
+             (let ((raise-type (get-raise type)))
+               (cond (raise-type (apply generic-apply (list op ((get-coercion type
+                                                                              raise-type)
+                                                                (car arg))))))))
+            ((= 2 (length arg))
+             (let ((type (map tag-name arg)))
+               (cond ((get-coercion (car type)
+                                    (cadr type))
+                      (apply generic-apply (list op ((get-coercion (car type)
+                                                                   (cadr type))
+                                                     (car arg))
+                                                 (cadr arg))))
+                     ((get-coercion (cadr type)
+                                    (car type))
+                      (apply generic-apply (list op (car arg)
+                                                 ((get-coercion (cadr type)
+                                                                (car type))
+                                                  (cadr arg)))))
+                     (else (error "can't cover these type -- " type))))
+             )
+            (else (error "three arguments conversion not implemented!"))))))
+
+;; ;; test
+;; (define n1 (make-ordinary 1))
+;; (define r1 (make-rational 1 2))
+;; (define c1 (make-complex-rectangular 1 1))
+;; (define c2 (make-complex-polar 2 (/ PI 4)))
+;; (define testlist (list n1 r1 c1 c2))
+;; ;; single test
+;; (print (map real testlist))
+;; (print (map magn testlist))
+
+;; ;; double test
+;; (print (map add
+;;             (list r1 r1 r1 n1 n1)
+;;             (list n1 c1 c2 c1 c2)))
+;; (print (map add testlist testlist))
+;; (exit)

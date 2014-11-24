@@ -1,0 +1,2 @@
+* The generic operator
+As we compute different data using similar procedures, we are trying to implement the generic design. The procedure should be able to dispatch the data to corresponding operations. This is different from the generic offered by the C++. The C++ generic is more like the oop rather than generic -- it can only operate on data with similar fields and operations and does dispatch the data.

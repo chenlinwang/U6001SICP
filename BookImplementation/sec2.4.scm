@@ -190,11 +190,12 @@
 (define (put-wrap op type proc)
   (put! 'arithmetic (symbol-append op type) proc))
 
-(define (get-wrap op type)
-  (let ((proc (get 'arithmetic (symbol-append op type))))
-    (cond (proc proc)
-          (else (error "unregistered operator and type -- " op type)))))
-
+;; rewrite get-wrap to return false if not found.
+;; (define (get-wrap op type)
+;;   (let ((proc (get 'arithmetic (symbol-append op type))))
+;;     (cond (proc proc)
+;;           (else (error "unregistered operator -- " op type)))))
+(define (get-wrap op type) (get 'arithmetic (symbol-append op type) #f))
 
 ;; the rectangular form
 (define (make-from-rectangular real imag)
@@ -253,7 +254,7 @@
 (define (angl-part z)
   (generic-apply 'angl-part z))
 
-;; ;; install
+;; install
 (install-rectangular-package)
 (install-polar-package)
 ;; ;; test
