@@ -213,18 +213,21 @@
 ;; install the package!
 (install-drop)
 (define (drop i)
-  (let ((proc (get-drop (tag-name i))))
-    (cond (proc (let ((simplified (proc i)))
-                  (cond (simplified (drop simplified))
-                        (else i))))
-          (else i))))
+  (cond ((number? i) (make-ordinary i))
+        (else
+         (let ((proc (get-drop (tag-name i))))
+           (cond (proc (let ((simplified (proc i)))
+                         (cond (simplified (drop simplified))
+                               (else i))))
+                 (else i))))))
 
 ;; rewrite
 (define (generic-apply op . arg)
   (let ((result
          (let ((type (apply symbol-append (map tag-name arg))))
            (let ((proc (get-wrap op type)))
-             (cond (proc (apply proc arg))
+             (cond (proc
+                    (apply proc arg))
                    ((= 1 (length arg))
                     (let ((raise-type (get-raise type)))
                       (cond (raise-type (apply generic-apply (list op ((get-coercion type
@@ -258,7 +261,6 @@
 ;; ;; test
 ;; (define c1 (make-complex-rectangular 1 1))
 ;; (define c2 (make-complex-rectangular 1 -1))
-;; ;;
 ;; (print (add c1 c1))
 ;; (print (add c1 c2))
 ;; (exit)
@@ -270,3 +272,160 @@
 
 
 ;; too much to do, will try to reinvent the system later ;P
+;; will have to reload the add at the most basic level and then rewrite the most generic addition so that it will do the actual addition only when the two inputs are numbers.
+
+;; complex data arithmetic, using the wishful thinking
+(define (complex-add z1 z2)
+  (make-from-rectangular (add (real-part z1)
+                              (real-part z2))
+                         (add (imag-part z1)
+                              (imag-part z2))))
+
+(define (complex-sub z1 z2)
+  (make-from-rectangular (sub (real-part z1)
+                              (real-part z2))
+                         (sub (imag-part z1)
+                              (imag-part z2))))
+
+(define (complex-mul z1 z2)
+  (make-from-polar (mul (magn-part z1)
+                        (magn-part z2))
+                   (add (angl-part z1)
+                        (angl-part z2))))
+
+(define (complex-div z1 z2)
+  (make-from-polar (div (magn-part z1)
+                        (magn-part z2))
+                   (sub (angl-part z1)
+                        (angl-part z2))))
+
+(define (re-install-complex)
+  ;; the generator
+  (define (generate c) (cons 'complex c))
+
+  ;; the selector
+  (define complex-number cdr)
+
+  (map (lambda (op proc)
+         (put-wrap op 'complexcomplex
+                   (lambda (c1 c2)
+                     (generate (proc (complex-number c1)
+                                     (complex-number c2))))))
+       (list 'add 'sub 'mul 'div)
+       (list complex-add complex-sub complex-mul complex-div))
+
+  ;; print the result
+  (print "complex number arithemtic reinstalled!"))
+
+;; redo the reconstruction
+(define (down-to-number a)
+  (let ((t (tag-name a)))
+    (cond ((eq? t 'number) a)
+          ((eq? t 'rational) (/ (nume a) (deno a)))
+          (else (error "can't change to calculating number -- " a)))))
+
+;; install square
+(define (install-square)
+  (define (rational-square r) (let ((n (nume r))
+                                    (d (deno r)))
+                                (make-rational (* n n) (* d d))))
+  (define (ordinary-square o) (* o o))
+  (define (complex-square c) (let ((r (real c))
+                                   (i (imag c)))
+                               (make-complex-rectangular (sub (generic-square r)
+                                                              (generic-square i))
+                                                         (mul 2 (mul r i)))))
+  (map (lambda (type proc) (put-wrap 'square type proc))
+       (list 'rational 'number 'complex)
+       (list rational-square ordinary-square complex-square))
+
+  ;; print the result
+  (print "square operator installed!"))
+;; install and wrap
+(install-square)
+(define (generic-square a) (generic-apply 'square a))
+
+;; sin operator
+(define (install-sin)
+  (define (rational-sin r) (sin (/ (nume r) (deno r))))
+  (define (ordinary-sin o) (sin o))
+
+  (map (lambda (type proc) (put-wrap 'sin type proc))
+       (list 'rational 'number)
+       (list rational-sin ordinary-sin))
+  (print "sin operator installed!"))
+;; install and wrap
+(install-sin)
+(define (generic-sin a) (generic-apply 'sin a))
+
+;; cos operator
+(define (install-cos)
+  (define (rational-cos r) (cos (/ (nume r) (deno r))))
+  (define (ordinary-cos o) (cos o))
+
+  (map (lambda (type proc) (put-wrap 'cos type proc))
+       (list 'rational 'number)
+       (list rational-cos ordinary-cos))
+  (print "cos operator installed!"))
+;; install and wrap
+(install-cos)
+(define (generic-cos a) (generic-apply 'cos a))
+
+;; install the rectangular package
+(define (re-install-rectangular-package)
+  ;; the rectangluar form
+  (define complex? (make-tag-rec 'rectangular))
+  (define real-part cadr)
+  (define imag-part cddr)
+  (define (magn-part z)
+    (sqrt (down-to-number (add (generic-square (real-part z))
+                               (generic-square (imag-part z))))))
+  (define (angl-part z)
+    (xy2angle (down-to-number (real-part z))
+              (down-to-number (imag-part z))))
+  (map (lambda (op proc)
+         (put-wrap op 'rectangular proc))
+       (list 'complex? 'real-part 'imag-part 'magn-part 'angl-part)
+       (list complex? real-part imag-part magn-part angl-part))
+  (print "rectangular complex number reinstalled!"))
+
+;; the polar form
+(define (make-from-polar magn angl)
+  (make-tag-gen 'polar (cons magn (get-group (down-to-number angl) PI))))
+
+;; install the polar package
+(define (re-install-polar-package)
+  ;; the polar form
+  (define complex? (make-tag-rec 'polar))
+  (define magn-part cadr)
+  (define angl-part cddr)
+  (define (real-part z) (mul (magn-part z)
+                             (generic-cos (angl-part z))))
+  (define (imag-part z) (mul (magn-part z)
+                             (generic-sin (angl-part z))))
+  (map (lambda (op proc)
+         (put-wrap op 'polar proc))
+       (list 'complex? 'real-part 'imag-part 'magn-part 'angl-part)
+       (list complex? real-part imag-part magn-part angl-part))
+  (print "polar complex number reinstalled!"))
+
+;; reinstall
+(re-install-complex)
+(re-install-polar-package)
+(re-install-rectangular-package)
+
+;; ;; test
+;; (define r1 (make-rational 1 2))
+;; (define r2 (make-rational 1 3))
+;; (define o1 (make-ordinary 1.5))
+;; (define o2 (make-ordinary 3.9))
+;; (define c1 (make-complex-rectangular r1 o1))
+;; (define c2 (make-complex-rectangular o2 r2))
+;; (define c3 (make-complex-polar r1 o1))
+;; (define c4 (make-complex-polar o2 r2))
+;; (print (add c1 c1))
+;; (print (map (lambda (p) (p c1 c2))
+;;             (list add sub mul div)))
+;; (print (map (lambda (p) (p c3 c4))
+;;             (list add sub mul div)))
+;; (exit)
