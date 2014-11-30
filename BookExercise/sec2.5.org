@@ -357,3 +357,25 @@ We will have to reload the add at the most basic level and then rewrite the most
 (re-install-polar-package)
 (re-install-rectangular-package)
 #+END_SRC
+* Exercise 2.87
+Install =zero?= for polynomials in the generic arithmetic package. This will allow adjoin-term to work for polynomials with coefficients that are themselves polynomials.
+** Answer
+#+BEGIN_SRC scheme
+(define (install-poly-zero)
+  (define (z p)
+    (let ((t (term p)))
+      (and (= (length t) 1)
+           (= (caar t) 0))))
+
+  (put-wrap 'zero? 'polynomial z)
+  (print "zero? for the polynomial installed!"))
+#+END_SRC
+* Exercise 2.88
+Extend the polynomial system to include subtraction of polynomials. (Hint: You may find it helpful to define a generic negation operation.)
+** Answer
+Already Done.
+
+* Exercise 2.89
+Define procedures that implement the term-list representation described above as appropriate for dense polynomials.
+** Answer
+Just ignore the exponent number and order the scalar by number starting from 0 to the highest exponent.

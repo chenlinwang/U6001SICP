@@ -214,6 +214,7 @@
 (install-drop)
 (define (drop i)
   (cond ((number? i) (make-ordinary i))
+        ((boolean? i) i)
         (else
          (let ((proc (get-drop (tag-name i))))
            (cond (proc (let ((simplified (proc i)))
@@ -428,4 +429,23 @@
 ;;             (list add sub mul div)))
 ;; (print (map (lambda (p) (p c3 c4))
 ;;             (list add sub mul div)))
+;; (exit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Exercise 2.87
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Install =zero?= for polynomials in the generic arithmetic package. This will allow adjoin-term to work for polynomials with coefficients that are themselves polynomials.
+(define (install-poly-zero)
+  (define (z p)
+    (let ((t (term p)))
+      (and (= (length t) 1)
+           (= (caar t) 0))))
+
+  (put-wrap 'zero? 'polynomial z)
+  (print "zero? for the polynomial installed!"))
+
+(install-poly-zero)
+;; ;; test
+;; (define p0 (make-polynomial '*scalar-polynomial* (list 0) (list 1)))
+;; (print (zero? p0))
 ;; (exit)
